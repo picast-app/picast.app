@@ -1,0 +1,20 @@
+{
+  "processors": [
+    [
+      "stylelint-processor-styled-components",
+      {
+        "ignoreFiles": ["**/*.{css,scss}"]
+      }
+    ]
+  ],
+  "extends": [
+    "stylelint-config-standard",
+    "stylelint-config-styled-components"
+  ],
+  "rules": {
+    "max-empty-lines": 1,
+    "at-rule-no-unknown": null,
+    "no-descending-specificity": null,
+    "declaration-colon-newline-after": null
+  }
+}
