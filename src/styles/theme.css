@@ -1,11 +1,13 @@
 :root {
   --cl-background: #fff;
+  --cl-surface: #fff;
   --cl-text: #000;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --cl-background: #1f2022;
+    --cl-surface: #2c2e30;
     --cl-text: #fff;
   }
 }

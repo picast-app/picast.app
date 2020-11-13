@@ -4,3 +4,7 @@
   color: var(--cl-text);
   background-color: var(--cl-background);
 }
+
+body {
+  overscroll-behavior: none;
+}
