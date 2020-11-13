@@ -2,13 +2,15 @@ import React from 'react'
 import styled from 'styled-components'
 import { Icon } from 'components/atoms'
 import { Link } from 'react-router-dom'
+import { Bar } from './styledComponents'
 
 export default function Mainnav() {
   return (
-    <S.Navbar>
+    <S.Navbar as="nav">
       <ul>
         <Item path="/" icon="library" />
         <Item path="/feed" icon="subscriptions" />
+        <Item path="/profile" icon="person" />
       </ul>
     </S.Navbar>
   )
@@ -27,13 +29,8 @@ const Item = ({ path, ...props }: ItemProps) => (
 )
 
 const S = {
-  Navbar: styled.nav`
-    position: fixed;
+  Navbar: styled(Bar)`
     bottom: 0;
-    left: 0;
-    width: 100vw;
-    height: 3.5rem;
-    background-color: var(--cl-surface);
 
     ul {
       list-style: none;
