@@ -1,20 +1,24 @@
 import React from 'react'
 import styled from 'styled-components'
+import { Link } from './Link'
 import { useTheme } from 'utils/hooks'
 
 type Props = {
   icon: keyof typeof icons
   style?: keyof SvgIcon
+  linkTo?: string
 }
 
-export function Icon({ icon, style }: Props) {
+export function Icon({ icon, style, linkTo }: Props) {
   const theme = useTheme()
-  return (
+  const svg = (
     <S.Icon viewBox="0 0 24 24">
       {icons[icon][style ?? (theme === 'dark' ? 'outlined' : 'filled')] ??
         icons[icon].filled}
     </S.Icon>
   )
+  if (!linkTo) return svg
+  return <Link to={linkTo}>{svg}</Link>
 }
 
 const S = {
@@ -40,6 +44,11 @@ const icons = buildSvgPaths({
     outlined:
       'M12 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2m0 10c2.7 0 5.8 1.29 6 2H6c.23-.72 3.31-2 6-2m0-12C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z',
   },
+  search:
+    'M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z',
+  arrow_back: 'M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z',
+  cancel:
+    'M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
 })
 
 type SvgIcon<T = JSX.Element> = {
