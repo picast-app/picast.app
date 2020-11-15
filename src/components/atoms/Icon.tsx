@@ -12,7 +12,7 @@ type Props = {
 export function Icon({ icon, style, linkTo }: Props) {
   const theme = useTheme()
   const svg = (
-    <S.Icon viewBox="0 0 24 24">
+    <S.Icon viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       {icons[icon][style ?? (theme === 'dark' ? 'outlined' : 'filled')] ??
         icons[icon].filled}
     </S.Icon>

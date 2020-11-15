@@ -11,15 +11,15 @@ const Screen: React.FC = props => {
       : React.Fragment
 
   return (
-    <>
+    <S.Screen>
       {appbar}
-      <S.Body>{children}</S.Body>
-    </>
+      {children}
+    </S.Screen>
   )
 }
 
 const S = {
-  Body: styled.div`
+  Screen: styled.div`
     padding-top: 3.5rem;
     max-height: calc(100vh - 3.5rem);
     overflow-y: auto;

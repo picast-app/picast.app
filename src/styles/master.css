@@ -3,6 +3,8 @@
   font-size: 16px;
   color: var(--cl-text);
   background-color: var(--cl-background);
+
+  --bar-height: 3.5rem;
 }
 
 body {

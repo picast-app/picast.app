@@ -32,7 +32,7 @@ export function Input({ value = '', onChange, blend, style, type }: Props) {
 const cancelSvg = encodeURIComponent(
   ReactDOMServer.renderToString(<Icon icon="cancel" />).replace(
     /class="[^"]*"/,
-    'xmlns="http://www.w3.org/2000/svg" fill="#fff"'
+    'fill="#fff"'
   )
 )
 
@@ -53,11 +53,9 @@ const S = {
 
     &[type='search']::-webkit-search-cancel-button {
       -webkit-appearance: none;
+      background: url('data:image/svg+xml,${cancelSvg}');
       height: 1.5rem;
       width: 1.5rem;
-      background: url('data:image/svg+xml,${cancelSvg}');
-      background-repeat: no-repeat;
-      background-position: center;
     }
 
     ${({ extend }) => extend ?? ''}
