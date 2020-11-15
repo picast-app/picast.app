@@ -2,18 +2,19 @@ import React from 'react'
 import styled from 'styled-components'
 import { Icon } from 'components/atoms'
 import { Link } from 'react-router-dom'
-import { Bar } from './styledComponents'
+import { Surface } from 'components/structure'
+import { bar } from 'styles/mixin'
 
 export default function Mainnav() {
   return (
-    <S.Navbar as="nav">
+    <Surface sc={S.Navbar} el={4}>
       <ul>
         <Item path="/" icon="library" />
         <Item path="/feed" icon="subscriptions" />
         <Item path="/discover" icon="search" />
         <Item path="/profile" icon="person" />
       </ul>
-    </S.Navbar>
+    </Surface>
   )
 }
 
@@ -30,7 +31,8 @@ const Item = ({ path, ...props }: ItemProps) => (
 )
 
 const S = {
-  Navbar: styled(Bar)`
+  Navbar: styled.nav`
+    ${bar}
     bottom: 0;
 
     ul {

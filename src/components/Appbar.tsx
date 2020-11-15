@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
-import { Bar } from './styledComponents'
+import { bar } from 'styles/mixin'
 import { Icon } from 'components/atoms'
+import { Surface } from 'components/structure'
 import { useScrollDir } from 'utils/hooks'
 
 type Props = {
@@ -13,11 +14,11 @@ type Props = {
 
 export default function Appbar({ title, back, children, scrollOut }: Props) {
   const appbar = (
-    <S.AppBar>
+    <Surface el={4} sc={S.AppBar}>
       {back && <Icon icon="arrow_back" linkTo={back} />}
       {title && <S.Title>{title}</S.Title>}
       {children}
-    </S.AppBar>
+    </Surface>
   )
   if (!scrollOut) return appbar
   return <ScrollWrap>{appbar}</ScrollWrap>
@@ -56,13 +57,16 @@ const ScrollWrap: React.FC = ({ children }) => {
   return <S.ScrollWrap ref={ref}>{children}</S.ScrollWrap>
 }
 
+const SAppBar = styled.div`
+  ${bar}
+  top: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+`
+
 const S = {
-  AppBar: styled(Bar)`
-    top: 0;
-    display: flex;
-    align-items: center;
-    padding: 0 1rem;
-  `,
+  AppBar: SAppBar,
 
   Title: styled.h1`
     font-size: 1.2rem;
@@ -86,7 +90,7 @@ const S = {
     flex-direction: column;
     pointer-events: none;
 
-    ${Bar} {
+    ${SAppBar} {
       position: sticky;
       top: calc(var(--bar-height) * -1);
       pointer-events: initial;

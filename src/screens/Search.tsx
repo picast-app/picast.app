@@ -1,5 +1,5 @@
 import React from 'react'
-import Screen from 'components/Screen'
+import { Screen } from 'components/structure'
 import Appbar from 'components/Appbar'
 import PodcastSearch from 'components/PodcastSearch'
 

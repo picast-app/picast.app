@@ -1,6 +1,6 @@
 import React from 'react'
 import { Icon } from 'components/atoms'
-import Screen from 'components/Screen'
+import { Screen } from 'components/structure'
 import Appbar from 'components/Appbar'
 
 export default function Discover() {

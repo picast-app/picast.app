@@ -1,8 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import Appbar from './Appbar'
+import Appbar from 'components/Appbar'
 
-const Screen: React.FC = props => {
+export const Screen: React.FC = props => {
   const children = React.Children.toArray(props.children)
   const appbar =
     typeof children[0] === 'object' &&
@@ -11,7 +11,7 @@ const Screen: React.FC = props => {
       : React.Fragment
 
   return (
-    <S.Screen>
+    <S.Screen offsetTop={appbar !== React.Fragment ? '3.5rem' : 0}>
       {appbar}
       {children}
     </S.Screen>
@@ -19,9 +19,9 @@ const Screen: React.FC = props => {
 }
 
 const S = {
-  Screen: styled.div`
-    padding-top: 3.5rem;
-    max-height: calc(100vh - 3.5rem);
+  Screen: styled.div<{ offsetTop: string | 0 }>`
+    padding-top: ${p => p.offsetTop};
+    max-height: calc(100vh - ${p => p.offsetTop});
     overflow-y: auto;
 
     &::-webkit-scrollbar {
@@ -29,5 +29,3 @@ const S = {
     }
   `,
 }
-
-export default Screen

@@ -1,6 +1,6 @@
 import React from 'react'
 import Appbar from 'components/Appbar'
-import Screen from 'components/Screen'
+import { Screen } from 'components/structure'
 
 export default function Library() {
   return (
