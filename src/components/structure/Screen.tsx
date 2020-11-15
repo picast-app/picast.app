@@ -1,8 +1,13 @@
 import React from 'react'
-import styled from 'styled-components'
+import styled, { AnyStyledComponent } from 'styled-components'
 import Appbar from 'components/Appbar'
 
-export const Screen: React.FC = props => {
+type Props = {
+  style?: AnyStyledComponent
+  padd?: boolean
+}
+
+export const Screen: React.FC<Props> = ({ style, padd, ...props }) => {
   const children = React.Children.toArray(props.children)
   const appbar =
     typeof children[0] === 'object' &&
@@ -11,7 +16,11 @@ export const Screen: React.FC = props => {
       : React.Fragment
 
   return (
-    <S.Screen offsetTop={appbar !== React.Fragment ? '3.5rem' : 0}>
+    <S.Screen
+      offsetTop={appbar !== React.Fragment ? 'var(--bar-height)' : '0px'}
+      as={style}
+      padd={padd}
+    >
       {appbar}
       {children}
     </S.Screen>
@@ -19,9 +28,15 @@ export const Screen: React.FC = props => {
 }
 
 const S = {
-  Screen: styled.div<{ offsetTop: string | 0 }>`
-    padding-top: ${p => p.offsetTop};
-    max-height: calc(100vh - ${p => p.offsetTop});
+  Screen: styled.div<{ offsetTop: string; padd?: boolean }>`
+    padding: ${({ padd }) => (padd ? '2rem' : '0')};
+    padding-top: calc(
+      ${({ padd }) => (padd ? '2rem' : '0')} + ${p => p.offsetTop}
+    );
+    padding-bottom: calc(
+      var(--bar-height) + ${({ padd }) => (padd ? '2rem' : '0')}
+    );
+    height: calc(100vh - ${({ offsetTop }) => offsetTop});
     overflow-y: auto;
 
     &::-webkit-scrollbar {
