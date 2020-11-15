@@ -10,13 +10,14 @@ export default function Mainnav() {
       <ul>
         <Item path="/" icon="library" />
         <Item path="/feed" icon="subscriptions" />
+        <Item path="/discover" icon="search" />
         <Item path="/profile" icon="person" />
       </ul>
     </S.Navbar>
   )
 }
 
-type ItemProps = Props<typeof Icon> & {
+type ItemProps = ReactProps<typeof Icon> & {
   path: string
 }
 

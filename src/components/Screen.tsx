@@ -23,6 +23,10 @@ const S = {
     padding-top: 3.5rem;
     max-height: calc(100vh - 3.5rem);
     overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
   `,
 }
 
