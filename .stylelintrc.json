@@ -3,7 +3,9 @@
     [
       "stylelint-processor-styled-components",
       {
-        "ignoreFiles": ["**/*.{css,scss}"]
+        "ignoreFiles": [
+          "**/*.{css,scss}"
+        ]
       }
     ]
   ],
@@ -15,6 +17,7 @@
     "max-empty-lines": 1,
     "at-rule-no-unknown": null,
     "no-descending-specificity": null,
-    "declaration-colon-newline-after": null
+    "declaration-colon-newline-after": null,
+    "value-keyword-case": null
   }
 }
