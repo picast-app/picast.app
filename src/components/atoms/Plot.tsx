@@ -1,0 +1,65 @@
+import React from 'react'
+import styled from 'styled-components'
+import { useComputed } from 'utils/hooks'
+
+type Props = {
+  data: Datum[]
+  xMin?: number
+  xMax?: number
+  yMin?: number
+  yMax?: number
+  padd?: number
+  ptR?: number
+  scatter?: boolean
+}
+
+export function Plot({
+  data,
+  padd = 0,
+  ptR,
+  scatter = true,
+  ...bounds
+}: Props) {
+  let xMin = useComputed(bounds.xMin ?? data, bound('min', 0), 'json')
+  let xMax = useComputed(bounds.xMax ?? data, bound('max', 0), 'json')
+  let yMin = useComputed(bounds.yMin ?? data, bound('min', 1), 'json')
+  let yMax = useComputed(bounds.yMax ?? data, bound('max', 1), 'json')
+  console.assert(xMax >= xMin && yMax >= yMin)
+
+  let width = xMax - xMin
+  let height = yMax - yMin
+
+  xMin -= width * padd
+  xMax += width * padd
+  yMin -= height * padd
+  yMax += height * padd
+  width += width * padd * 2
+  height += height * padd * 2
+
+  return (
+    <S.Plot viewBox={`${xMin} ${yMin} ${width} ${height}`} fill="#fff8">
+      {scatter &&
+        data.map(([x, y], i) => (
+          <circle
+            cx={x}
+            cy={yMax - (y - yMin)}
+            r={ptR ?? height / 200}
+            key={`pt-${i}`}
+          />
+        ))}
+    </S.Plot>
+  )
+}
+
+export type Datum = [x: number, y: number]
+
+const bound = (func: 'min' | 'max', i: number) => (
+  data: Datum[] | number
+): number =>
+  typeof data === 'number' ? data : Math[func](...data.map(v => v[i]))
+
+const S = {
+  Plot: styled.svg<{ fill?: string }>`
+    ${({ fill }) => `fill: ${fill ?? 'var(--cl-text)'};`}
+  `,
+}
