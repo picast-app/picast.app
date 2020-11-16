@@ -1,4 +1,4 @@
-const { sin, cos, PI } = Math
+const { sin, cos, PI, sqrt } = Math
 
 export const easeInSine = (x: number) => 1 - cos((x * PI) / 2)
 export const easeOutSine = (x: number) => sin((x * PI) / 2)
@@ -33,12 +33,12 @@ export const easeInOutExpo = (x: number) =>
     ? 2 ** (20 * x - 10) / 2
     : (2 - 2 ** (-20 * x + 10)) / 2
 
-export const easeInCirc = (x: number) => 1 - Math.sqrt(1 - x ** 2)
-export const easeOutCirc = (x: number) => Math.sqrt(1 - (x - 1) ** 2)
+export const easeInCirc = (x: number) => 1 - sqrt(1 - x ** 2)
+export const easeOutCirc = (x: number) => sqrt(1 - (x - 1) ** 2)
 export const easeInOutCirc = (x: number) =>
   x < 0.5
-    ? (1 - Math.sqrt(1 - (2 * x) ** 2)) / 2
-    : (Math.sqrt(1 - (-2 * x + 2) ** 2) + 1) / 2
+    ? (1 - sqrt(1 - (2 * x) ** 2)) / 2
+    : (sqrt(1 - (-2 * x + 2) ** 2) + 1) / 2
 
 const c1 = 1.70158
 const c2 = c1 * 1.525

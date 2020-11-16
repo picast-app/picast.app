@@ -27,16 +27,12 @@ export const Screen: React.FC<Props> = ({ style, padd, ...props }) => {
   )
 }
 
+// prettier-ignore
 const S = {
   Screen: styled.div<{ offsetTop: string; padd?: boolean }>`
-    padding: ${({ padd }) => (padd ? '2rem' : '0')};
-    padding-top: calc(
-      ${({ padd }) => (padd ? '2rem' : '0')} + ${p => p.offsetTop}
-    );
-    padding-bottom: calc(
-      var(--bar-height) + ${({ padd }) => (padd ? '2rem' : '0')}
-    );
-    height: calc(100vh - ${({ offsetTop }) => offsetTop});
+    padding: ${({ padd }) => (padd ? '2rem' : '0px')};
+    padding-top: calc(${({ padd }) => (padd ? '2rem' : '0px')} + ${p => p.offsetTop});
+    height: calc(100vh - var(--bar-height));
     overflow-y: auto;
 
     &::-webkit-scrollbar {
