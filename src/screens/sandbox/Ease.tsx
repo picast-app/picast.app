@@ -10,7 +10,7 @@ export default function Ease() {
     <Screen style={S.Page} padd>
       <S.Grid>
         {Object.keys(funcs).map(k => (
-          <EaseFunc key={k} name={k as keyof typeof funcs} pts={500} />
+          <EaseFunc key={k} name={k as keyof typeof funcs} pts={600} />
         ))}
       </S.Grid>
     </Screen>

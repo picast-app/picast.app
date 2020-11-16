@@ -1,6 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { useComputed } from 'utils/hooks'
+import { css, hex, blend, alpha } from 'styles/color'
 
 type Props = {
   data: Datum[]
@@ -40,8 +41,12 @@ export function Plot({
   width += width * padd * 2
   height += height * padd * 2
 
+  const cl = hex.encode(
+    blend(css.color('text'), alpha(css.color('background'), 0x44))
+  )
+
   return (
-    <S.Plot viewBox={`${xMin} ${yMin} ${width} ${height}`} fill="#fff8">
+    <S.Plot viewBox={`${xMin} ${yMin} ${width} ${height}`} fill={cl}>
       {scatter &&
         data.map(([x, y], i) => (
           <circle
@@ -60,7 +65,7 @@ export function Plot({
             <line
               {...{ x1, y1, x2, y2 }}
               key={`seg-${i}`}
-              stroke="var(--cl-text)"
+              stroke={cl}
               stroke-width={lineWidth ?? height / 100}
             />
           )
