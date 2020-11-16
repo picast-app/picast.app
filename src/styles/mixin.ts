@@ -10,5 +10,4 @@ export const bar = `
   left: 0;
   width: 100vw;
   height: var(--bar-height);
-  background-color: var(--cl-surface);
 `
