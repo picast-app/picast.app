@@ -4,6 +4,7 @@ import { Screen, Surface } from 'components/structure'
 import { Plot, Datum } from 'components/atoms'
 import * as funcs from 'utils/ease'
 import { useComputed } from 'utils/hooks'
+import { desktop } from 'styles/responsive'
 
 export default function Ease() {
   return (
@@ -51,6 +52,7 @@ const S = {
     display: grid;
 
     --width: 60rem;
+    --max-width: 100vw;
     --gap: 2rem;
     --columns: 3;
 
@@ -63,10 +65,14 @@ const S = {
     @media (max-width: 600px) {
       --columns: 1;
     }
+
+    @media ${desktop} {
+      --max-width: calc(100vw - var(--sidebar-width));
+    }
   `,
 
   Func: styled.div`
-    height: calc((min(var(--width), 100vw) - (var(--columns) - 1) * var(--gap)) / var(--columns));
+    height: calc((min(var(--width), var(--max-width)) - (var(--columns) - 1) * var(--gap)) / var(--columns));
     padding: 1rem;
     overflow: hidden;
     display: flex;

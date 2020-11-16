@@ -1,3 +1,5 @@
+import { desktop } from './responsive'
+
 export const center = `
   position: absolute;
   left: 50%;
@@ -8,6 +10,11 @@ export const center = `
 export const bar = `
   position: fixed;
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: var(--bar-height);
+
+  @media ${desktop} {
+    left: var(--sidebar-width);
+    width: calc(100vw - var(--sidebar-width));
+  }
 `

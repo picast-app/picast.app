@@ -1,6 +1,7 @@
 import React from 'react'
 import styled, { AnyStyledComponent } from 'styled-components'
 import Appbar from 'components/Appbar'
+import { desktop } from 'styles/responsive'
 
 type Props = {
   style?: AnyStyledComponent
@@ -32,11 +33,17 @@ const S = {
   Screen: styled.div<{ offsetTop: string; padd?: boolean }>`
     padding: ${({ padd }) => (padd ? '2rem' : '0px')};
     padding-top: calc(${({ padd }) => (padd ? '2rem' : '0px')} + ${p => p.offsetTop});
-    height: calc(100vh - var(--bar-height));
+    height: calc(100% - var(--bar-height));
     overflow-y: auto;
+    position: relative;
 
     &::-webkit-scrollbar {
       display: none;
+    }
+
+    @media ${desktop} {
+      height: 100%;
+      flex-grow: 1;
     }
   `,
 }

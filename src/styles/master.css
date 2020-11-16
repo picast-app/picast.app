@@ -5,8 +5,15 @@
   background-color: var(--cl-background);
 
   --bar-height: 3.5rem;
+  --sidebar-width: 15rem;
 }
 
 body {
   overscroll-behavior: none;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }

@@ -1,18 +1,21 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Icon } from 'components/atoms'
-import { Link } from 'react-router-dom'
+import { Icon, Link } from 'components/atoms'
 import { Surface } from 'components/structure'
 import { bar } from 'styles/mixin'
+import { desktop } from 'styles/responsive'
+import { useMatchMedia } from 'utils/hooks'
 
 export default function Mainnav() {
+  const isDesktop = useMatchMedia(desktop)
+
   return (
-    <Surface sc={S.Navbar} el={4}>
+    <Surface sc={S.Navbar} el={isDesktop ? 0 : 4}>
       <ul>
-        <Item path="/" icon="library" />
-        <Item path="/feed" icon="subscriptions" />
-        <Item path="/discover" icon="search" />
-        <Item path="/profile" icon="person" />
+        <Item path="/" label="Library" icon="library" />
+        <Item path="/feed" label="Feed" icon="subscriptions" />
+        <Item path="/discover" label="Discover" icon="search" />
+        <Item path="/profile" label="Profile" icon="person" />
       </ul>
     </Surface>
   )
@@ -20,12 +23,14 @@ export default function Mainnav() {
 
 type ItemProps = ReactProps<typeof Icon> & {
   path: string
+  label: string
 }
 
-const Item = ({ path, ...props }: ItemProps) => (
+const Item = ({ path, label, ...props }: ItemProps) => (
   <S.Item>
     <Link to={path}>
       <Icon {...props} />
+      <span>{label}</span>
     </Link>
   </S.Item>
 )
@@ -34,6 +39,7 @@ const S = {
   Navbar: styled.nav`
     ${bar}
     bottom: 0;
+    z-index: 1000;
 
     ul {
       list-style: none;
@@ -43,6 +49,26 @@ const S = {
       display: flex;
       flex-direction: row;
       align-items: center;
+    }
+
+    @media ${desktop} {
+      width: var(--sidebar-width);
+      height: 100vh;
+      position: static;
+      flex-shrink: 0;
+      background-color: var(--surface-alt);
+      padding: 2rem;
+
+      --cl-text: var(--cl-text-alt);
+
+      border: none;
+
+      ul {
+        flex-direction: column;
+        height: unset;
+        width: unset;
+        align-items: flex-start;
+      }
     }
   `,
 
@@ -55,6 +81,20 @@ const S = {
       display: flex;
       align-items: center;
       justify-content: space-around;
+      text-decoration: none;
+    }
+
+    span {
+      margin-left: 1rem;
+      display: none;
+    }
+
+    @media ${desktop} {
+      margin-bottom: 1rem;
+
+      span {
+        display: initial;
+      }
     }
   `,
 }

@@ -85,7 +85,7 @@ const S = {
     height: var(--height);
     margin-top: calc(var(--bar-height) * -1);
     margin-bottom: calc(var(--height) * -1 + var(--bar-height));
-    width: 100vw;
+    width: 100%;
     display: flex;
     flex-direction: column;
     pointer-events: none;

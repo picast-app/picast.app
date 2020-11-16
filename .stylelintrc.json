@@ -18,6 +18,7 @@
     "at-rule-no-unknown": null,
     "no-descending-specificity": null,
     "declaration-colon-newline-after": null,
-    "value-keyword-case": null
+    "value-keyword-case": null,
+    "selector-list-comma-newline-after": null
   }
 }
