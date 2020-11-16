@@ -80,7 +80,7 @@ const S = {
     --height: var(--bar-height);
 
     position: relative;
-    top: 0;
+    top: var(--bar-height);
     left: 0;
     height: var(--height);
     margin-top: calc(var(--bar-height) * -1);
@@ -92,7 +92,6 @@ const S = {
 
     ${SAppBar} {
       position: sticky;
-      top: calc(var(--bar-height) * -1);
       pointer-events: initial;
     }
   `,

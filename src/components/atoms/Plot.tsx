@@ -11,13 +11,17 @@ type Props = {
   padd?: number
   ptR?: number
   scatter?: boolean
+  line?: boolean
+  lineWidth?: number
 }
 
 export function Plot({
   data,
   padd = 0,
   ptR,
-  scatter = true,
+  lineWidth,
+  scatter,
+  line,
   ...bounds
 }: Props) {
   let xMin = useComputed(bounds.xMin ?? data, bound('min', 0), 'json')
@@ -47,6 +51,20 @@ export function Plot({
             key={`pt-${i}`}
           />
         ))}
+      {line &&
+        data.slice(0, -1).map((p1, i) => {
+          const [x1, y1i] = p1
+          const [x2, y2i] = data[i + 1]
+          const [y1, y2] = [y1i, y2i].map(v => yMax - (v - yMin))
+          return (
+            <line
+              {...{ x1, y1, x2, y2 }}
+              key={`seg-${i}`}
+              stroke="var(--cl-text)"
+              stroke-width={lineWidth ?? height / 100}
+            />
+          )
+        })}
     </S.Plot>
   )
 }

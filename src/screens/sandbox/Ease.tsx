@@ -34,11 +34,11 @@ function EaseFunc({
   )
 
   return (
-    <Surface el={1} sc={S.Func}>
+    <Surface el={3} sc={S.Func}>
       <abbr title={funcs[name].toString()}>
         <h2>{name}</h2>
       </abbr>
-      <Plot data={data} padd={0.05} />
+      <Plot data={data} padd={0.05} scatter />
     </Surface>
   )
 }
@@ -76,7 +76,7 @@ const S = {
     abbr {
       text-align: center;
       text-decoration: none;
-      margin-bottom: 0.5rem;
+      margin-bottom: 1rem;
     }
   `,
 }
