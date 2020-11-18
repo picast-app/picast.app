@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import styled from 'styled-components'
-import { useComputed } from 'utils/hooks'
+import { useComputed, useNavbarWidget } from 'utils/hooks'
 
 type Props = {
   document: Document
@@ -14,7 +14,11 @@ function parse(node: Node, i?: number) {
   const tag = (node as Element).tagName
 
   if (node.nodeName === '#comment')
-    return <Comment key={i}>{node.textContent}</Comment>
+    return (
+      <Node key={i}>
+        <Comment>{node.textContent}</Comment>
+      </Node>
+    )
 
   const head =
     node.nodeName === '#text' ? (
@@ -30,6 +34,7 @@ function parse(node: Node, i?: number) {
           return (
             <Attr key={`${i}=${at.nodeName}`}>
               {at.nodeName}
+              {v ? '=' : ''}
               {v}
             </Attr>
           )
@@ -51,7 +56,7 @@ function parse(node: Node, i?: number) {
       </Node>
     )
   return (
-    <Node key={i}>
+    <Node key={i} expanded={i === undefined}>
       {head}
       {children.length > 0 && tag && (
         <CollapsedClose>/&lt;{tag}&gt;</CollapsedClose>
@@ -62,7 +67,10 @@ function parse(node: Node, i?: number) {
   )
 }
 
-const Node: React.FC = ({ children }) => {
+const Node: React.FC<{ expanded?: boolean }> = ({
+  children,
+  expanded = false,
+}) => {
   const hasChildren = React.Children.toArray(children).some(
     v => (v as any).type === 'ol'
   )
@@ -79,7 +87,7 @@ const Node: React.FC = ({ children }) => {
             node.getAttribute('aria-expanded') === 'true' ? 'false' : 'true'
           )
         },
-        'aria-expanded': false,
+        'aria-expanded': expanded,
       })}
     >
       {children}
@@ -88,14 +96,39 @@ const Node: React.FC = ({ children }) => {
 }
 
 export default function DocTree({ document }: Props) {
-  console.log(document)
-  ;(window as any).doc = document
+  const ref = useRef<HTMLDivElement>(null)
+
+  useNavbarWidget(
+    <S.Controls key="xml-controls">
+      <button
+        onClick={() => {
+          if (!ref.current) return
+          ref.current
+            .querySelectorAll('[aria-expanded]')
+            .forEach(el => el.setAttribute('aria-expanded', 'true'))
+        }}
+      >
+        expand all
+      </button>
+      <button
+        onClick={() => {
+          if (!ref.current) return
+          Array.from(ref.current.querySelectorAll('[aria-expanded]'))
+            .filter(v => v.parentElement !== ref.current)
+            .forEach(el => el.setAttribute('aria-expanded', 'false'))
+        }}
+      >
+        collapse all
+      </button>
+    </S.Controls>
+  )
 
   const pretty = useComputed(document, parse)
 
   return (
     <S.Document>
       <S.Root
+        ref={ref}
         onMouseOver={({ target }) =>
           (target as HTMLElement).toggleAttribute('data-hover')
         }
@@ -148,7 +181,7 @@ const AttrValue = styled.span`
   overflow-wrap: break-word;
 
   &::before {
-    content: '="';
+    content: '"';
   }
 
   &::after {
@@ -211,5 +244,12 @@ const S = {
     &[aria-expanded='true'] > ${CollapsedClose} {
       display: none;
     }
+  `,
+
+  Controls: styled.div`
+    display: block;
+    width: 100%;
+    height: 5rem;
+    border: 1px dotted #f00;
   `,
 }

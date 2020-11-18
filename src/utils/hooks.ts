@@ -1,5 +1,6 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useContext, useReducer, useRef } from 'react'
 import { Theme } from 'styles'
+import subscription from './subscription'
 
 export const useTheme = () => useContext(Theme)
 
@@ -80,4 +81,71 @@ export function useComputed<T, K>(
   }, [])
 
   return computed
+}
+
+export function useDebouncedInputCall<T>(
+  input: T,
+  { initial = input, inputDelay = 3, maxDelay = 300 } = {}
+) {
+  const [lastInput, setLastInput] = useState(input)
+  const [inputStamps, setInputStamps] = useReducer(
+    (c: number[], v: number | undefined) =>
+      v === undefined ? [] : [...c, ...(Array.isArray(v) ? v : [v])],
+    []
+  )
+  const [cancelGo, setCancelGo] = useState<ReturnType<typeof setTimeout>>()
+  const [debounced, setDebounced] = useState(initial)
+
+  const setInputStampsRef = useRef(setInputStamps)
+  setInputStampsRef.current = setInputStamps
+  const setDebouncedRef = useRef(setDebounced)
+  setDebouncedRef.current = setDebounced
+  const inputRef = useRef(input)
+  inputRef.current = input
+
+  useEffect(() => {
+    if (input === lastInput) return
+    setInputStamps(performance.now())
+    setLastInput(input)
+  }, [input, lastInput])
+
+  useEffect(() => {
+    if (cancelGo) clearTimeout(cancelGo)
+    if (!inputStamps.length) return
+
+    const inputDelta = inputStamps.slice(1).map((v, i) => v - inputStamps[i])
+    const inputAvg = inputDelta.reduce((a, c) => a + c, 0) / inputDelta.length
+
+    setCancelGo(
+      setTimeout(
+        () => {
+          setInputStampsRef.current(undefined)
+          setDebouncedRef.current(inputRef.current)
+        },
+        isNaN(inputAvg) ? maxDelay : Math.min(inputAvg * inputDelay, maxDelay)
+      )
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputStamps])
+
+  return debounced
+}
+
+const navbarWidgets = subscription<JSX.Element[]>()
+
+export function useNavbarWidget(widget?: JSX.Element) {
+  const [widgets, setWidgets] = useState(navbarWidgets.state)
+
+  useEffect(() => {
+    const unsub = navbarWidgets.subscribe(setWidgets)
+    const el = widget
+    if (el) navbarWidgets._call([...(widgets ?? []), el])
+    return () => {
+      unsub()
+      navbarWidgets._call(widgets?.filter(v => v !== el))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return widgets
 }

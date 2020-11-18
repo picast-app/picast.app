@@ -4,19 +4,28 @@ import { Icon, Link } from 'components/atoms'
 import { Surface } from 'components/structure'
 import { bar } from 'styles/mixin'
 import { desktop } from 'styles/responsive'
-import { useMatchMedia } from 'utils/hooks'
+import { useMatchMedia, useTheme, useNavbarWidget } from 'utils/hooks'
 
 export default function Mainnav() {
   const isDesktop = useMatchMedia(desktop)
+  const theme = useTheme()
+  const widgets = useNavbarWidget()
+
+  console.log(widgets)
 
   return (
-    <Surface sc={S.Navbar} el={isDesktop ? 0 : 4}>
+    <Surface
+      sc={S.Navbar}
+      el={isDesktop && theme === 'light' ? 0 : 4}
+      alt={isDesktop && theme === 'light'}
+    >
       <ul>
         <Item path="/" label="Library" icon="library" />
         <Item path="/feed" label="Feed" icon="subscriptions" />
         <Item path="/discover" label="Discover" icon="search" />
         <Item path="/profile" label="Profile" icon="person" />
       </ul>
+      {isDesktop && <S.WidgetTray>{widgets}</S.WidgetTray>}
     </Surface>
   )
 }
@@ -40,6 +49,8 @@ const S = {
     ${bar}
     bottom: 0;
     z-index: 1000;
+    display: flex;
+    flex-direction: column;
 
     ul {
       list-style: none;
@@ -56,12 +67,7 @@ const S = {
       height: 100vh;
       position: static;
       flex-shrink: 0;
-      background-color: var(--surface-alt);
       padding: 2rem;
-
-      --cl-text: var(--cl-text-alt);
-
-      border: none;
 
       ul {
         flex-direction: column;
@@ -95,6 +101,16 @@ const S = {
       span {
         display: initial;
       }
+    }
+  `,
+
+  WidgetTray: styled.div`
+    display: flex;
+    flex-direction: column;
+    margin-top: auto;
+
+    & > * {
+      margin-top: 1rem;
     }
   `,
 }
