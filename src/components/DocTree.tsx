@@ -13,7 +13,8 @@ function parse(node: Node, i?: number) {
     childContent = children[0].textContent ?? ''
   const tag = (node as Element).tagName
 
-  if (node.nodeName === '#comment') return <Comment>{node.textContent}</Comment>
+  if (node.nodeName === '#comment')
+    return <Comment key={i}>{node.textContent}</Comment>
 
   const head =
     node.nodeName === '#text' ? (
@@ -52,6 +53,9 @@ function parse(node: Node, i?: number) {
   return (
     <Node key={i}>
       {head}
+      {children.length > 0 && tag && (
+        <CollapsedClose>/&lt;{tag}&gt;</CollapsedClose>
+      )}
       {children.length > 0 && <ol>{children.map(parse)}</ol>}
       {close}
     </Node>
@@ -112,6 +116,13 @@ const Tag = styled.span`
 
 const CloseTag = styled(Tag)``
 
+const CollapsedClose = styled(Tag)`
+  &::before {
+    content: '…';
+    color: var(--cl-text);
+  }
+`
+
 const Comment = styled.span`
   opacity: 0.5;
 
@@ -134,6 +145,7 @@ const Attr = styled.span`
 
 const AttrValue = styled.span`
   color: #f29766;
+  overflow-wrap: break-word;
 
   &::before {
     content: '="';
@@ -176,11 +188,6 @@ const S = {
       content: '▾ ';
     }
 
-    &[aria-expanded='false'] > ol,
-    &[aria-expanded='false'] > ${CloseTag} {
-      display: none;
-    }
-
     &[aria-expanded='true']::before {
       content: '';
       position: absolute;
@@ -194,6 +201,15 @@ const S = {
 
     &[aria-expanded='true']:hover::before {
       opacity: 0.1;
+    }
+
+    &[aria-expanded='false'] > ol,
+    &[aria-expanded='false'] > ${CloseTag} {
+      display: none;
+    }
+
+    &[aria-expanded='true'] > ${CollapsedClose} {
+      display: none;
     }
   `,
 }
