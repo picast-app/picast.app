@@ -13,14 +13,18 @@ function parse(node: Node, i?: number) {
     childContent = children[0].textContent ?? ''
   const tag = (node as Element).tagName
 
-  const head =
-    node.nodeName === '#text'
-      ? node.textContent
-      : tag
-      ? `<${tag}>`
-      : node.nodeName
+  if (node.nodeName === '#comment') return <Comment>{node.textContent}</Comment>
 
-  const close = tag && <CloseTag>&lt;{tag}&gt;</CloseTag>
+  const head =
+    node.nodeName === '#text' ? (
+      node.textContent
+    ) : tag ? (
+      <Tag>{tag}</Tag>
+    ) : (
+      node.nodeName
+    )
+
+  const close = tag && <CloseTag>{tag}</CloseTag>
 
   if (childContent)
     return (
@@ -86,7 +90,36 @@ export default function DocTree({ document }: Props) {
   )
 }
 
-const CloseTag = styled.span``
+const Tag = styled.span`
+  color: #2882f9;
+  pointer-events: none;
+
+  &::before {
+    content: '<';
+  }
+
+  &::after {
+    content: '>';
+  }
+`
+
+const CloseTag = styled(Tag)`
+  &::before {
+    content: '</';
+  }
+`
+
+const Comment = styled.span`
+  opacity: 0.5;
+
+  &::before {
+    content: '<!--';
+  }
+
+  &::after {
+    content: '-->';
+  }
+`
 
 const S = {
   Document: styled.div`
@@ -97,13 +130,19 @@ const S = {
 
   Root: styled.div`
     font-family: 'Menlo', 'Source Code Pro', monospace;
-    font-size: 14px;
-    line-height: 1.4em;
+    font-size: 12px;
+    line-height: 1.5em;
+
+    & > li[aria-expanded='true']::before {
+      content: none;
+    }
   `,
 
   Node: styled.li`
+    position: relative;
+
     &[data-hover] {
-      background-color: #fff1;
+      background-color: #ffffff08;
     }
 
     &[aria-expanded='false']::marker {
@@ -117,6 +156,21 @@ const S = {
     &[aria-expanded='false'] > ol,
     &[aria-expanded='false'] > ${CloseTag} {
       display: none;
+    }
+
+    &[aria-expanded='true']::before {
+      content: '';
+      position: absolute;
+      left: calc(-1em + 1px);
+      top: 1.5em;
+      width: 1px;
+      height: calc(100% - 1.5em);
+      background-color: var(--cl-text);
+      opacity: 0.05;
+    }
+
+    &[aria-expanded='true']:hover::before {
+      opacity: 0.1;
     }
   `,
 }
