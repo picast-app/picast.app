@@ -19,12 +19,27 @@ function parse(node: Node, i?: number) {
     node.nodeName === '#text' ? (
       node.textContent
     ) : tag ? (
-      <Tag>{tag}</Tag>
+      <Tag>
+        &lt;{tag}
+        {Object.values((node as Element).attributes)?.map(at => {
+          const v =
+            typeof at.value !== 'string' ? undefined : (
+              <AttrValue>{at.value}</AttrValue>
+            )
+          return (
+            <Attr key={`${i}=${at.nodeName}`}>
+              {at.nodeName}
+              {v}
+            </Attr>
+          )
+        })}
+        &gt;
+      </Tag>
     ) : (
       node.nodeName
     )
 
-  const close = tag && <CloseTag>{tag}</CloseTag>
+  const close = tag && <CloseTag>&lt;{tag}&gt;</CloseTag>
 
   if (childContent)
     return (
@@ -93,21 +108,9 @@ export default function DocTree({ document }: Props) {
 const Tag = styled.span`
   color: #2882f9;
   pointer-events: none;
-
-  &::before {
-    content: '<';
-  }
-
-  &::after {
-    content: '>';
-  }
 `
 
-const CloseTag = styled(Tag)`
-  &::before {
-    content: '</';
-  }
-`
+const CloseTag = styled(Tag)``
 
 const Comment = styled.span`
   opacity: 0.5;
@@ -118,6 +121,26 @@ const Comment = styled.span`
 
   &::after {
     content: '-->';
+  }
+`
+
+const Attr = styled.span`
+  color: #9bbbdc;
+
+  &::before {
+    content: ' ';
+  }
+`
+
+const AttrValue = styled.span`
+  color: #f29766;
+
+  &::before {
+    content: '="';
+  }
+
+  &::after {
+    content: '"';
   }
 `
 
