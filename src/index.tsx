@@ -4,13 +4,17 @@ import reportWebVitals from './reportWebVitals'
 import { Router } from 'react-router-dom'
 import history from 'utils/history'
 import App from './App'
+import { ApolloProvider } from '@apollo/client'
+import api from 'api'
 import 'styles'
 
 ReactDOM.render(
   <React.StrictMode>
-    <Router history={history}>
-      <App />
-    </Router>
+    <ApolloProvider client={api}>
+      <Router history={history}>
+        <App />
+      </Router>
+    </ApolloProvider>
   </React.StrictMode>,
   document.getElementById('root')
 )

@@ -3,3 +3,5 @@
 .DS_Store
 /*.env*
 /.*cache
+_fragmentTypes.json
+src/gql/types

@@ -12,9 +12,19 @@
     "format:check": "stylelint 'src/**/*.{ts,tsx}' && prettier --check .",
     "format:fix": "prettier --write .",
     "lint": "npm run lint:check && npm run format:check",
-    "format": "npm run lint:fix && npm run format:fix"
+    "format": "npm run lint:fix && npm run format:fix",
+    "gql:check": "npx apollo client:check",
+    "gql:types": "rm -rf src/gql/types && mkdir src/gql/types && npx apollo client:download-schema src/gql/types/schema.json && npx apollo client:codegen --target typescript --outputFlat src/gql/types && npx graphql-codegen && node src/gql/bundleTypes && prettier --write \"./src/gql/types/*.ts\""
   },
   "dependencies": {
+    "@apollo/client": "^3.2.5",
+    "apollo-cache-inmemory": "^1.6.6",
+    "apollo-client": "^2.6.10",
+    "apollo-link": "^1.2.14",
+    "apollo-link-error": "^1.1.13",
+    "apollo-link-http": "^1.5.17",
+    "graphql": "^15.4.0",
+    "graphql-tag": "^2.11.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-router-dom": "^5.2.0",
@@ -23,6 +33,11 @@
     "web-vitals": "^0.2.4"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^1.19.1",
+    "@graphql-codegen/fragment-matcher": "^2.0.0",
+    "@graphql-codegen/introspection": "^1.18.0",
+    "@graphql-codegen/typescript": "^1.17.11",
+    "@graphql-codegen/typescript-resolvers": "^1.17.10",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
@@ -34,6 +49,7 @@
     "@types/styled-components": "^5.1.4",
     "@typescript-eslint/eslint-plugin": "^4.7.0",
     "@typescript-eslint/parser": "^4.7.0",
+    "apollo": "^2.31.1",
     "eslint": "^7.13.0",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.1.4",
