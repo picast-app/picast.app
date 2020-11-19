@@ -9,10 +9,10 @@ type Props = {
   linkTo?: string
 }
 
-export function Icon({ icon, style, linkTo }: Props) {
+export const Icon: React.FC<Props> = ({ icon, style, linkTo, ...props }) => {
   const theme = useTheme()
   const svg = (
-    <S.Icon viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <S.Icon viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       {icons[icon][style ?? (theme === 'dark' ? 'outlined' : 'filled')] ??
         icons[icon].filled}
     </S.Icon>

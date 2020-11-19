@@ -5,6 +5,7 @@ import { Icon, Link, ProgressSC } from 'components/atoms'
 import { Surface } from 'components/structure'
 import { useScrollDir, useMatchMedia } from 'utils/hooks'
 import { desktop } from 'styles/responsive'
+import { useHistory } from 'react-router-dom'
 
 type Props = {
   title?: string
@@ -15,13 +16,25 @@ type Props = {
 
 export default function Appbar({ title, back, children, scrollOut }: Props) {
   const isDesktop = useMatchMedia(desktop)
+  const history = useHistory()
+  const lastPath = (history.location.state as any)?.previous
 
   if (isDesktop) return null
   const appbar = (
     <Surface el={4} sc={S.AppBar}>
       {back && (
-        <S.BackWrap to={back}>
-          <Icon icon="arrow_back" />
+        <S.BackWrap
+          {...(!back.startsWith('!') && lastPath
+            ? {
+                as: 'button',
+                onClick() {
+                  history.goBack()
+                },
+              }
+            : { to: back.replace(/^!/, '') })}
+        >
+          <Icon icon="arrow_back" aria-hidden />
+          <span>Go Back</span>
         </S.BackWrap>
       )}
       {title && <S.Title>{title}</S.Title>}
@@ -112,5 +125,19 @@ const S = {
 
   BackWrap: styled(Link)`
     margin-right: 1rem;
+    appearance: none;
+    background-color: transparent;
+    border: none;
+    padding: 0;
+
+    span:not(:focus):not(:active) {
+      clip: rect(0 0 0 0);
+      clip-path: inset(100%);
+      height: 1px;
+      overflow: hidden;
+      position: absolute;
+      white-space: nowrap;
+      width: 1px;
+    }
   `,
 }
