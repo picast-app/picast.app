@@ -1,19 +1,28 @@
 import React from 'react'
 import styled, { AnyStyledComponent } from 'styled-components'
-import Appbar from 'components/Appbar'
 import { desktop } from 'styles/responsive'
+import Appbar from 'components/Appbar'
+import { Progress, ProgressSC } from 'components/atoms'
 
 type Props = {
   style?: AnyStyledComponent
   padd?: boolean
+  loading?: boolean
 }
 
-export const Screen: React.FC<Props> = ({ style, padd, ...props }) => {
+export const Screen: React.FC<Props> = ({
+  style,
+  padd,
+  loading = false,
+  ...props
+}) => {
+  const progress = <Progress active={loading} />
+
   const children = React.Children.toArray(props.children)
   const appbar =
     typeof children[0] === 'object' &&
     ((children[0] as unknown) as React.ReactElement).type === Appbar
-      ? children.splice(0, 1)[0]
+      ? React.cloneElement(children.splice(0, 1)[0] as any, undefined, progress)
       : React.Fragment
 
   return (
@@ -22,6 +31,7 @@ export const Screen: React.FC<Props> = ({ style, padd, ...props }) => {
       as={style}
       padd={padd}
     >
+      {progress}
       {appbar}
       {children}
     </S.Screen>
@@ -32,9 +42,10 @@ export const Screen: React.FC<Props> = ({ style, padd, ...props }) => {
 const S = {
   Screen: styled.div<{ offsetTop: string; padd?: boolean }>`
     --top-off: ${({offsetTop}) => offsetTop};
+    --padd: ${({padd}) => padd ? '2rem' : '0px'};
   
-    padding: ${({ padd }) => (padd ? '2rem' : '0px')};
-    padding-top: calc(${({ padd }) => (padd ? '2rem' : '0px')} + var(--top-off));
+    padding: var(--padd);
+    padding-top: calc(var(--padd) + var(--top-off));
     height: calc(100% - var(--bar-height));
     overflow-y: auto;
     position: relative;
@@ -47,6 +58,10 @@ const S = {
       height: 100%;
       flex-grow: 1;
       --top-off: 0px;
+    }
+
+    & > ${ProgressSC} {
+      position: fixed;
     }
   `,
 }

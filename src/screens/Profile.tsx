@@ -4,7 +4,7 @@ import { Screen } from 'components/structure'
 
 export default function Profile() {
   return (
-    <Screen>
+    <Screen padd>
       <Appbar title="Profile" />
     </Screen>
   )

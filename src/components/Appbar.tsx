@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { bar } from 'styles/mixin'
-import { Icon, Link } from 'components/atoms'
+import { Icon, Link, ProgressSC } from 'components/atoms'
 import { Surface } from 'components/structure'
 import { useScrollDir, useMatchMedia } from 'utils/hooks'
 import { desktop } from 'styles/responsive'
@@ -71,6 +71,11 @@ const SAppBar = styled.div`
   display: flex;
   align-items: center;
   padding: 0 1rem;
+
+  ${ProgressSC} {
+    top: unset;
+    bottom: 0;
+  }
 `
 
 const S = {
@@ -88,19 +93,19 @@ const S = {
     --height: var(--bar-height);
 
     position: relative;
-    top: 0;
-    left: 0;
+    top: calc(var(--padd) * -1);
+    left: calc(var(--padd) * -1);
+    width: calc(100% + 2 * var(--padd));
     height: var(--height);
     margin-top: calc(var(--bar-height) * -1);
     margin-bottom: calc(var(--height) * -1 + var(--bar-height));
-    width: 100%;
     display: flex;
     flex-direction: column;
     pointer-events: none;
 
     ${SAppBar} {
       position: sticky;
-      top: calc(var(--bar-height) * -1);
+      top: calc(var(--bar-height) * -1 - var(--padd));
       pointer-events: initial;
     }
   `,

@@ -4,7 +4,7 @@ import { Screen } from 'components/structure'
 
 export default function Library() {
   return (
-    <Screen>
+    <Screen padd>
       <Appbar title="Podcasts" scrollOut />
       {Array(100)
         .fill(0)
