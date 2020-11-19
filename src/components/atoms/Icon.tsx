@@ -28,7 +28,12 @@ export const Icon: React.FC<Props> = ({
     </S.Icon>
   )
   if (linkTo) return <Link to={linkTo}>{svg}</Link>
-  if (onClick) return <Button iconWrap={label}>{svg}</Button>
+  if (onClick)
+    return (
+      <Button iconWrap={label} onClick={onClick}>
+        {svg}
+      </Button>
+    )
   return svg
 }
 

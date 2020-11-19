@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react'
 import { Route, Switch, Redirect } from 'react-router-dom'
+import { Progress } from 'components/atoms'
 
 const Library = React.lazy(() => import('screens/Library'))
 const Profile = React.lazy(() => import('screens/Profile'))
@@ -13,7 +14,7 @@ const FeedView = React.lazy(() => import('./screens/FeedView'))
 
 export default function Routes() {
   return (
-    <Suspense fallback={<span>loading</span>}>
+    <Suspense fallback={<Progress />}>
       <Switch>
         <Route exact path="/" component={Library} />
         <Route exact path="/profile" component={Profile} />
