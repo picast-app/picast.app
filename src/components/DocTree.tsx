@@ -21,7 +21,7 @@ function parse(node: Node, i?: number) {
     )
 
   const head =
-    node.nodeName === '#text' ? (
+    node.nodeName === '#text' || node.nodeName === '#cdata-section' ? (
       node.textContent
     ) : tag ? (
       <Tag>
@@ -96,6 +96,8 @@ const Node: React.FC<{ expanded?: boolean }> = ({
 }
 
 export default function DocTree({ document }: Props) {
+  console.log(document)
+  ;(window as any).doc = document
   const ref = useRef<HTMLDivElement>(null)
 
   useNavbarWidget(

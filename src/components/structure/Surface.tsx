@@ -8,9 +8,10 @@ import { easeOutCubic } from 'utils/ease'
 type Props = {
   sc?: AnyStyledComponent
   el?: number
+  alt?: boolean
 }
 
-export const Surface: React.FC<Props> = ({ sc, el = 0, children }) => {
+export const Surface: React.FC<Props> = ({ sc, el = 0, alt, children }) => {
   const theme = useTheme()
   return (
     <S.Surface
@@ -31,6 +32,7 @@ export const Surface: React.FC<Props> = ({ sc, el = 0, children }) => {
               )
             )
       }
+      {...(alt && { 'data-style': 'alt' })}
     >
       {children}
     </S.Surface>
@@ -42,5 +44,12 @@ const S = {
     background-color: ${({ color }) => color};
     ${({ el, border }) =>
       border ? `border: 1px solid ${border};` : shadow(el)}
+
+    &[data-style~='alt'] {
+      background-color: var(--surface-alt);
+      border: none;
+
+      --cl-text: var(--cl-text-alt);
+    }
   `,
 }

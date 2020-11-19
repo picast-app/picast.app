@@ -11,8 +11,6 @@ export default function Mainnav() {
   const theme = useTheme()
   const widgets = useNavbarWidget()
 
-  console.log(widgets)
-
   return (
     <Surface
       sc={S.Navbar}

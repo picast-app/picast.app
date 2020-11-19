@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { bar } from 'styles/mixin'
-import { Icon } from 'components/atoms'
+import { Icon, Link } from 'components/atoms'
 import { Surface } from 'components/structure'
-import { useScrollDir } from 'utils/hooks'
+import { useScrollDir, useMatchMedia } from 'utils/hooks'
+import { desktop } from 'styles/responsive'
 
 type Props = {
   title?: string
@@ -13,9 +14,16 @@ type Props = {
 }
 
 export default function Appbar({ title, back, children, scrollOut }: Props) {
+  const isDesktop = useMatchMedia(desktop)
+
+  if (isDesktop) return null
   const appbar = (
     <Surface el={4} sc={S.AppBar}>
-      {back && <Icon icon="arrow_back" linkTo={back} />}
+      {back && (
+        <S.BackWrap to={back}>
+          <Icon icon="arrow_back" />
+        </S.BackWrap>
+      )}
       {title && <S.Title>{title}</S.Title>}
       {children}
     </Surface>
@@ -95,5 +103,9 @@ const S = {
       top: calc(var(--bar-height) * -1);
       pointer-events: initial;
     }
+  `,
+
+  BackWrap: styled(Link)`
+    margin-right: 1rem;
   `,
 }

@@ -8,6 +8,7 @@ const Search = React.lazy(() => import('screens/Search'))
 const Sandbox = React.lazy(() => import('screens/Sandbox'))
 const Elevation = React.lazy(() => import('screens/sandbox/Elevation'))
 const Ease = React.lazy(() => import('screens/sandbox/Ease'))
+const FeedView = React.lazy(() => import('./screens/FeedView'))
 
 export default function Routes() {
   return (
@@ -20,6 +21,7 @@ export default function Routes() {
         <Route exact path="/sandbox" component={Sandbox} />
         <Route exact path="/sandbox/elevation" component={Elevation} />
         <Route exact path="/sandbox/ease" component={Ease} />
+        <Route path="/feedview" component={FeedView} />
         <Redirect to="/" />
       </Switch>
     </Suspense>

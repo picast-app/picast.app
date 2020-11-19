@@ -31,8 +31,10 @@ export const Screen: React.FC<Props> = ({ style, padd, ...props }) => {
 // prettier-ignore
 const S = {
   Screen: styled.div<{ offsetTop: string; padd?: boolean }>`
+    --top-off: ${({offsetTop}) => offsetTop};
+  
     padding: ${({ padd }) => (padd ? '2rem' : '0px')};
-    padding-top: calc(${({ padd }) => (padd ? '2rem' : '0px')} + ${p => p.offsetTop});
+    padding-top: calc(${({ padd }) => (padd ? '2rem' : '0px')} + var(--top-off));
     height: calc(100% - var(--bar-height));
     overflow-y: auto;
     position: relative;
@@ -44,6 +46,7 @@ const S = {
     @media ${desktop} {
       height: 100%;
       flex-grow: 1;
+      --top-off: 0px;
     }
   `,
 }
