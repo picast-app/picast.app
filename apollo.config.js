@@ -11,18 +11,18 @@ const env = process.env.SCHEMA_TAG
     )
   : {}
 
-const service =
+const tagName =
   env.LOCAL_SCHEMA === 'true'
-    ? `echo@local-${require('os').userInfo().username}`
-    : `echo@${env.SCHEMA_TAG || 'beta'}`
+    ? `local-${require('os').userInfo().username}`
+    : `${env.SCHEMA_TAG || 'current'}`
 
-console.log(`load schema version ${service}`)
+console.log(`load schema version echo@${tagName}`)
 
 module.exports = {
   client: {
     service: {
       name: 'echo',
-      service,
+      tagName,
     },
   },
 }
