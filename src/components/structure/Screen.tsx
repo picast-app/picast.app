@@ -19,10 +19,16 @@ export const Screen: React.FC<Props> = ({
   const progress = <Progress active={loading} />
 
   const children = React.Children.toArray(props.children)
+
+  const cloneBar = () => {
+    const bar: any = children.splice(0, 1)[0]
+    return React.cloneElement(bar, bar.props, bar.props.children, progress)
+  }
+
   const appbar =
     typeof children[0] === 'object' &&
     ((children[0] as unknown) as React.ReactElement).type === Appbar
-      ? React.cloneElement(children.splice(0, 1)[0] as any, undefined, progress)
+      ? cloneBar()
       : React.Fragment
 
   return (
