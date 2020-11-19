@@ -48,7 +48,7 @@ export const Screen: React.FC<Props> = ({
 const S = {
   Screen: styled.div<{ offsetTop: string; padd?: boolean }>`
     --top-off: ${({offsetTop}) => offsetTop};
-    --padd: ${({padd}) => padd ? '2rem' : '0px'};
+    --padd: ${({padd}) => padd ? '1rem' : '0px'};
   
     padding: var(--padd);
     padding-top: calc(var(--padd) + var(--top-off));

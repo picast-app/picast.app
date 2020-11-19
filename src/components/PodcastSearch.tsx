@@ -18,13 +18,14 @@ const SEARCH_QUERY = gql`
 
 type Props = {
   onResults(results: T.SearchPodcast_search[], query: string): void
+  onLoading?(v: boolean): void
 }
 
-export default function Search({ onResults }: Props) {
+export default function Search({ onResults, onLoading }: Props) {
   const [input, setInput] = useState('')
   const query = useDebouncedInputCall(input)
 
-  const { data, variables } = useQuery<
+  const { data, variables, loading } = useQuery<
     T.SearchPodcast,
     T.SearchPodcastVariables
   >(SEARCH_QUERY, {
@@ -37,6 +38,10 @@ export default function Search({ onResults }: Props) {
     onResults?.(data.search, variables.query)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data])
+
+  useEffect(() => {
+    onLoading?.(loading)
+  }, [loading, onLoading])
 
   return (
     <Input

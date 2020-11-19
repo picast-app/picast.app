@@ -2,8 +2,9 @@
   --cl-background: #fff;
   --cl-surface: #fff;
   --surface-alt: #1c1f22;
-  --cl-text: #000;
-  --cl-text-alt: #fff;
+  --cl-text: #000d;
+  --cl-text-alt: #fffd;
+  --cl-text-disabled: #00000060;
   --cl-primary: #3f51b5;
 }
 
@@ -11,6 +12,7 @@
   :root {
     --cl-background: #1f2022;
     --cl-surface: #2c2e30;
-    --cl-text: #fff;
+    --cl-text: #fffd;
+    --cl-text-disabled: #ffffff60;
   }
 }

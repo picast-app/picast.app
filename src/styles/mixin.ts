@@ -18,3 +18,11 @@ export const bar = `
     width: calc(100vw - var(--sidebar-width));
   }
 `
+
+export const lineClamp = (lines: number) => `
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: ${lines};
+`

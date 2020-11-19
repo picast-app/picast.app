@@ -8,13 +8,15 @@ import Show from './search/Show'
 
 export default function Search() {
   const [results, setResults] = useState<T.SearchPodcast_search[]>([])
-
-  console.log(results)
+  const [loading, setLoading] = useState(false)
 
   return (
-    <Screen>
+    <Screen loading={loading}>
       <Appbar back="/discover">
-        <PodcastSearch onResults={(res, q) => setResults(res)} />
+        <PodcastSearch
+          onResults={(res, q) => setResults(res)}
+          onLoading={setLoading}
+        />
       </Appbar>
       <S.Results>
         {results.map(v => (
