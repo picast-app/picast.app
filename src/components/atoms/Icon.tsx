@@ -2,14 +2,24 @@ import React from 'react'
 import styled from 'styled-components'
 import { Link } from './Link'
 import { useTheme } from 'utils/hooks'
+import { Button } from './Button'
 
 type Props = {
   icon: keyof typeof icons
   style?: keyof SvgIcon
   linkTo?: string
+  onClick?(): void
+  label?: string
 }
 
-export const Icon: React.FC<Props> = ({ icon, style, linkTo, ...props }) => {
+export const Icon: React.FC<Props> = ({
+  icon,
+  style,
+  linkTo,
+  onClick,
+  label,
+  ...props
+}) => {
   const theme = useTheme()
   const svg = (
     <S.Icon viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -17,8 +27,9 @@ export const Icon: React.FC<Props> = ({ icon, style, linkTo, ...props }) => {
         icons[icon].filled}
     </S.Icon>
   )
-  if (!linkTo) return svg
-  return <Link to={linkTo}>{svg}</Link>
+  if (linkTo) return <Link to={linkTo}>{svg}</Link>
+  if (onClick) return <Button iconWrap={label}>{svg}</Button>
+  return svg
 }
 
 const S = {
@@ -49,6 +60,8 @@ const icons = buildSvgPaths({
   arrow_back: 'M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z',
   cancel:
     'M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
+  expand_more: 'M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z',
+  expand_less: 'M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z',
 })
 
 type SvgIcon<T = JSX.Element> = {

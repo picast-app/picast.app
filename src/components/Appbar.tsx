@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { bar } from 'styles/mixin'
-import { Icon, Link, ProgressSC } from 'components/atoms'
+import { Icon, ProgressSC } from 'components/atoms'
 import { Surface } from 'components/structure'
 import { useScrollDir, useMatchMedia } from 'utils/hooks'
 import { desktop } from 'styles/responsive'
@@ -23,19 +23,13 @@ export default function Appbar({ title, back, children, scrollOut }: Props) {
   const appbar = (
     <Surface el={4} sc={S.AppBar}>
       {back && (
-        <S.BackWrap
+        <Icon
+          icon="arrow_back"
+          aria-hidden
           {...(!back.startsWith('!') && lastPath
-            ? {
-                as: 'button',
-                onClick() {
-                  history.goBack()
-                },
-              }
+            ? { onClick: history.goBack, label: 'go back' }
             : { to: back.replace(/^!/, '') })}
-        >
-          <Icon icon="arrow_back" aria-hidden />
-          <span>Go Back</span>
-        </S.BackWrap>
+        />
       )}
       {title && <S.Title>{title}</S.Title>}
       {children}
@@ -100,6 +94,10 @@ const S = {
     & + * {
       margin-left: auto;
     }
+
+    * + & {
+      margin-left: 1rem;
+    }
   `,
 
   ScrollWrap: styled.div`
@@ -120,24 +118,6 @@ const S = {
       position: sticky;
       top: calc(var(--bar-height) * -1 - var(--padd));
       pointer-events: initial;
-    }
-  `,
-
-  BackWrap: styled(Link)`
-    margin-right: 1rem;
-    appearance: none;
-    background-color: transparent;
-    border: none;
-    padding: 0;
-
-    span:not(:focus):not(:active) {
-      clip: rect(0 0 0 0);
-      clip-path: inset(100%);
-      height: 1px;
-      overflow: hidden;
-      position: absolute;
-      white-space: nowrap;
-      width: 1px;
     }
   `,
 }
