@@ -56,7 +56,10 @@ function parse(node: Node, i?: number) {
       </Node>
     )
   return (
-    <Node key={i} expanded={i === undefined}>
+    <Node
+      key={i}
+      expanded={i === undefined || ['rss', 'channel'].includes(tag)}
+    >
       {head}
       {children.length > 0 && tag && (
         <CollapsedClose>/&lt;{tag}&gt;</CollapsedClose>
