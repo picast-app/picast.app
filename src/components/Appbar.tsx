@@ -28,7 +28,7 @@ export default function Appbar({ title, back, children, scrollOut }: Props) {
           aria-hidden
           {...(!back.startsWith('!') && lastPath
             ? { onClick: history.goBack, label: 'go back' }
-            : { to: back.replace(/^!/, '') })}
+            : { linkTo: back.replace(/^!/, '') })}
         />
       )}
       {title && <S.Title>{title}</S.Title>}

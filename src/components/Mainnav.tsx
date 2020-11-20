@@ -3,8 +3,9 @@ import styled from 'styled-components'
 import { Icon, Link } from 'components/atoms'
 import { Surface } from 'components/structure'
 import { bar } from 'styles/mixin'
-import { desktop } from 'styles/responsive'
+import { desktop, mobile } from 'styles/responsive'
 import { useMatchMedia, useTheme, useNavbarWidget } from 'utils/hooks'
+import Search from './PodcastSearch'
 
 export default function Mainnav() {
   const isDesktop = useMatchMedia(desktop)
@@ -17,6 +18,9 @@ export default function Mainnav() {
       el={isDesktop && theme === 'light' ? 0 : 4}
       alt={isDesktop && theme === 'light'}
     >
+      <S.SearchWrap>
+        <Search visual />
+      </S.SearchWrap>
       <ul>
         <Item path="/" label="Library" icon="library" />
         <Item path="/feed" label="Feed" icon="subscriptions" />
@@ -109,6 +113,14 @@ const S = {
 
     & > * {
       margin-top: 1rem;
+    }
+  `,
+
+  SearchWrap: styled.div`
+    margin-bottom: 2rem;
+
+    @media ${mobile} {
+      display: none;
     }
   `,
 }

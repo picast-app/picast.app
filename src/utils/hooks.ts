@@ -1,11 +1,12 @@
 import { useState, useEffect, useContext, useReducer, useRef } from 'react'
 import { Theme } from 'styles'
 import subscription from './subscription'
+export { useHistory } from 'react-router-dom'
 
 export const useTheme = () => useContext(Theme)
 
 export function useMatchMedia(query: string) {
-  const [match, setMatch] = useState(true)
+  const [match, setMatch] = useState(window.matchMedia(query).matches)
 
   const handleEvent = (e: MediaQueryListEvent | MediaQueryList) =>
     setMatch(e.matches)

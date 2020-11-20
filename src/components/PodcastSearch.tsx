@@ -1,53 +1,37 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { Input } from './atoms'
-import { useDebouncedInputCall } from 'utils/hooks'
-import { gql, useQuery } from 'gql'
-import type * as T from 'gql/types'
-
-const SEARCH_QUERY = gql`
-  query SearchPodcast($query: String!) {
-    search(query: $query) {
-      id
-      title
-      author
-      artwork
-    }
-  }
-`
+import { useDebouncedInputCall, useHistory } from 'utils/hooks'
 
 type Props = {
-  onResults(results: T.SearchPodcast_search[], query: string): void
-  onLoading?(v: boolean): void
+  visual?: boolean
 }
 
-export default function Search({ onResults, onLoading }: Props) {
-  const [input, setInput] = useState('')
+export default function Search({ visual }: Props) {
+  const [input, setInput] = useState(
+    new URLSearchParams(location.search).get('q') ?? ''
+  )
+  const [lastQuery, setLastQuery] = useState(input)
   const query = useDebouncedInputCall(input)
-
-  const { data, variables, loading } = useQuery<
-    T.SearchPodcast,
-    T.SearchPodcastVariables
-  >(SEARCH_QUERY, {
-    variables: { query },
-    skip: !query,
-  })
+  const history = useHistory()
 
   useEffect(() => {
-    if (!data?.search || !variables?.query) return
-    onResults?.(data.search, variables.query)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data])
-
-  useEffect(() => {
-    onLoading?.(loading)
-  }, [loading, onLoading])
+    if (!query && !lastQuery) return
+    const params = new URLSearchParams(location.search)
+    if (query) params.set('q', query)
+    else params.delete('q')
+    const to = `/search?${params.toString()}`.replace(/\?$/, '')
+    if (to === location.pathname + location.search) return
+    if (location.pathname === '/search') history.replace(to)
+    else history.push(to)
+    setLastQuery(query)
+  }, [query, lastQuery, history])
 
   return (
     <Input
       value={input}
       onChange={setInput}
-      blend
+      blend={!visual}
       style={style}
       type="search"
     />
