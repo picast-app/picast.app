@@ -21,7 +21,11 @@ export default function Search({ visual }: Props) {
     if (query) params.set('q', query)
     else params.delete('q')
     const to = `/search?${params.toString()}`.replace(/\?$/, '')
-    if (to === location.pathname + location.search) return
+    if (
+      to === location.pathname + location.search ||
+      (!query && location.pathname !== '/search')
+    )
+      return
     if (location.pathname === '/search') history.replace(to)
     else history.push(to)
     setLastQuery(query)

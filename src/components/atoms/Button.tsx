@@ -2,13 +2,20 @@ import React from 'react'
 import styled from 'styled-components'
 
 type Props = {
-  iconWrap?: string
   onClick?(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void
+  iconWrap?: string
+  text?: boolean
 }
 
-export const Button: React.FC<Props> = ({ iconWrap, onClick, children }) => {
+export const Button: React.FC<Props> = ({
+  iconWrap,
+  text,
+  onClick,
+  children,
+}) => {
   const styles: string[] = []
   if (iconWrap) styles.push('icon-wrap')
+  if (text) styles.push('text')
   return (
     <S.Button
       {...(styles.length && { ['data-style']: styles.join(' ') })}
@@ -25,14 +32,23 @@ const S = {
     appearance: none;
     border: none;
     cursor: pointer;
+    font-family: inherit;
 
     &[data-style~='icon-wrap'] {
       background-color: transparent;
       padding: 0;
+    }
 
-      &:focus {
-        outline: none;
-      }
+    &[data-style~='text'] {
+      padding: 0;
+      background-color: transparent;
+      color: var(--cl-primary);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    &:focus {
+      outline: none;
     }
   `,
 

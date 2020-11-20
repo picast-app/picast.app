@@ -78,6 +78,7 @@ const SAppBar = styled.div`
   display: flex;
   align-items: center;
   padding: 0 1rem;
+  z-index: 1000;
 
   ${ProgressSC} {
     top: unset;
