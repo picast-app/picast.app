@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { css, hex, alpha, blend } from 'styles/color'
+import * as cl from 'utils/css/color'
 
 type Props = {
   active?: boolean
@@ -20,8 +20,8 @@ const S = {
     overflow-x: hidden;
     transition: transform 0.5s ease;
     background-color: ${() =>
-      hex.encode(
-        blend(css.color('background'), alpha(css.color('primary'), 0x66))
+      cl.format.hex(
+        cl.blend(cl.read('background'), cl.alpha(cl.read('primary'), 0x66))
       )};
 
     &[data-collapsed='true'] {
@@ -36,7 +36,7 @@ const S = {
       left: 0;
       bottom: 0;
       will-change: left, right;
-      background-color: ${() => hex.encode(css.color('primary'))};
+      background-color: var(--cl-primary);
     }
 
     &::before {

@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { useComputed } from 'utils/hooks'
-import { css, hex, blend, alpha } from 'styles/color'
+import * as color from 'utils/css/color'
 
 type Props = {
   data: Datum[]
@@ -41,8 +41,8 @@ export function Plot({
   width += width * padd * 2
   height += height * padd * 2
 
-  const cl = hex.encode(
-    blend(css.color('text'), alpha(css.color('background'), 0x44))
+  const cl = color.format.hex(
+    color.blend(color.read('text'), color.alpha(color.read('background'), 0x44))
   )
 
   return (

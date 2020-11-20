@@ -1,6 +1,6 @@
 import React from 'react'
 import styled, { AnyStyledComponent } from 'styled-components'
-import { css, hex, blend, alpha } from 'styles/color'
+import * as cl from 'utils/css/color'
 import { shadow } from 'styles/shadow'
 import { useTheme } from 'utils/hooks'
 import { easeOutCubic } from 'utils/ease'
@@ -18,17 +18,17 @@ export const Surface: React.FC<Props> = ({ sc, el = 0, alt, children }) => {
       as={sc}
       el={el}
       {...(el === 0 && {
-        border: hex.encode(
-          blend(css.color('text'), alpha(css.color('background'), 0xe8))
+        border: cl.format.hex(
+          cl.blend(cl.read('text'), cl.alpha(cl.read('background'), 0xe8))
         ),
       })}
       color={
         theme === 'light'
           ? 'var(--cl-background)'
-          : hex.encode(
-              blend(
-                css.color('background'),
-                alpha(css.color('surface'), 0xff * easeOutCubic(el / 24))
+          : cl.format.hex(
+              cl.blend(
+                cl.read('background'),
+                cl.alpha(cl.read('surface'), 0xff * easeOutCubic(el / 24))
               )
             )
       }
