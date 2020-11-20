@@ -18,6 +18,11 @@ export default function Sandbox() {
             Ease
           </Link>
         </li>
+        <li>
+          <Link append to="components">
+            Components
+          </Link>
+        </li>
       </ol>
       <button onClick={() => setLoading(!loading)}>toggle loading</button>
     </Screen>
