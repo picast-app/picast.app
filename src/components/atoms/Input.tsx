@@ -46,6 +46,8 @@ const S = {
     border: none;
     padding: 0.3rem 0.5rem;
     font-size: 0.85rem;
+    width: 20rem;
+    max-width: 100%;
 
     &[data-style~='blend'] {
       border: none;

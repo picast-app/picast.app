@@ -122,3 +122,8 @@ const S = {
     }
   `,
 }
+
+export const AppbarSC = {
+  Bar: SAppBar,
+  Wrap: S.ScrollWrap,
+}

@@ -4,6 +4,7 @@ import { Screen, Surface } from 'components/structure'
 import Appbar from 'components/Appbar'
 import PodcastSearch from 'components/PodcastSearch'
 import { Icon, Button } from 'components/atoms'
+import { ShowCard } from 'components/composite'
 import Show from './search/Show'
 import { useHistory, useMatchMedia } from 'utils/hooks'
 import { desktop, mobile } from 'styles/responsive'
@@ -76,7 +77,9 @@ export default function Search() {
           <S.RowWrap>
             <S.Results aria-expanded={showAll ? 'true' : 'false'}>
               {results.map(v => (
-                <Show key={v.id} {...v} />
+                <S.Item key={v.id}>
+                  <ShowCard podcast={v} title strip={!isDesktop} />
+                </S.Item>
               ))}
             </S.Results>
             {Array(10)
@@ -121,6 +124,7 @@ const RowWrap = styled.div`
   --max: ${maxColumns};
 
   position: relative;
+  user-select: none;
   ${breakPoints.join('\n')}
 
   @media ${desktop} {
@@ -255,5 +259,9 @@ const S = {
       .map((v, i) => v + i)
       .map(i => `&:nth-of-type(${i}) { --page: ${i - 1}; }`)
       .join('\n')}
+  `,
+
+  Item: styled.li`
+    position: relative;
   `,
 }
