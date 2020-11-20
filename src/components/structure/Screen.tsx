@@ -1,7 +1,7 @@
 import React from 'react'
 import styled, { AnyStyledComponent } from 'styled-components'
 import { desktop } from 'styles/responsive'
-import Appbar from 'components/Appbar'
+import Appbar, { AppbarSC } from 'components/Appbar'
 import { Progress, ProgressSC } from 'components/atoms'
 
 type Props = {
@@ -68,6 +68,19 @@ const S = {
 
     & > ${ProgressSC} {
       position: fixed;
+    }
+
+    /* stylelint-disable-next-line */
+    & > *:first-child,
+    ${AppbarSC.Bar} + *,
+    ${AppbarSC.Wrap} + *,
+    ${ProgressSC} + * {
+      margin-top: 0;
+    }
+
+    section:not(:first-of-type) {
+      margin-top: 2rem;
+      border-top: 1px solid var(--cl-text-disabled);
     }
   `,
 }
