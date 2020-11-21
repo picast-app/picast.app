@@ -83,6 +83,13 @@ const S = {
         padding-bottom: var(--player-height);
       }
     }
+
+    @media ${mobile} {
+      z-index: 9001;
+      ${PlayerSC} ~ & {
+        box-shadow: unset;
+      }
+    }
   `,
 
   Item: styled.li`

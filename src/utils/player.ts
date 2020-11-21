@@ -1,7 +1,7 @@
 import { useSubscription } from 'utils/hooks'
 import createSub from 'utils/subscription'
 
-const trackSub = createSub<string>()
+export const trackSub = createSub<string>()
 export const useTrack = () => useSubscription(trackSub)
 
 type PlayState = 'playing' | 'paused'

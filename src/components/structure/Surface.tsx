@@ -50,6 +50,7 @@ const S = {
       border: none;
 
       --cl-text: var(--cl-text-alt);
+      --cl-surface: var(--cl-surface-alt);
     }
   `,
 }
