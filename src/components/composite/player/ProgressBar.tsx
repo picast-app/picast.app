@@ -62,8 +62,52 @@ export default function ProgressBar() {
       else prog += dt / 1000
 
       ctx.clearRect(0, 0, width, height)
+
+      ctx.fillStyle = '#666'
+      const barHeight = 6 * devicePixelRatio
+      const progWidth = (prog / duration) * width
+
+      // background strip
+      ctx.fillRect(
+        progWidth,
+        height / 2 - barHeight / 2,
+        width - progWidth - barHeight / 2,
+        barHeight
+      )
+      ctx.beginPath()
+      ctx.arc(
+        width - barHeight / 2,
+        height / 2,
+        barHeight / 2,
+        -Math.PI / 2,
+        Math.PI / 2
+      )
+      ctx.fill()
+
+      // progress strip
       ctx.fillStyle = '#f00'
-      ctx.fillRect(0, 0, (prog / duration) * width, height)
+      ctx.fillRect(
+        barHeight / 2,
+        height / 2 - barHeight / 2,
+        progWidth - barHeight / 2,
+        barHeight
+      )
+      ctx.beginPath()
+      ctx.arc(
+        barHeight / 2,
+        height / 2,
+        barHeight / 2,
+        -Math.PI / 2,
+        Math.PI / 2,
+        true
+      )
+      ctx.fill()
+
+      // progress knob
+      ctx.fillStyle = '#fff'
+      ctx.beginPath()
+      ctx.arc((prog / duration) * width, height / 2, height / 2, 0, 2 * Math.PI)
+      ctx.fill()
 
       if (playing) renderId = requestAnimationFrame(render)
     }

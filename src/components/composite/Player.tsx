@@ -9,6 +9,7 @@ import { useTheme, useMatchMedia } from 'utils/hooks'
 import ProgressBar from './player/ProgressBar'
 
 const audio = document.querySelector('#player') as HTMLAudioElement
+audio.volume = 0.4
 
 async function play(track?: string) {
   if (track && track !== audio.src) {
