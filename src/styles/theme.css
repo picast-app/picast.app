@@ -6,7 +6,7 @@
   --cl-text-alt: #fffd;
   --cl-text-disabled: #00000060;
   --cl-border: #0002;
-  --cl-primary: #304ffe;
+  --cl-primary: #d32f2f;
 }
 
 @media (prefers-color-scheme: dark) {

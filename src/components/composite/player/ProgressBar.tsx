@@ -40,6 +40,9 @@ export default function ProgressBar() {
     }
   }, [visible])
 
+  const barHeight = 6 * devicePixelRatio
+  const padd = (16 * devicePixelRatio) / 2
+
   useEffect(() => {
     if (!ctx || !visible) return
 
@@ -47,6 +50,8 @@ export default function ProgressBar() {
     let prog: number
     let lastRender: number
     const syncInterval = 30000
+    const w = width - padd * 2
+    const x0 = padd
 
     const render = () => {
       const now = performance.now()
@@ -64,19 +69,18 @@ export default function ProgressBar() {
       ctx.clearRect(0, 0, width, height)
 
       ctx.fillStyle = '#666'
-      const barHeight = 6 * devicePixelRatio
-      const progWidth = (prog / duration) * width
+      const progWidth = (prog / duration) * w
 
       // background strip
       ctx.fillRect(
-        progWidth,
+        x0 + progWidth,
         height / 2 - barHeight / 2,
-        width - progWidth - barHeight / 2,
+        w - progWidth - barHeight / 2,
         barHeight
       )
       ctx.beginPath()
       ctx.arc(
-        width - barHeight / 2,
+        w - barHeight / 2 + x0,
         height / 2,
         barHeight / 2,
         -Math.PI / 2,
@@ -85,16 +89,16 @@ export default function ProgressBar() {
       ctx.fill()
 
       // progress strip
-      ctx.fillStyle = '#f00'
+      ctx.fillStyle = '#d32f2f'
       ctx.fillRect(
-        barHeight / 2,
+        barHeight / 2 + x0,
         height / 2 - barHeight / 2,
         progWidth - barHeight / 2,
         barHeight
       )
       ctx.beginPath()
       ctx.arc(
-        barHeight / 2,
+        barHeight / 2 + x0,
         height / 2,
         barHeight / 2,
         -Math.PI / 2,
@@ -106,7 +110,13 @@ export default function ProgressBar() {
       // progress knob
       ctx.fillStyle = '#fff'
       ctx.beginPath()
-      ctx.arc((prog / duration) * width, height / 2, height / 2, 0, 2 * Math.PI)
+      ctx.arc(
+        (prog / duration) * width + x0,
+        height / 2,
+        height / 2,
+        0,
+        2 * Math.PI
+      )
       ctx.fill()
 
       if (playing) renderId = requestAnimationFrame(render)
@@ -115,14 +125,14 @@ export default function ProgressBar() {
 
     return () => window.cancelAnimationFrame(renderId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ctx, visible, width, height, duration, playing])
+  }, [ctx, visible, width, height, duration, playing, barHeight, padd])
 
   return (
     <S.Wrap>
       <S.Time aria-label="progress" dateTime={durAttr(progress)}>
         {formatDuration(progress)}
       </S.Time>
-      <S.Bar ref={canvasRef} />
+      <S.Bar ref={canvasRef} padd={padd / devicePixelRatio} />
       <S.Time
         aria-label="time remaining"
         dateTime={durAttr(duration - progress)}
@@ -139,9 +149,10 @@ const S = {
     position: relative;
   `,
 
-  Bar: styled.canvas`
+  Bar: styled.canvas<{ padd: number }>`
     height: 1rem;
-    width: 100%;
+    width: calc(100% + ${({ padd }) => padd}px * 2);
+    transform: translateX(-${({ padd }) => padd}px);
   `,
 
   Time: styled.time`
