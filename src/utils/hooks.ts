@@ -7,6 +7,7 @@ import {
   useCallback,
 } from 'react'
 import { Theme } from 'styles'
+import createSubscription from './subscription'
 import subscription, { Subscription } from './subscription'
 export { useHistory } from 'react-router-dom'
 
@@ -158,11 +159,16 @@ export function useNavbarWidget(widget?: JSX.Element) {
 export function useSubscription<T>(sub: Subscription<T>): [T, (v: T) => void] {
   const [v, setV] = useState<T>(sub.state)
 
-  useEffect(() => {
-    return sub.subscribe(setV)
-  }, [sub])
+  useEffect(() => sub.subscribe(setV), [sub])
 
   const set = useCallback((v: T) => sub.setState(v), [sub])
 
   return [v, set]
 }
+
+const visibility = createSubscription(document.visibilityState)
+document.addEventListener('visibilitychange', () => {
+  visibility.setState(document.visibilityState)
+})
+
+export const useVisibility = () => useSubscription(visibility)[0]

@@ -1,5 +1,5 @@
 export default function createSubscription<T>(
-  setup?: (...args: any[]) => ((...args: any[]) => any) | void
+  setup?: ((...args: any[]) => ((...args: any[]) => any) | void) | T
 ): Subscription<T> {
   let subscribers: ((v: T) => void)[] = []
   let cleanup: ((...args: any[]) => any) | void
@@ -8,9 +8,11 @@ export default function createSubscription<T>(
     if (subscribers.length === 0 && cleanup) cleanup()
   }
   let _state: T
+  if (typeof setup !== 'function') _state = setup as T
   return {
     subscribe(callback: (v: T) => void, ...setupArgs: any[]) {
-      if (subscribers.length === 0 && setup) cleanup = setup(...setupArgs)
+      if (subscribers.length === 0 && typeof setup === 'function')
+        cleanup = (setup as any)(...setupArgs)
       subscribers.push(callback)
       return () => unsubscribe(callback)
     },

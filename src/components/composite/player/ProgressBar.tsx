@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { formatDuration, durAttr } from 'utils/time'
+import { useVisibility } from 'utils/hooks'
 
 const audio = document.querySelector('#player') as HTMLAudioElement
 
 export default function ProgressBar() {
   const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(0)
+  const visibility = useVisibility()
+  const visible = visibility === 'visible'
 
   useEffect(() => {
-    let lastT = 0
+    if (!visible) return
+    let lastT = audio.currentTime
 
     const onUpdate = ({ target }: Event) => {
       const t = (target as HTMLAudioElement).currentTime
@@ -29,9 +33,7 @@ export default function ProgressBar() {
       audio.removeEventListener('timeupdate', onUpdate)
       audio.removeEventListener('durationchange', onDuration)
     }
-  }, [])
-
-  console.log('render')
+  }, [visible])
 
   return (
     <S.Wrap>
