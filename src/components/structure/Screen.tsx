@@ -3,6 +3,7 @@ import styled, { AnyStyledComponent } from 'styled-components'
 import { desktop } from 'styles/responsive'
 import Appbar, { AppbarSC } from 'components/Appbar'
 import { Progress, ProgressSC } from 'components/atoms'
+import { PlayerSC } from 'components/composite'
 
 type Props = {
   style?: AnyStyledComponent
@@ -44,12 +45,11 @@ export const Screen: React.FC<Props> = ({
   )
 }
 
-// prettier-ignore
 const S = {
   Screen: styled.div<{ offsetTop: string; padd?: boolean }>`
-    --top-off: ${({offsetTop}) => offsetTop};
-    --padd: ${({padd}) => padd ? '1rem' : '0px'};
-  
+    --top-off: ${({ offsetTop }) => offsetTop};
+    --padd: ${({ padd }) => (padd ? '1rem' : '0px')};
+
     padding: var(--padd);
     padding-top: calc(var(--padd) + var(--top-off));
     height: calc(100% - var(--bar-height));
@@ -64,6 +64,15 @@ const S = {
       height: 100%;
       flex-grow: 1;
       --top-off: 0px;
+    }
+
+    /* stylelint-disable-next-line */
+    ${PlayerSC} ~ & {
+      height: calc(100% - var(--bar-height) - var(--player-height));
+
+      @media ${desktop} {
+        height: calc(100% - var(--player-height));
+      }
     }
 
     & > ${ProgressSC} {

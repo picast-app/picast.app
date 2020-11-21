@@ -7,6 +7,7 @@
   --bar-height: 3.5rem;
   --sidebar-width: 15rem;
   --progress-height: 0.2rem;
+  --player-height: 3.5rem;
 }
 
 body {
@@ -17,4 +18,10 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+@media (min-width: 901px) {
+  :root {
+    --player-height: 5rem;
+  }
 }

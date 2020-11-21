@@ -2,6 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import Routes from 'Routes'
 import Mainnav from 'components/Mainnav'
+import { Player } from 'components/composite'
 import { Theme } from 'styles'
 import { desktop } from 'styles/responsive'
 import { useMatchMedia } from 'utils/hooks'
@@ -12,6 +13,7 @@ export default function App() {
   return (
     <Theme.Provider value={isDarkMode ? 'dark' : 'light'}>
       <S.App>
+        <Player />
         <Routes />
         <Mainnav />
       </S.App>

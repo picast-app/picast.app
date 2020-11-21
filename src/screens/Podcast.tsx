@@ -19,6 +19,7 @@ const QUERY_SHOW = gql`
         id
         title
         publishDate
+        file
       }
     }
   }

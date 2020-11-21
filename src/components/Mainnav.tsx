@@ -2,6 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Icon, Link } from 'components/atoms'
 import { Surface } from 'components/structure'
+import { PlayerSC } from 'components/composite'
 import { bar } from 'styles/mixin'
 import { desktop, mobile } from 'styles/responsive'
 import { useMatchMedia, useTheme, useNavbarWidget } from 'utils/hooks'
@@ -76,6 +77,10 @@ const S = {
         height: unset;
         width: unset;
         align-items: flex-start;
+      }
+
+      ${PlayerSC} ~ & {
+        padding-bottom: var(--player-height);
       }
     }
   `,
