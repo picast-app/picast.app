@@ -1,6 +1,6 @@
-export default function subscription<T>(
+export default function createSubscription<T>(
   setup?: (...args: any[]) => ((...args: any[]) => any) | void
-) {
+): Subscription<T> {
   let subscribers: ((v: T) => void)[] = []
   let cleanup: ((...args: any[]) => any) | void
   const unsubscribe = (callback: (v: T) => void) => {
@@ -14,8 +14,7 @@ export default function subscription<T>(
       subscribers.push(callback)
       return () => unsubscribe(callback)
     },
-    unsubscribe,
-    _call(v: T) {
+    setState(v: T) {
       _state = v
       subscribers.forEach(f => f(v))
     },
@@ -27,3 +26,12 @@ export default function subscription<T>(
     },
   }
 }
+
+export type Subscription<T> = {
+  state: T
+  setState(v: T): void
+  requested: boolean
+  subscribe(callback: (v: T) => void): unsubscribe
+}
+
+type unsubscribe = () => void

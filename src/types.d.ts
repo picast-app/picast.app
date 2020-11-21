@@ -4,3 +4,5 @@ type ReactProps<
 
 type RGBA = number
 type RGBA_ = [number, number, number, number]
+
+type EchoPlayEvent = CustomEvent<{ track?: string }>

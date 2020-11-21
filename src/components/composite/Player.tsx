@@ -1,13 +1,60 @@
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { Surface } from 'components/structure'
 import { bar } from 'styles/mixin'
 import { desktop } from 'styles/responsive'
+import { useTrack, usePlayState } from 'utils/player'
 
 export function Player() {
-  const [src, setSrc] = useState<string>()
+  const [track, setTrack] = useTrack()
+  const [, setPlayState] = usePlayState()
+  const audio = document.querySelector('#player') as HTMLAudioElement
 
-  if (!src) return null
+  useEffect(() => {
+    if (!audio) return
+    console.log('setup')
+
+    const onPlay = () => {
+      setPlayState('playing')
+    }
+    const onPause = () => {
+      setPlayState('paused')
+    }
+
+    audio.addEventListener('play', onPlay)
+    audio.addEventListener('pause', onPause)
+
+    return () => {
+      audio.removeEventListener('play', onPlay)
+      audio.removeEventListener('pause', onPause)
+    }
+  }, [audio, setPlayState])
+
+  useEffect(() => {
+    const onPlay = async (e: Event) => {
+      const { track = audio.src } = (e as EchoPlayEvent).detail
+      if (!track) return
+      if (track !== audio.src) {
+        audio.src = track
+        setTrack(track)
+      }
+      await audio.play()
+    }
+
+    const onPause = () => {
+      audio.pause()
+    }
+
+    window.addEventListener('echo_play', onPlay)
+    window.addEventListener('echo_pause', onPause)
+
+    return () => {
+      window.removeEventListener('echo_play', onPlay)
+      window.removeEventListener('echo_pause', onPause)
+    }
+  }, [audio, setTrack])
+
+  if (!track) return <div />
   return (
     <Surface sc={S.Player} el={4}>
       <S.PlayControls></S.PlayControls>

@@ -1,6 +1,13 @@
-import { useState, useEffect, useContext, useReducer, useRef } from 'react'
+import {
+  useState,
+  useEffect,
+  useContext,
+  useReducer,
+  useRef,
+  useCallback,
+} from 'react'
 import { Theme } from 'styles'
-import subscription from './subscription'
+import subscription, { Subscription } from './subscription'
 export { useHistory } from 'react-router-dom'
 
 export const useTheme = () => useContext(Theme)
@@ -135,18 +142,27 @@ export function useDebouncedInputCall<T>(
 const navbarWidgets = subscription<JSX.Element[]>()
 
 export function useNavbarWidget(widget?: JSX.Element) {
-  const [widgets, setWidgets] = useState(navbarWidgets.state)
+  const [widgets, setWidgets] = useSubscription(navbarWidgets)
 
   useEffect(() => {
-    const unsub = navbarWidgets.subscribe(setWidgets)
     const el = widget
-    if (el) navbarWidgets._call([...(widgets ?? []), el])
-    return () => {
-      unsub()
-      navbarWidgets._call(widgets?.filter(v => v !== el))
-    }
+    if (!el) return
+    setWidgets([...(widgets ?? []), el])
+    return () => navbarWidgets.setState(widgets?.filter(v => v !== el))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return widgets
+}
+
+export function useSubscription<T>(sub: Subscription<T>): [T, (v: T) => void] {
+  const [v, setV] = useState<T>(sub.state)
+
+  useEffect(() => {
+    return sub.subscribe(setV)
+  }, [sub])
+
+  const set = useCallback((v: T) => sub.setState(v), [sub])
+
+  return [v, set]
 }
