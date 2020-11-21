@@ -15,6 +15,7 @@ export default function ProgressBar() {
   const visible = visibility === 'visible'
   const [playState] = usePlayState()
   const playing = playState === 'playing'
+  const [seekKey, setSeekKey] = useState<any>()
 
   useEffect(() => {
     if (!visible) return
@@ -39,6 +40,15 @@ export default function ProgressBar() {
       audio.removeEventListener('durationchange', onDuration)
     }
   }, [visible])
+
+  function jumpTo(relative: number) {
+    audio.addEventListener('seeked', setSeekKey, { once: true })
+    window.dispatchEvent(
+      new CustomEvent<EchoJumpEvent['detail']>('echo_jump', {
+        detail: { location: relative * duration },
+      })
+    )
+  }
 
   const barHeight = 6 * devicePixelRatio
   const padd = (16 * devicePixelRatio) / 2
@@ -111,7 +121,7 @@ export default function ProgressBar() {
       ctx.fillStyle = '#fff'
       ctx.beginPath()
       ctx.arc(
-        (prog / duration) * width + x0,
+        (prog / duration) * w + x0,
         height / 2,
         height / 2,
         0,
@@ -125,14 +135,27 @@ export default function ProgressBar() {
 
     return () => window.cancelAnimationFrame(renderId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ctx, visible, width, height, duration, playing, barHeight, padd])
+  }, [ctx, visible, width, height, duration, playing, barHeight, padd, seekKey])
 
   return (
     <S.Wrap>
       <S.Time aria-label="progress" dateTime={durAttr(progress)}>
         {formatDuration(progress)}
       </S.Time>
-      <S.Bar ref={canvasRef} padd={padd / devicePixelRatio} />
+      <S.Bar
+        ref={canvasRef}
+        padd={padd / devicePixelRatio}
+        onClick={({ screenX, target }) => {
+          const p = padd / devicePixelRatio
+          const {
+            left,
+            right,
+            width,
+          } = (target as HTMLCanvasElement).getBoundingClientRect()
+          const cx = Math.min(Math.max(screenX, left + p), right - p) - p
+          jumpTo((cx - left) / (width - p * 2))
+        }}
+      />
       <S.Time
         aria-label="time remaining"
         dateTime={durAttr(duration - progress)}
@@ -153,6 +176,7 @@ const S = {
     height: 1rem;
     width: calc(100% + ${({ padd }) => padd}px * 2);
     transform: translateX(-${({ padd }) => padd}px);
+    cursor: pointer;
   `,
 
   Time: styled.time`

@@ -55,12 +55,18 @@ export function Player() {
       audio.pause()
     }
 
+    const onJump = (e: Event) => {
+      audio.currentTime = (e as EchoJumpEvent).detail.location
+    }
+
     window.addEventListener('echo_play', onPlay)
     window.addEventListener('echo_pause', onPause)
+    window.addEventListener('echo_jump', onJump)
 
     return () => {
       window.removeEventListener('echo_play', onPlay)
       window.removeEventListener('echo_pause', onPause)
+      window.removeEventListener('echo_jump', onJump)
     }
   }, [setTrack])
 
