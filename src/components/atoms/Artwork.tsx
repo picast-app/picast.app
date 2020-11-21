@@ -14,5 +14,6 @@ const S = {
   Artwork: styled.img`
     height: auto;
     max-width: 100%;
+    flex-shrink: 0;
   `,
 }

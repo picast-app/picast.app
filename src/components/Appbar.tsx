@@ -91,6 +91,9 @@ const S = {
 
   Title: styled.h1`
     font-size: 1.2rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 
     & + * {
       margin-left: auto;

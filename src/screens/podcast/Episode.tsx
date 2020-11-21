@@ -1,6 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import type * as T from 'gql/types'
+import { desktop } from 'styles/responsive'
 
 export default function Episode({ title }: T.PodcastPage_podcast_episodes) {
   return (
@@ -20,8 +21,20 @@ const S = {
       padding: 0.5rem;
     }
 
+    --border: 1px solid var(--cl-border);
+
     &:not(:first-of-type) {
-      border-top: 1px solid var(--cl-border);
+      border-top: var(--border);
+    }
+
+    @media ${desktop} {
+      &:first-of-type {
+        border-top: var(--border);
+      }
+
+      &:last-of-type {
+        border-bottom: var(--border);
+      }
     }
   `,
 

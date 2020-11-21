@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Icon } from 'components/atoms'
+import { Icon, Artwork } from 'components/atoms'
 import { lineClamp } from 'styles/mixin'
+import { desktop } from 'styles/responsive'
+import { useMatchMedia } from 'utils/hooks'
 import type * as T from 'gql/types'
 
 export default function Info({
@@ -12,6 +14,7 @@ export default function Info({
   description,
 }: Partial<T.PodcastPage_podcast>) {
   const [showDescription, setShowDescription] = useState(false)
+  const isDesktop = useMatchMedia(desktop)
 
   if (!id) return null
 
@@ -21,8 +24,9 @@ export default function Info({
         <div>
           <h1>{title}</h1>
           <span>{author}</span>
+          {isDesktop && <S.Description>{description}</S.Description>}
         </div>
-        <img src={artwork as string} alt="artwork" />
+        <Artwork src={artwork as string} />
       </S.Head>
       <S.Actions>
         <Icon
@@ -40,6 +44,14 @@ const S = {
   Info: styled.div`
     border-bottom: 1px solid var(--cl-text-disabled);
     padding: 1rem 1.5rem;
+
+    @media ${desktop} {
+      border-bottom: none;
+
+      & > *:not(:first-child) {
+        display: none;
+      }
+    }
   `,
 
   Head: styled.div`
@@ -64,6 +76,18 @@ const S = {
       display: block;
       margin-top: 1rem;
       color: var(--cl-primary);
+    }
+
+    @media ${desktop} {
+      flex-direction: row-reverse;
+      justify-content: flex-end;
+
+      img {
+        margin-left: 0;
+        margin-right: 1rem;
+        height: unset;
+        width: 12rem;
+      }
     }
   `,
 
