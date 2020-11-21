@@ -172,3 +172,35 @@ document.addEventListener('visibilitychange', () => {
 })
 
 export const useVisibility = () => useSubscription(visibility)[0]
+
+export function useCanvas(
+  canvas?: HTMLCanvasElement | null
+): [
+  context: CanvasRenderingContext2D | undefined,
+  width: number,
+  height: number
+] {
+  const [ctx, setCtx] = useState<CanvasRenderingContext2D>()
+  const [width, setWidth] = useState(0)
+  const [height, setHeight] = useState(0)
+
+  useEffect(() => {
+    if (!canvas) {
+      setCtx(undefined)
+      setWidth(0)
+      setHeight(0)
+      return
+    }
+
+    setCtx(canvas.getContext('2d') ?? undefined)
+
+    const width = canvas.offsetWidth * devicePixelRatio
+    const height = canvas.offsetHeight * devicePixelRatio
+    canvas.width = width
+    canvas.height = height
+    setWidth(width)
+    setHeight(height)
+  }, [canvas])
+
+  return [ctx, width, height]
+}

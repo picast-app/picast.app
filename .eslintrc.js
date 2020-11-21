@@ -15,5 +15,6 @@ module.exports = {
     'no-restricted-globals': 'off',
     '@typescript-eslint/no-var-requires': 'off',
     'no-useless-computed-key': 'off',
+    'prefer-const': 'warn',
   },
 }
