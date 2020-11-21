@@ -9,6 +9,7 @@ import {
 import { Theme } from 'styles'
 import createSubscription from './subscription'
 import subscription, { Subscription } from './subscription'
+import throttle from 'lodash/throttle'
 export { useHistory } from 'react-router-dom'
 
 export const useTheme = () => useContext(Theme)
@@ -184,6 +185,29 @@ export function useCanvas(
   const [width, setWidth] = useState(0)
   const [height, setHeight] = useState(0)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const resize = useCallback(
+    throttle(
+      (canvas: HTMLCanvasElement) => {
+        const width = canvas.offsetWidth * devicePixelRatio
+        const height = canvas.offsetHeight * devicePixelRatio
+        canvas.width = width
+        canvas.height = height
+        setWidth(width)
+        setHeight(height)
+      },
+      250,
+      { leading: true, trailing: true }
+    ),
+    []
+  )
+
+  const [observer] = useState(
+    new ResizeObserver(([{ target }]) => {
+      resize(target as HTMLCanvasElement)
+    })
+  )
+
   useEffect(() => {
     if (!canvas) {
       setCtx(undefined)
@@ -194,13 +218,10 @@ export function useCanvas(
 
     setCtx(canvas.getContext('2d') ?? undefined)
 
-    const width = canvas.offsetWidth * devicePixelRatio
-    const height = canvas.offsetHeight * devicePixelRatio
-    canvas.width = width
-    canvas.height = height
-    setWidth(width)
-    setHeight(height)
-  }, [canvas])
+    observer.observe(canvas)
+
+    return () => observer.disconnect()
+  }, [canvas, observer])
 
   return [ctx, width, height]
 }
