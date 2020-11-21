@@ -60,6 +60,8 @@ export default function ProgressBar() {
     setManualProg(true)
     const p = padd / devicePixelRatio
     const box = (target as HTMLCanvasElement).getBoundingClientRect()
+    const progLabel = (target as HTMLElement).previousSibling as HTMLTimeElement
+    let lastLabel = progLabel.innerHTML
 
     const jump = (msX: number, persist = false) => {
       const cx = Math.min(Math.max(msX, box.left + p), box.right - p) - p
@@ -67,6 +69,11 @@ export default function ProgressBar() {
         Math.max((cx - box.left) / (box.width - p * 2), 0),
         1
       )
+      const label = formatDuration(pos * duration)
+      if (label !== lastLabel) {
+        progLabel.innerHTML = label
+        lastLabel = label
+      }
       if (persist) jumpTo(pos * duration)
       else renderBar(ctx, width, height, padd, pos)
     }
