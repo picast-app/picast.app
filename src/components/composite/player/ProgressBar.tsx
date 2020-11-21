@@ -16,6 +16,8 @@ export default function ProgressBar() {
   const [playState] = usePlayState()
   const playing = playState === 'playing'
   const [seekKey, setSeekKey] = useState<any>()
+  const [manualProg, setManualProg] = useState(false)
+  const padd = (16 * devicePixelRatio) / 2
 
   useEffect(() => {
     if (!visible) return
@@ -41,27 +43,64 @@ export default function ProgressBar() {
     }
   }, [visible])
 
-  function jumpTo(relative: number) {
+  function jumpTo(location: number) {
     audio.addEventListener('seeked', setSeekKey, { once: true })
     window.dispatchEvent(
       new CustomEvent<EchoJumpEvent['detail']>('echo_jump', {
-        detail: { location: relative * duration },
+        detail: { location },
       })
     )
   }
 
-  const barHeight = 6 * devicePixelRatio
-  const padd = (16 * devicePixelRatio) / 2
+  function drag({
+    pageX,
+    target,
+  }: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
+    if (!ctx) return
+    setManualProg(true)
+    const p = padd / devicePixelRatio
+    const box = (target as HTMLCanvasElement).getBoundingClientRect()
 
+    const jump = (msX: number, persist = false) => {
+      const cx = Math.min(Math.max(msX, box.left + p), box.right - p) - p
+      const pos = Math.min(
+        Math.max((cx - box.left) / (box.width - p * 2), 0),
+        1
+      )
+      if (persist) jumpTo(pos * duration)
+      else renderBar(ctx, width, height, padd, pos)
+    }
+
+    jump(pageX)
+    document.documentElement.style.userSelect = 'none'
+
+    const onMove = ({ pageX }: MouseEvent) => {
+      jump(pageX)
+    }
+
+    const finalize = ({ pageX }: MouseEvent) => {
+      jump(pageX, true)
+      setManualProg(false)
+      window.removeEventListener('mousemove', onMove)
+      document.documentElement.style.userSelect = 'initial'
+    }
+
+    window.addEventListener('mousemove', onMove, { passive: true })
+    window.addEventListener('mouseup', finalize, { once: true })
+  }
+
+  // prettier-ignore
+  const renderDeps = [
+    ctx, visible, width, height, duration, playing, barHeight, padd, seekKey, 
+    manualProg
+  ]
   useEffect(() => {
-    if (!ctx || !visible) return
+    if (!ctx || !visible || manualProg) return
 
     let renderId: number
     let prog: number
     let lastRender: number
     const syncInterval = 30000
-    const w = width - padd * 2
-    const x0 = padd
 
     const render = () => {
       const now = performance.now()
@@ -76,66 +115,14 @@ export default function ProgressBar() {
         prog = audio.currentTime
       else prog += dt / 1000
 
-      ctx.clearRect(0, 0, width, height)
-
-      ctx.fillStyle = '#666'
-      const progWidth = (prog / duration) * w
-
-      // background strip
-      ctx.fillRect(
-        x0 + progWidth,
-        height / 2 - barHeight / 2,
-        w - progWidth - barHeight / 2,
-        barHeight
-      )
-      ctx.beginPath()
-      ctx.arc(
-        w - barHeight / 2 + x0,
-        height / 2,
-        barHeight / 2,
-        -Math.PI / 2,
-        Math.PI / 2
-      )
-      ctx.fill()
-
-      // progress strip
-      ctx.fillStyle = '#d32f2f'
-      ctx.fillRect(
-        barHeight / 2 + x0,
-        height / 2 - barHeight / 2,
-        progWidth - barHeight / 2,
-        barHeight
-      )
-      ctx.beginPath()
-      ctx.arc(
-        barHeight / 2 + x0,
-        height / 2,
-        barHeight / 2,
-        -Math.PI / 2,
-        Math.PI / 2,
-        true
-      )
-      ctx.fill()
-
-      // progress knob
-      ctx.fillStyle = '#fff'
-      ctx.beginPath()
-      ctx.arc(
-        (prog / duration) * w + x0,
-        height / 2,
-        height / 2,
-        0,
-        2 * Math.PI
-      )
-      ctx.fill()
-
+      renderBar(ctx, width, height, padd, prog / duration)
       if (playing) renderId = requestAnimationFrame(render)
     }
-    render()
 
+    render()
     return () => window.cancelAnimationFrame(renderId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ctx, visible, width, height, duration, playing, barHeight, padd, seekKey])
+  }, renderDeps)
 
   return (
     <S.Wrap>
@@ -145,16 +132,7 @@ export default function ProgressBar() {
       <S.Bar
         ref={canvasRef}
         padd={padd / devicePixelRatio}
-        onClick={({ screenX, target }) => {
-          const p = padd / devicePixelRatio
-          const {
-            left,
-            right,
-            width,
-          } = (target as HTMLCanvasElement).getBoundingClientRect()
-          const cx = Math.min(Math.max(screenX, left + p), right - p) - p
-          jumpTo((cx - left) / (width - p * 2))
-        }}
+        onMouseDown={drag}
       />
       <S.Time
         aria-label="time remaining"
@@ -164,6 +142,79 @@ export default function ProgressBar() {
       </S.Time>
     </S.Wrap>
   )
+}
+
+const barHeight = 6 * devicePixelRatio
+
+function renderBar(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  padd: number,
+  ratio: number
+) {
+  const w = width - padd * 2
+  const x0 = padd
+  if (ratio === Infinity || isNaN(ratio)) ratio = 0
+
+  ctx.clearRect(0, 0, width, height)
+
+  ctx.fillStyle = '#666'
+  const progWidth = ratio * w
+
+  // background strip
+  ctx.fillRect(
+    x0 + progWidth + barHeight / 2,
+    height / 2 - barHeight / 2,
+    w - progWidth - barHeight,
+    barHeight
+  )
+  ctx.beginPath()
+  ctx.arc(
+    barHeight / 2 + x0,
+    height / 2,
+    barHeight / 2,
+    -Math.PI / 2,
+    Math.PI / 2,
+    true
+  )
+  ctx.fill()
+  ctx.beginPath()
+  ctx.arc(
+    w - barHeight / 2 + x0,
+    height / 2,
+    barHeight / 2,
+    -Math.PI / 2,
+    Math.PI / 2
+  )
+  ctx.fill()
+
+  if (ratio > 0) {
+    // progress strip
+    ctx.fillStyle = '#d32f2f'
+    ctx.fillRect(
+      barHeight / 2 + x0,
+      height / 2 - barHeight / 2,
+      progWidth - barHeight / 2,
+      barHeight
+    )
+    ctx.beginPath()
+    ctx.arc(
+      barHeight / 2 + x0,
+      height / 2,
+      barHeight / 2,
+      -Math.PI / 2,
+      Math.PI / 2,
+      true
+    )
+    ctx.fill()
+  }
+
+  // progress knob
+  ctx.fillStyle = '#fff'
+  ctx.beginPath()
+  ctx.arc(ratio * w + x0, height / 2, height / 2, 0, 2 * Math.PI)
+  ctx.fill()
 }
 
 const S = {
