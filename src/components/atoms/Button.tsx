@@ -30,13 +30,21 @@ export const Button: React.FC<Props> = ({
 const S = {
   Button: styled.button`
     appearance: none;
-    border: none;
     cursor: pointer;
     font-family: inherit;
+    font-size: 0.9rem;
+    background-color: var(--cl-background);
+    border: 2px solid var(--cl-primary);
+    color: var(--cl-primary);
+    height: 2rem;
+    padding: 0 1rem;
+    border-radius: 1rem;
 
     &[data-style~='icon-wrap'] {
       background-color: transparent;
       padding: 0;
+      border: none;
+      border-radius: unset;
     }
 
     &[data-style~='text'] {

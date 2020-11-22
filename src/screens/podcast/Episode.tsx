@@ -38,10 +38,11 @@ export default function Episode({
 const S = {
   Episode: styled.li`
     article {
-      height: 4rem;
+      height: 3.8rem;
       display: flex;
-      padding: 0.5rem;
+      padding: 0 1rem;
       align-items: center;
+      font-size: 0.9rem;
     }
 
     --border: 1px solid var(--cl-border);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Icon, Artwork } from 'components/atoms'
+import { Icon, Artwork, Button } from 'components/atoms'
 import { lineClamp } from 'styles/mixin'
 import { desktop } from 'styles/responsive'
 import { useMatchMedia } from 'utils/hooks'
@@ -29,6 +29,7 @@ export default function Info({
         <Artwork src={artwork as string} />
       </S.Head>
       <S.Actions>
+        <Button>Subscribe</Button>
         <Icon
           icon={`expand_${showDescription ? 'less' : 'more'}` as any}
           onClick={() => setShowDescription(!showDescription)}
@@ -43,7 +44,7 @@ export default function Info({
 const S = {
   Info: styled.div`
     border-bottom: 1px solid var(--cl-text-disabled);
-    padding: 1rem 1.5rem;
+    padding: 1rem;
 
     @media ${desktop} {
       border-bottom: none;
@@ -93,8 +94,12 @@ const S = {
 
   Actions: styled.div`
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
     margin-top: 1rem;
+
+    & > :last-child {
+      margin-left: auto;
+    }
   `,
 
   Description: styled.p`

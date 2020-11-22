@@ -8,6 +8,8 @@ import { ApolloProvider } from '@apollo/client'
 import api from 'api'
 import 'styles'
 
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')
+
 ReactDOM.render(
   <React.StrictMode>
     <ApolloProvider client={api}>

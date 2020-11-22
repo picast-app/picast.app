@@ -79,14 +79,6 @@ const S = {
       position: fixed;
     }
 
-    /* stylelint-disable-next-line */
-    & > *:first-child,
-    ${AppbarSC.Bar} + *,
-    ${AppbarSC.Wrap} + *,
-    ${ProgressSC} + * {
-      margin-top: 0;
-    }
-
     section:not(:first-of-type) {
       margin-top: 2rem;
       border-top: 1px solid var(--cl-text-disabled);

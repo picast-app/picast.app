@@ -1,6 +1,5 @@
 import { openDB, DBSchema } from 'idb'
 
-export default null
 declare let self: ServiceWorkerGlobalScope
 
 const VERSION = 1
@@ -83,7 +82,8 @@ async function cacheStatic() {
     caches.open(STATIC_CACHE),
     getStatic(),
   ])
-  await cache.addAll(staticFiles)
+  const external = staticFiles.filter(v => /^https?:\/\//.test(v))
+  await cache.addAll(staticFiles.filter(v => !external.includes(v)))
 }
 
 async function getStatic() {
