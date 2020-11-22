@@ -85,7 +85,7 @@ const S = {
       img {
         margin-left: 0;
         margin-right: 1rem;
-        height: unset;
+        height: 12rem;
         width: 12rem;
       }
     }

@@ -10,9 +10,10 @@ type Props =
   | { h6: true }
 
 export const Title: React.FC<Props> = ({ children, ...props }) => {
-  const [size] = Object.entries(props).find(([k, v]) => v && /^h[0-6]$/.test(k))
+  const [size] =
+    Object.entries(props).find(([k, v]) => v && /^h[0-6]$/.test(k)) ?? []
   const Comp = S[size as keyof typeof S]
-  return <Comp as={size}>{children}</Comp>
+  return <Comp as={size as any}>{children}</Comp>
 }
 
 const Base = styled.span`
