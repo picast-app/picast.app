@@ -3,9 +3,7 @@
     [
       "stylelint-processor-styled-components",
       {
-        "ignoreFiles": [
-          "**/*.{css,scss}"
-        ]
+        "ignoreFiles": ["**/*.{css,scss}"]
       }
     ]
   ],
@@ -28,9 +26,7 @@
     "length-zero-no-unit": [
       true,
       {
-        "ignore": [
-          "custom-properties"
-        ]
+        "ignore": ["custom-properties"]
       }
     ]
   }

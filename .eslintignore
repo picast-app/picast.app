@@ -2,3 +2,4 @@ build
 scripts
 config
 scripts
+react-app-env.d.ts
