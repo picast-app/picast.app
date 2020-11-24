@@ -10,6 +10,7 @@ import { Theme } from 'styles'
 import createSubscription from './subscription'
 import subscription, { Subscription } from './subscription'
 import throttle from 'lodash/throttle'
+
 export { useHistory } from 'react-router-dom'
 
 export const useTheme = () => useContext(Theme)
@@ -224,4 +225,18 @@ export function useCanvas(
   }, [canvas, observer])
 
   return [ctx, width, height]
+}
+
+export function useAsyncCall<T, K extends any[]>(
+  func: (...args: any[]) => Promise<T>,
+  ...args: K
+): T | undefined {
+  const [v, setV] = useState<T>()
+
+  useEffect(() => {
+    func(...args).then(setV)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, args)
+
+  return v
 }

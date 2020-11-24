@@ -1,6 +1,15 @@
-query PodcastTmp($id: ID!) {
+query PodcastPage($id: ID!) {
   podcast(id: $id) {
     id
     title
+    author
+    description
+    artwork
+    episodes {
+      id
+      title
+      publishDate
+      file
+    }
   }
 }

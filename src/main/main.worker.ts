@@ -3,25 +3,20 @@ import { expose } from 'comlink'
 import { GraphQLClient } from 'graphql-request'
 import type * as T from 'gql/types'
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare let self: DedicatedWorkerGlobalScope
 export default null
-
-self.onmessage = e => {
-  console.log('[worker]: got message', e)
-}
 
 const client = new GraphQLClient(process.env.REACT_APP_API as string, {
   headers: {},
 })
 
 const api: MainAPI = {
-  async podcast(id: string): Promise<T.PodcastTmp['podcast']> {
+  async podcast(id: string): Promise<T.PodcastPage['podcast']> {
     const { podcast } = await client.request<
-      T.PodcastTmp,
-      T.PodcastTmpVariables
-    >(query, {
-      id: '6v03',
-    })
+      T.PodcastPage,
+      T.PodcastPageVariables
+    >(query, { id })
     return podcast
   },
 }
