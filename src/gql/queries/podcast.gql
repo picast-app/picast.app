@@ -1,0 +1,6 @@
+query PodcastTmp($id: ID!) {
+  podcast(id: $id) {
+    id
+    title
+  }
+}
