@@ -33,11 +33,11 @@ const S = {
     cursor: pointer;
     font-family: inherit;
     font-size: 0.9rem;
-    background-color: var(--cl-background);
-    border: 2px solid var(--cl-primary);
-    color: var(--cl-primary);
     height: 2rem;
     padding: 0 1rem;
+    background-color: var(--cl-background);
+    color: var(--cl-primary);
+    border: 2px solid var(--cl-primary);
     border-radius: 1rem;
 
     &[data-style~='icon-wrap'] {
@@ -53,6 +53,7 @@ const S = {
       color: var(--cl-primary);
       font-size: 0.9rem;
       font-weight: 700;
+      border-radius: unset;
     }
 
     &:focus {

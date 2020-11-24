@@ -7,8 +7,12 @@ import App from './App'
 import { ApolloProvider } from '@apollo/client'
 import api from 'api'
 import 'styles'
+import MainWorker from 'test.worker'
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')
+
+const worker: Worker = new (MainWorker as any)()
+console.log(worker)
 
 ReactDOM.render(
   <React.StrictMode>

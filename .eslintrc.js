@@ -15,7 +15,9 @@ module.exports = {
     '@typescript-eslint/ban-ts-comment': 'off',
     'no-restricted-globals': 'off',
     '@typescript-eslint/no-var-requires': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
     'no-useless-computed-key': 'off',
     'prefer-const': 'warn',
+    'import/no-anonymous-default-export': 'off',
   },
 }

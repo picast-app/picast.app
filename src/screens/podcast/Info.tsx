@@ -18,24 +18,30 @@ export default function Info({
 
   if (!id) return null
 
+  const actions = (
+    <S.Actions>
+      <Button>Subscribe</Button>
+      <Icon
+        icon={`expand_${showDescription ? 'less' : 'more'}` as any}
+        onClick={() => setShowDescription(!showDescription)}
+        label="show description"
+      />
+    </S.Actions>
+  )
   return (
     <S.Info>
       <S.Head>
         <div>
-          <h1>{title}</h1>
+          <S.TitleRow>
+            <h1>{title}</h1>
+            {isDesktop && actions}
+          </S.TitleRow>
           <span>{author}</span>
           {isDesktop && <S.Description>{description}</S.Description>}
         </div>
         <Artwork src={artwork as string} />
       </S.Head>
-      <S.Actions>
-        <Button>Subscribe</Button>
-        <Icon
-          icon={`expand_${showDescription ? 'less' : 'more'}` as any}
-          onClick={() => setShowDescription(!showDescription)}
-          label="show description"
-        />
-      </S.Actions>
+      {!isDesktop && actions}
       {showDescription && <S.Description>{description}</S.Description>}
     </S.Info>
   )
@@ -48,10 +54,6 @@ const S = {
 
     @media ${desktop} {
       border-bottom: none;
-
-      & > *:not(:first-child) {
-        display: none;
-      }
     }
   `,
 
@@ -64,13 +66,6 @@ const S = {
       width: 7rem;
       border-radius: 0.5rem;
       margin-left: 1rem;
-    }
-
-    h1 {
-      font-size: 1.3rem;
-      line-height: 1.4;
-      margin-top: 0.2rem;
-      ${lineClamp(2)}
     }
 
     span {
@@ -92,6 +87,19 @@ const S = {
     }
   `,
 
+  TitleRow: styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h1 {
+      font-size: 1.3rem;
+      line-height: 1.4;
+      margin-top: 0.2rem;
+      ${lineClamp(2)}
+    }
+  `,
+
   Actions: styled.div`
     display: flex;
     justify-content: flex-start;
@@ -99,6 +107,12 @@ const S = {
 
     & > :last-child {
       margin-left: auto;
+    }
+
+    @media ${desktop} {
+      & > :last-child {
+        display: none;
+      }
     }
   `,
 

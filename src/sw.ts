@@ -16,11 +16,25 @@ interface EchoDB extends DBSchema {
     key: 'updateStatus'
     value: 'UP_TO_DATE' | 'EVICT_PENDING'
   }
+  podcasts: {
+    key: string
+    value: {
+      title: string
+      author: string
+      artwork: string
+    }
+  }
+  user: {
+    key: string
+    value: { subscriptions: string[] }
+  }
 }
 
 const dbProm = openDB<EchoDB>(self.location.hostname, 1, {
   upgrade(db) {
     db.createObjectStore('meta').put('UP_TO_DATE', 'updateStatus')
+    db.createObjectStore('podcasts')
+    db.createObjectStore('user').put({ subscriptions: [] }, 'local')
   },
 })
 
