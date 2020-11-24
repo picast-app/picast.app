@@ -10,6 +10,7 @@ import { Theme } from 'styles'
 import createSubscription from './subscription'
 import subscription, { Subscription } from './subscription'
 import throttle from 'lodash/throttle'
+import { main } from 'workers'
 
 export { useHistory } from 'react-router-dom'
 
@@ -231,12 +232,37 @@ export function useAsyncCall<T, K extends any[]>(
   func: (...args: any[]) => Promise<T>,
   ...args: K
 ): T | undefined {
-  const [v, setV] = useState<T>()
+  const [value, setValue] = useState<T>()
 
   useEffect(() => {
-    func(...args).then(setV)
+    func(...args).then(setValue)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, args)
 
-  return v
+  return value
+}
+
+type FilterKeys<T, U> = { [P in keyof T]: T[P] extends U ? P : never }[keyof T]
+
+export function useAPICall<
+  T extends FilterKeys<MainAPI, (...v: any[]) => Promise<any>>,
+  R = PromType<ReturnType<MainAPI[T]>>
+>(
+  method: T,
+  ...args: Parameters<MainAPI[T]>
+): [data: R | undefined, loading: boolean] {
+  const [value, setValue] = useState<R>()
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    setLoading(true)
+    // @ts-ignore
+    main[method](...args).then((v: R) => {
+      setValue(v)
+      setLoading(false)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, args)
+
+  return [value as any, loading]
 }

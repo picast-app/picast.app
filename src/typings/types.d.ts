@@ -7,3 +7,5 @@ type RGBA_ = [number, number, number, number]
 
 type EchoPlayEvent = CustomEvent<{ track?: string }>
 type EchoJumpEvent = CustomEvent<{ location: number }>
+
+type PromType<T> = T extends PromiseLike<infer U> ? U : T

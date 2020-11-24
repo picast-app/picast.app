@@ -1,0 +1,5 @@
+query FetchFeed($url: String!) {
+  feed(url: $url) {
+    raw
+  }
+}

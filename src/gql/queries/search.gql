@@ -1,0 +1,8 @@
+query SearchPodcast($query: String!) {
+  search(query: $query, limit: 50) {
+    id
+    title
+    author
+    artwork
+  }
+}
