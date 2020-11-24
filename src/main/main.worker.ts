@@ -3,6 +3,7 @@ import { GraphQLClient } from 'graphql-request'
 import type * as T from 'gql/types'
 import podcastQuery from 'gql/queries/podcast.gql'
 import feedQuery from 'gql/queries/feed.gql'
+import searchQuery from 'gql/queries/search.gql'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare let self: DedicatedWorkerGlobalScope
@@ -26,6 +27,13 @@ const api: MainAPI = {
       { url }
     )
     return feed
+  },
+  async search(query) {
+    const { search } = await client.request<
+      T.SearchPodcast,
+      T.SearchPodcastVariables
+    >(searchQuery, { query })
+    return search
   },
 }
 

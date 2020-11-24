@@ -1,58 +1,25 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Screen, Surface, ExpandoGrid, ExpandoSC } from 'components/structure'
 import { ShowCard } from 'components/composite'
 import { Icon, Button } from 'components/atoms'
 import Appbar from 'components/Appbar'
 import PodcastSearch from 'components/PodcastSearch'
-import { useHistory, useMatchMedia } from 'utils/hooks'
+import { useHistory, useMatchMedia, useAPICall } from 'utils/hooks'
 import { desktop, mobile } from 'styles/responsive'
-import { gql, useQuery } from 'gql'
-import type * as T from 'gql/types'
 import { center } from 'styles/mixin'
 import { Redirect } from 'react-router-dom'
-
-const SEARCH_QUERY = gql`
-  query SearchPodcast($query: String!) {
-    search(query: $query, limit: 50) {
-      id
-      title
-      author
-      artwork
-    }
-  }
-`
 
 export default function Search() {
   useHistory()
   const isDesktop = useMatchMedia(desktop)
-  const [results, setResults] = useState<T.SearchPodcast_search[]>([])
-  const [term, setTerm] = useState<string>()
   const [showAll, setShowAll] = useState(false)
   const query = new URLSearchParams(location.search).get('q') ?? undefined
 
-  const { variables, loading } = useQuery<
-    T.SearchPodcast,
-    T.SearchPodcastVariables
-  >(SEARCH_QUERY, {
-    variables: { query: query as string },
-    skip: !query,
-    onCompleted({ search }) {
-      setResults(search)
-    },
-  })
+  const [data, loading, [term] = []] = useAPICall('search', query)
+  const results = query ? data : []
 
-  useEffect(() => {
-    if (variables?.query) setTerm(variables.query)
-  }, [variables])
-
-  useEffect(() => {
-    if (query) return
-    setResults([])
-    setTerm(undefined)
-  }, [query])
-
-  if (isDesktop && !query && !term) return <Redirect to="/discover" />
+  if (isDesktop && !query) return <Redirect to="/discover" />
   return (
     <Screen loading={loading} style={S.Page}>
       <Appbar back="/discover">
@@ -65,7 +32,7 @@ export default function Search() {
           </h1>
         </Surface>
       )}
-      {results?.length > 0 && (
+      {(results?.length ?? 0) > 0 && (
         <S.Podcasts>
           <S.PodHeader>
             <h2>Podcasts</h2>
@@ -74,13 +41,13 @@ export default function Search() {
             </Button>
           </S.PodHeader>
           <ExpandoGrid list={!isDesktop} expanded={showAll}>
-            {results.map(v => (
+            {results?.map(v => (
               <ShowCard key={v.id} podcast={v} title strip={!isDesktop} />
             ))}
           </ExpandoGrid>
         </S.Podcasts>
       )}
-      {results?.length === 0 && term && !loading && (
+      {results?.length === 0 && query && !loading && (
         <S.NoMatch>
           <Icon icon="search" />
           <span>No podcasts found for "{term}"</span>

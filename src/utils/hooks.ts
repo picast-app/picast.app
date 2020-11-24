@@ -242,27 +242,34 @@ export function useAsyncCall<T, K extends any[]>(
   return value
 }
 
-type FilterKeys<T, U> = { [P in keyof T]: T[P] extends U ? P : never }[keyof T]
+type MapToOptional<T> = { [K in keyof T]: T[K] | undefined }
+type Arr<T> = T extends any[] ? T : []
 
 export function useAPICall<
   T extends FilterKeys<MainAPI, (...v: any[]) => Promise<any>>,
+  P = Parameters<MainAPI[T]>,
   R = PromType<ReturnType<MainAPI[T]>>
 >(
-  method: T,
-  ...args: Parameters<MainAPI[T]>
-): [data: R | undefined, loading: boolean] {
+  opts: T | { method: T },
+  ...args: Arr<MapToOptional<Parameters<MainAPI[T]>>>
+): [data: R | undefined, loading: boolean, args: P] {
   const [value, setValue] = useState<R>()
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(args.every(v => v !== undefined))
+  const [params, setParams] = useState<P>()
 
   useEffect(() => {
+    if (args.some(v => v === undefined)) return
     setLoading(true)
     // @ts-ignore
-    main[method](...args).then((v: R) => {
-      setValue(v)
-      setLoading(false)
-    })
+    main[typeof opts === 'string' ? opts : opts.method](...args).then(
+      (v: R) => {
+        setValue(v)
+        setLoading(false)
+        setParams((args as unknown) as P)
+      }
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, args)
 
-  return [value as any, loading]
+  return [value as any, loading, params as P]
 }
