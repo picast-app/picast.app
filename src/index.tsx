@@ -7,8 +7,6 @@ import App from './App'
 import './workers'
 import 'styles'
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')
-
 ReactDOM.render(
   <React.StrictMode>
     <Router history={history}>

@@ -1,40 +1,45 @@
 import { expose } from 'comlink'
-import { GraphQLClient } from 'graphql-request'
-import type * as T from 'gql/types'
-import podcastQuery from 'gql/queries/podcast.gql'
-import feedQuery from 'gql/queries/feed.gql'
-import searchQuery from 'gql/queries/search.gql'
+import * as apiCalls from './api'
+import { ChannelManager } from 'utils/msgChannel'
+import dbProm from './store'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare let self: DedicatedWorkerGlobalScope
 export default null
 
-const client = new GraphQLClient(process.env.REACT_APP_API as string, {
-  headers: {},
+const channels = new ChannelManager('main')
+
+const api: MainAPI = apiCalls
+expose(api)
+
+self.addEventListener('message', async ({ data }) => {
+  if (typeof data !== 'object') return
+  const msg: WorkerMsg = data
+  if (typeof data?.type !== 'string') return
+
+  switch (msg.type) {
+    case 'ADD_MSG_CHANNEL':
+      {
+        const { target, port } = (msg as WorkerMsg<'ADD_MSG_CHANNEL'>).payload
+        channels.addChannel(target as Exclude<WorkerName, 'main'>, port)
+      }
+      break
+  }
 })
 
-const api: MainAPI = {
-  async podcast(id: string) {
-    const { podcast } = await client.request<
-      T.PodcastPage,
-      T.PodcastPageVariables
-    >(podcastQuery, { id })
-    return podcast
-  },
-  async feed(url: string) {
-    const { feed } = await client.request<T.FetchFeed, T.FetchFeedVariables>(
-      feedQuery,
-      { url }
-    )
-    return feed
-  },
-  async search(query) {
-    const { search } = await client.request<
-      T.SearchPodcast,
-      T.SearchPodcastVariables
-    >(searchQuery, { query })
-    return search
-  },
+channels.onMessage = async (msg, source, respond) => {
+  switch (msg.type) {
+    case 'DB_READ': {
+      const db = await dbProm
+      const { table, key } = (msg as WorkerMsg<'DB_READ'>).payload
+      respond('DB_DATA', await db.get(table, key))
+      break
+    }
+    case 'DB_WRITE': {
+      const db = await dbProm
+      const { table, key, data } = (msg as WorkerMsg<'DB_WRITE'>).payload
+      await db.put(table, data, key)
+      break
+    }
+  }
 }
-
-expose(api)

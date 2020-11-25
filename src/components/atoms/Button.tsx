@@ -54,6 +54,7 @@ const S = {
       font-size: 0.9rem;
       font-weight: 700;
       border-radius: unset;
+      border: none;
     }
 
     &:focus {

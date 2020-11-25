@@ -3,3 +3,5 @@ scripts
 config
 scripts
 react-app-env.d.ts
+src/gql/types
+src/typings/lib.esnext.weakref.d.ts

@@ -1,6 +1,7 @@
-import { openDB, DBSchema } from 'idb'
+import { ChannelManager } from 'utils/msgChannel'
 
 declare let self: ServiceWorkerGlobalScope
+export default null
 
 const VERSION = 1
 const CACHE_PREFIX = `${self.location.hostname}.v${VERSION}.`
@@ -11,31 +12,16 @@ const expectedCaches = [STATIC_CACHE, PHOTO_CACHE]
 
 const IS_LOCAL = ['localhost', '127.0.0.1'].includes(self.location.hostname)
 
-interface EchoDB extends DBSchema {
-  meta: {
-    key: 'updateStatus'
-    value: 'UP_TO_DATE' | 'EVICT_PENDING'
-  }
-  podcasts: {
-    key: string
-    value: {
-      title: string
-      author: string
-      artwork: string
-    }
-  }
-  user: {
-    key: string
-    value: { subscriptions: string[] }
-  }
-}
+const channels = new ChannelManager('service')
 
-const dbProm = openDB<EchoDB>(self.location.hostname, 1, {
-  upgrade(db) {
-    db.createObjectStore('meta').put('UP_TO_DATE', 'updateStatus')
-    db.createObjectStore('podcasts')
-    db.createObjectStore('user').put({ subscriptions: [] }, 'local')
-  },
+self.addEventListener('message', ({ data }) => {
+  if (typeof data !== 'object') return
+  const msg: WorkerMsg = data
+  if (typeof data?.type !== 'string') return
+  if (msg.type === 'ADD_MSG_CHANNEL') {
+    const { target, port } = (msg as WorkerMsg<'ADD_MSG_CHANNEL'>).payload
+    channels.addChannel(target as Exclude<WorkerName, 'service'>, port)
+  }
 })
 
 self.addEventListener('install', event => {
@@ -121,8 +107,14 @@ async function getStatic() {
 }
 
 async function checkForUpdate() {
-  const db = await dbProm
-  const updateStatus = await db.get('meta', 'updateStatus')
+  const { payload: updateStatus } = await channels.post<'DB_READ', 'DB_DATA'>(
+    'main',
+    'DB_READ',
+    {
+      table: 'meta',
+      key: 'updateStatus',
+    }
+  )
 
   if (updateStatus === 'UP_TO_DATE') {
     const cache = await caches.open(STATIC_CACHE)
@@ -131,7 +123,11 @@ async function checkForUpdate() {
     const latest = await fetch('/index.html').then(res => res.text())
     if ((await cached.text()) !== latest) {
       await cacheStatic()
-      await db.put('meta', 'EVICT_PENDING', 'updateStatus')
+      channels.post('main', 'DB_WRITE', {
+        table: 'meta',
+        key: 'updateStatus',
+        data: 'EVICT_PENDING',
+      })
       const clients = await self.clients.matchAll()
       clients.forEach(client =>
         client.postMessage?.({ type: 'UPDATE_AVAILABLE' })
@@ -145,6 +141,10 @@ async function checkForUpdate() {
       ({ url }) => !staticFiles.includes(url.replace(self.location.origin, ''))
     )
     await Promise.all(toEvict.map(v => cache.delete(v)))
-    await db.put('meta', 'UP_TO_DATE', 'updateStatus')
+    channels.post('main', 'DB_WRITE', {
+      table: 'meta',
+      key: 'updateStatus',
+      data: 'UP_TO_DATE',
+    })
   }
 }
