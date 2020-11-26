@@ -3,6 +3,7 @@ import type * as T from 'gql/types'
 import podcastQuery from 'gql/queries/podcast.gql'
 import feedQuery from 'gql/queries/feed.gql'
 import searchQuery from 'gql/queries/search.gql'
+import episodeQuery from 'gql/queries/podcastEpisodes.gql'
 
 export const client = new GraphQLClient(process.env.REACT_APP_API as string, {
   headers: {},
@@ -30,4 +31,16 @@ export async function search(query: string) {
     T.SearchPodcastVariables
   >(searchQuery, { query })
   return search
+}
+
+export async function episodes(id: string, limit: number, cursor: string) {
+  const { podcast } = await client.request<
+    T.PodcastEpisodes,
+    T.PodcastEpisodesVariables
+  >(episodeQuery, {
+    podcast: id,
+    cursor,
+    last: limit,
+  })
+  return podcast?.episodes
 }

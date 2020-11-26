@@ -8,3 +8,9 @@ type TupleUnion<U extends string, R extends string[] = []> = {
     : TupleUnion<Exclude<U, S>, [...R, S]>
 }[U] &
   string[]
+
+type NullOpt<T> = {
+  [P in keyof T]: T[P] extends null ? T[P] | undefined : T[P]
+}
+
+type GqlType<T> = Optional<NullOpt<T>, '__typename'>

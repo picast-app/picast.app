@@ -15,7 +15,7 @@ export default function Podcast({
     <Screen loading={loading}>
       <Appbar title={podcast?.title} back="/" />
       <Info {...(podcast ?? {})} />
-      <Feed episodes={podcast?.episodes ?? []} />
+      <Feed episodes={podcast?.episodes} />
     </Screen>
   )
 }

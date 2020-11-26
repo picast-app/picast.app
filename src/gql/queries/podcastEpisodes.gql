@@ -1,11 +1,7 @@
-query PodcastPage($id: ID!) {
-  podcast(id: $id) {
+query PodcastEpisodes($podcast: ID!, $last: Int!, $cursor: ID!) {
+  podcast(id: $podcast) {
     id
-    title
-    author
-    description
-    artwork
-    episodes(last: 100) {
+    episodes(last: $last, before: $cursor) {
       pageInfo {
         total
         hasPreviousPage

@@ -1,7 +1,7 @@
 import React from 'react'
 import styled, { AnyStyledComponent } from 'styled-components'
-import { desktop } from 'styles/responsive'
-import Appbar, { AppbarSC } from 'components/Appbar'
+import { desktop, mobile } from 'styles/responsive'
+import Appbar from 'components/Appbar'
 import { Progress, ProgressSC } from 'components/atoms'
 import { PlayerSC } from 'components/composite'
 
@@ -56,8 +56,10 @@ const S = {
     overflow-y: auto;
     position: relative;
 
-    &::-webkit-scrollbar {
-      display: none;
+    @media ${mobile} {
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
 
     @media ${desktop} {

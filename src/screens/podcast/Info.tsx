@@ -5,6 +5,7 @@ import { lineClamp } from 'styles/mixin'
 import { desktop } from 'styles/responsive'
 import { useMatchMedia } from 'utils/hooks'
 import type * as T from 'gql/types'
+import { main } from 'workers'
 
 export default function Info({
   id,
@@ -20,7 +21,7 @@ export default function Info({
 
   const actions = (
     <S.Actions>
-      <Button>Subscribe</Button>
+      <Button onClick={() => main.subscribe(id)}>Subscribe</Button>
       <Icon
         icon={`expand_${showDescription ? 'less' : 'more'}` as any}
         onClick={() => setShowDescription(!showDescription)}
@@ -61,6 +62,10 @@ const S = {
     display: flex;
     justify-content: space-between;
 
+    & > div {
+      width: 100%;
+    }
+
     img {
       height: 7rem;
       width: 7rem;
@@ -91,6 +96,7 @@ const S = {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
 
     h1 {
       font-size: 1.3rem;

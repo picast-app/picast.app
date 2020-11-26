@@ -3,16 +3,15 @@ interface EchoDB extends import('idb').DBSchema {
     key: 'updateStatus'
     value: 'UP_TO_DATE' | 'EVICT_PENDING'
   }
-  podcasts: {
+  subscriptions: {
     key: string
     value: {
+      id: string
       title: string
-      author: string
-      artwork: string
+      author: string | null
+      artwork: string | null
+      description: string | null
+      subscriptionTime?: Date
     }
-  }
-  user: {
-    key: string
-    value: { subscriptions: string[] }
   }
 }

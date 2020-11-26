@@ -9,7 +9,7 @@ import { useTrackState } from 'utils/player'
 export default function Episode({
   title,
   file,
-}: T.PodcastPage_podcast_episodes) {
+}: T.PodcastPage_podcast_episodes_edges_node) {
   const state = useTrackState(file as string)
 
   function toggle() {

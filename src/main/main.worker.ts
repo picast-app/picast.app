@@ -1,7 +1,7 @@
 import { expose } from 'comlink'
 import * as apiCalls from './api'
 import { ChannelManager } from 'utils/msgChannel'
-import dbProm from './store'
+import { dbProm, Store } from './store'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare let self: DedicatedWorkerGlobalScope
@@ -9,7 +9,11 @@ export default null
 
 const channels = new ChannelManager('main')
 
-const api: MainAPI = apiCalls
+const api: MainAPI = {
+  ...apiCalls,
+  podcast: Store.podcast,
+  subscribe: Store.subscribe,
+}
 expose(api)
 
 self.addEventListener('message', async ({ data }) => {
@@ -30,15 +34,13 @@ self.addEventListener('message', async ({ data }) => {
 channels.onMessage = async (msg, source, respond) => {
   switch (msg.type) {
     case 'DB_READ': {
-      const db = await dbProm
       const { table, key } = (msg as WorkerMsg<'DB_READ'>).payload
-      respond('DB_DATA', await db.get(table, key))
+      respond('DB_DATA', await (await dbProm).get(table, key))
       break
     }
     case 'DB_WRITE': {
-      const db = await dbProm
       const { table, key, data } = (msg as WorkerMsg<'DB_WRITE'>).payload
-      await db.put(table, data, key)
+      await (await dbProm).put(table, data, key)
       break
     }
   }
