@@ -1,19 +1,23 @@
 import React from 'react'
 import styled from 'styled-components'
-import type * as T from 'gql/types'
 import Episode from './Episode'
 import { desktop } from 'styles/responsive'
+import { useEpisodes } from 'utils/hooks'
 
 type Props = {
-  episodes: T.PodcastPage_podcast_episodes
+  id: string
+  total: number
 }
 
-export default function Episodes({ episodes }: Props) {
-  if (!episodes?.edges) return null
+export default function Episodes({ id, total }: Props) {
+  const episodes = useEpisodes(id)
+
+  console.log(episodes.length)
+
   return (
-    <S.Feed episodes={episodes.pageInfo?.total ?? 100}>
-      {episodes.edges.map(({ node }) => (
-        <Episode key={node.id} {...node} />
+    <S.Feed episodes={total ?? 100}>
+      {episodes.map((node, i) => (
+        <Episode key={node.id} {...node} index={i} />
       ))}
     </S.Feed>
   )
@@ -21,6 +25,8 @@ export default function Episodes({ episodes }: Props) {
 
 const S = {
   Feed: styled.ol<{ episodes: number }>`
+    position: relative;
+
     @media ${desktop} {
       margin: 1rem 1.5rem;
     }

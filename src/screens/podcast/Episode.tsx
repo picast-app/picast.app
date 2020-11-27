@@ -1,33 +1,20 @@
 import React from 'react'
 import styled from 'styled-components'
-import type * as T from 'gql/types'
 import { desktop } from 'styles/responsive'
 import { Button, Icon } from 'components/atoms'
 import { center } from 'styles/mixin'
 import { useTrackState } from 'utils/player'
 
-export default function Episode({
-  title,
-  file,
-}: T.PodcastPage_podcast_episodes_edges_node) {
+type Props = EpisodeMin & { index: number }
+
+export default function Episode({ title, file, index }: Props) {
   const state = useTrackState(file as string)
 
-  function toggle() {
-    if (!file) return
-    if (state === 'playing') window.dispatchEvent(new CustomEvent('echo_pause'))
-    else
-      window.dispatchEvent(
-        new CustomEvent<EchoPlayEvent['detail']>('echo_play', {
-          detail: { track: file },
-        })
-      )
-  }
-
   return (
-    <S.Episode>
+    <S.Episode style={{ top: `${index * 3.8}rem` }}>
       <article>
         <h1>{title}</h1>
-        <Button iconWrap="play" onClick={toggle}>
+        <Button iconWrap="play" onClick={() => file && toggle(file, state)}>
           <Icon icon={state === 'paused' ? 'play' : 'pause'} />
         </Button>
       </article>
@@ -35,8 +22,22 @@ export default function Episode({
   )
 }
 
+function toggle(file: string, state: 'playing' | 'paused') {
+  if (!file) return
+  if (state === 'playing') window.dispatchEvent(new CustomEvent('echo_pause'))
+  else
+    window.dispatchEvent(
+      new CustomEvent<EchoPlayEvent['detail']>('echo_play', {
+        detail: { track: file },
+      })
+    )
+}
+
 const S = {
   Episode: styled.li`
+    position: absolute;
+    width: 100%;
+
     article {
       height: 3.8rem;
       display: flex;

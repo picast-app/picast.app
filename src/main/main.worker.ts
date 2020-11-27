@@ -45,3 +45,7 @@ channels.onMessage = async (msg, source, respond) => {
     }
   }
 }
+
+Store.onEpisodes = episodes => {
+  self.postMessage({ type: 'episodes', episodes })
+}

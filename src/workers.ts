@@ -1,6 +1,7 @@
 import { wrap } from 'comlink'
 import MainWorker from 'main/main.worker'
 import { msg } from 'utils/msgChannel'
+import { episodeSub } from 'utils/hooks'
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')
 
@@ -19,3 +20,20 @@ navigator.serviceWorker.ready.then(({ active }) => {
     port2,
   ])
 })
+
+mainWorker.onmessage = ({ type, data }) => {
+  if (!type || typeof data?.type !== 'string') return
+  if (data.type === 'episodes') {
+    episodeSub.setState({
+      ...episodeSub.state,
+      ...Object.fromEntries(
+        Object.entries(data.episodes).map(([k, v]) => [
+          k,
+          [...(episodeSub.state[k] ?? []), ...(v as EpisodeMin[])].sort(
+            (a, b) => b.published - a.published
+          ),
+        ])
+      ),
+    })
+  }
+}

@@ -5,7 +5,7 @@ query PodcastPage($id: ID!) {
     author
     description
     artwork
-    episodes(last: 100) {
+    episodes(last: 50) {
       pageInfo {
         total
         hasPreviousPage

@@ -16,6 +16,7 @@ export abstract class Store {
     [id: string]: EchoDB['subscriptions']['value']
   } = {}
   private static _init = Store.__init().then(() => dbProm)
+  public static onEpisodes?: (episodes: Record<string, EpisodeMin[]>) => void
 
   private static async __init() {
     const db = await dbProm
@@ -55,10 +56,22 @@ export abstract class Store {
     if (!podcast) return
     Store._podcasts[id] = podcast
     Store.fetchRemainingEpisodes(podcast.id)
+    Store.onEpisodes?.({
+      [id]: podcast.episodes.edges.map(
+        ({ node: { id, title, file, publishDate } }) =>
+          ({
+            id,
+            title,
+            file,
+            published: new Date(publishDate ?? 0).getTime(),
+          } as EpisodeMin)
+      ),
+    })
     return podcast
   }
 
   private static async fetchRemainingEpisodes(id: string) {
+    if (process.env.NODE_ENV === 'development') return
     const podcast = Store._podcasts[id] as T.PodcastPage_podcast
     if (!podcast?.episodes.pageInfo.hasPreviousPage) return
     console.log('fetch episodes', id)
@@ -70,6 +83,17 @@ export abstract class Store {
     if (!res) return
     podcast.episodes.edges.push(...res.edges)
     podcast.episodes.pageInfo.hasPreviousPage = res.pageInfo.hasPreviousPage
+    Store.onEpisodes?.({
+      [id]: res.edges.map(
+        ({ node: { id, title, file, publishDate } }) =>
+          ({
+            id,
+            title,
+            file,
+            published: new Date(publishDate ?? 0).getTime(),
+          } as EpisodeMin)
+      ),
+    })
     Store.fetchRemainingEpisodes(id)
   }
 }

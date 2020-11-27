@@ -273,3 +273,20 @@ export function useAPICall<
 
   return [value as any, loading, params as P]
 }
+
+export const episodeSub = subscription<Record<string, EpisodeMin[]>>({})
+
+export function useEpisodes(id: string) {
+  const [episodes, setEpisodes] = useState<EpisodeMin[]>([])
+
+  const [all] = useSubscription(episodeSub)
+
+  useEffect(() => {
+    if (!all[id]?.length) return
+    if (all[id].every(({ id }) => episodes.find(v => v.id === id))) return
+    setEpisodes(all[id])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [all])
+
+  return episodes
+}
