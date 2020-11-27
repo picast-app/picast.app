@@ -1,4 +1,4 @@
-import { openDB } from 'idb'
+import { openDB } from 'idb/with-async-ittr'
 import * as api from './api'
 import { pickKeys } from 'utils/object'
 import type * as T from 'gql/types'
@@ -6,7 +6,11 @@ import type * as T from 'gql/types'
 export const dbProm = openDB<EchoDB>(self.location.hostname, 3, {
   upgrade(db) {
     db.createObjectStore('meta').put('UP_TO_DATE', 'updateStatus')
-    db.createObjectStore('subscriptions')
+    db.createObjectStore('subscriptions', { keyPath: 'id' })
+    db.createObjectStore('episodes', { keyPath: ['pId', 'eId'] }).createIndex(
+      'date',
+      'date'
+    )
   },
 })
 
@@ -33,20 +37,27 @@ export abstract class Store {
     Store._subscriptions.push(id)
     const podcast = await Store.podcast(id)
     if (!podcast) return
-    await db.put(
-      'subscriptions',
-      {
-        ...pickKeys(podcast, [
-          'id',
-          'title',
-          'author',
-          'artwork',
-          'description',
-        ]),
-        subscriptionDate: new Date(),
-      },
-      id
-    )
+    await db.put('subscriptions', {
+      ...pickKeys(podcast, ['id', 'title', 'author', 'artwork', 'description']),
+      subscriptionDate: new Date(),
+      episodeCount: (podcast as any).episodes?.pageInfo?.total,
+    })
+    const episodes = ((podcast as any).episodes
+      .edges as T.PodcastPage_podcast_episodes_edges[]).map(({ node }) => node)
+
+    const tx = db.transaction('episodes', 'readwrite')
+    await Promise.all([
+      ...episodes.map(({ id: eId, title, file, publishDate }) =>
+        tx.store.put({
+          title,
+          file,
+          date: new Date(publishDate ?? 0).getTime(),
+          pId: id,
+          eId,
+        })
+      ),
+      tx.done,
+    ] as Promise<any>[])
   }
 
   public static async podcast(id: string) {
@@ -57,15 +68,7 @@ export abstract class Store {
     Store._podcasts[id] = podcast
     Store.fetchRemainingEpisodes(podcast.id)
     Store.onEpisodes?.({
-      [id]: podcast.episodes.edges.map(
-        ({ node: { id, title, file, publishDate } }) =>
-          ({
-            id,
-            title,
-            file,
-            published: new Date(publishDate ?? 0).getTime(),
-          } as EpisodeMin)
-      ),
+      [id]: Store.mapEpisodeMin(podcast.episodes.edges),
     })
     return podcast
   }
@@ -84,16 +87,22 @@ export abstract class Store {
     podcast.episodes.edges.push(...res.edges)
     podcast.episodes.pageInfo.hasPreviousPage = res.pageInfo.hasPreviousPage
     Store.onEpisodes?.({
-      [id]: res.edges.map(
-        ({ node: { id, title, file, publishDate } }) =>
-          ({
-            id,
-            title,
-            file,
-            published: new Date(publishDate ?? 0).getTime(),
-          } as EpisodeMin)
-      ),
+      [id]: Store.mapEpisodeMin(res.edges),
     })
     Store.fetchRemainingEpisodes(id)
+  }
+
+  private static mapEpisodeMin(
+    episodes: T.PodcastPage_podcast_episodes_edges[]
+  ): EpisodeMin[] {
+    return episodes.map(
+      ({ node: { id, title, file, publishDate } }) =>
+        ({
+          id,
+          title,
+          file,
+          published: new Date(publishDate ?? 0).getTime(),
+        } as EpisodeMin)
+    )
   }
 }

@@ -17,7 +17,10 @@ export default function Podcast({
       {podcast && (
         <>
           <Info {...podcast} />
-          <Feed id={podcast.id} total={podcast.episodes.pageInfo.total} />
+          <Feed
+            id={podcast.id}
+            total={podcast.episodes?.pageInfo?.total ?? podcast.episodeCount}
+          />
         </>
       )}
     </Screen>

@@ -12,8 +12,6 @@ type Props = {
 export default function Episodes({ id, total }: Props) {
   const episodes = useEpisodes(id)
 
-  console.log(episodes.length)
-
   return (
     <S.Feed episodes={total ?? 100}>
       {episodes.map((node, i) => (

@@ -14,4 +14,12 @@ interface EchoDB extends import('idb').DBSchema {
       subscriptionTime?: Date
     }
   }
+  episodes: {
+    key: [pId: string, eId: string]
+    value: {
+      title: string
+      file: string
+      date: number
+    }
+  }
 }
