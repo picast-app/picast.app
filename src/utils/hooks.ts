@@ -10,7 +10,7 @@ import { Theme } from 'styles'
 import createSubscription from './subscription'
 import subscription, { Subscription } from './subscription'
 import throttle from 'lodash/throttle'
-import { main } from 'workers'
+import { main, channels } from 'workers'
 
 export { useHistory } from 'react-router-dom'
 
@@ -274,19 +274,33 @@ export function useAPICall<
   return [value as any, loading, params as P]
 }
 
-export const episodeSub = subscription<Record<string, EpisodeMin[]>>({})
-
 export function useEpisodes(id: string) {
-  const [episodes, setEpisodes] = useState<EpisodeMin[]>([])
-
-  const [all] = useSubscription(episodeSub)
+  const [episodes, addEpisodes] = useReducer(
+    (c: EpisodeMin[], v: EpisodeMin[]) =>
+      [...c, ...v].sort((a, b) => b.published - a.published),
+    []
+  )
 
   useEffect(() => {
-    if (!all[id]?.length) return
-    if (all[id].every(({ id }) => episodes.find(v => v.id === id))) return
-    setEpisodes(all[id])
+    let subId: string
+
+    channels
+      .post('main', 'ADD_FEED_SUB', { podcast: id })
+      .then(({ payload }) => {
+        subId = payload.subId
+      })
+
+    const unsub = channels.on('FEED_ADDED', msg => {
+      if (msg.payload.subId !== subId) return
+      addEpisodes(msg.payload.episodes)
+    })
+
+    return () => {
+      if (subId) channels.post('main', 'CANCEL_FEED_SUB', { subId })
+      unsub()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [all])
+  }, [id])
 
   return episodes
 }

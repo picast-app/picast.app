@@ -11,8 +11,10 @@ export const msg = <T extends WorkerMsgType>(
   payload,
 })
 
+type Listener<T extends WorkerMsgType = any> = (msg: WorkerMsg<T>) => void
+
 export class ChannelManager<T extends WorkerName> {
-  private static workers: TupleUnion<WorkerName> = ['main', 'service']
+  private static workers: TupleUnion<WorkerName> = ['main', 'service', 'ui']
   private channels: { [k in WorkerName]?: MessagePort } = {}
   private queues: { [k in WorkerName]: WorkerMsg[] }
   public onMessage?: (
@@ -24,6 +26,7 @@ export class ChannelManager<T extends WorkerName> {
     ) => void
   ) => void
   private readonly ansResolvers = new OptWeakValues<(msg: WorkerMsg) => void>()
+  private listeners: { type: WorkerMsgType; handler: Listener }[] = []
 
   constructor(private readonly owner: T) {
     this.queues = Object.fromEntries(
@@ -42,6 +45,10 @@ export class ChannelManager<T extends WorkerName> {
       this.onMessage?.(msg, name, (t, p) => {
         this.post(name, t, p, msg.id)
       })
+      this.listeners.forEach(({ type, handler }) => {
+        if (type !== msg.type) return
+        handler(msg)
+      })
     }
   }
 
@@ -59,5 +66,13 @@ export class ChannelManager<T extends WorkerName> {
     return new Promise(res => {
       this.ansResolvers.set(v.id as string, res as any)
     })
+  }
+
+  public on<T extends WorkerMsgType>(type: T, handler: Listener<T>) {
+    const listener = { type, handler }
+    this.listeners.push(listener)
+    return () => {
+      this.listeners = this.listeners.filter(v => v !== listener)
+    }
   }
 }

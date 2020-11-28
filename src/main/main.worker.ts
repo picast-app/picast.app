@@ -8,6 +8,7 @@ declare let self: DedicatedWorkerGlobalScope
 export default null
 
 const channels = new ChannelManager('main')
+Store.channels = channels
 
 const api: MainAPI = {
   ...apiCalls,
@@ -43,9 +44,16 @@ channels.onMessage = async (msg, source, respond) => {
       await (await dbProm).put(table, data, key)
       break
     }
+    case 'ADD_FEED_SUB':
+      respond('CONFIRM_FEED_SUB', {
+        subId: Store.addFeedSub(
+          (msg as WorkerMsg<'ADD_FEED_SUB'>).payload,
+          source
+        ),
+      })
+      break
+    case 'CANCEL_FEED_SUB':
+      Store.cancelFeedSub((msg as WorkerMsg<'CANCEL_FEED_SUB'>).payload.subId)
+      break
   }
-}
-
-Store.onEpisodes = episodes => {
-  self.postMessage({ type: 'episodes', episodes })
 }

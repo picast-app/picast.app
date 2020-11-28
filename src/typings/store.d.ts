@@ -15,8 +15,10 @@ interface EchoDB extends import('idb').DBSchema {
     }
   }
   episodes: {
-    key: [pId: string, eId: string]
+    key: string
     value: {
+      id: string
+      podcast: string
       title: string
       file: string
       date: number

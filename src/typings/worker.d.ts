@@ -7,7 +7,7 @@ type MainAPI = {
   subscribe(id: string): void
 }
 
-type WorkerName = 'service' | 'main'
+type WorkerName = 'service' | 'main' | 'ui'
 
 type WorkerMsg<T extends WorkerMsgType = unknown> = {
   id?: string
@@ -16,7 +16,15 @@ type WorkerMsg<T extends WorkerMsgType = unknown> = {
   payload: WorkerMsgPayload<T>
 }
 
-type WorkerMsgType = 'ADD_MSG_CHANNEL' | 'DB_READ' | 'DB_WRITE' | 'DB_DATA'
+type WorkerMsgType =
+  | 'ADD_MSG_CHANNEL'
+  | 'DB_READ'
+  | 'DB_WRITE'
+  | 'DB_DATA'
+  | 'ADD_FEED_SUB'
+  | 'CONFIRM_FEED_SUB'
+  | 'CANCEL_FEED_SUB'
+  | 'FEED_ADDED'
 
 type WorkerMsgPayload<T extends WorkerMsgType> = T extends 'ADD_MSG_CHANNEL'
   ? { target: WorkerName; port: MessagePort }
@@ -30,4 +38,12 @@ type WorkerMsgPayload<T extends WorkerMsgType> = T extends 'ADD_MSG_CHANNEL'
     }
   : T extends 'DB_DATA'
   ? any
+  : T extends 'ADD_FEED_SUB'
+  ? { podcast: string; limit?: number }
+  : T extends 'CONFIRM_FEED_SUB'
+  ? { subId: string }
+  : T extends 'CANCEL_FEED_SUB'
+  ? { subId: string }
+  : T extends 'FEED_ADDED'
+  ? { episodes: EpisodeMin[]; subId: string }
   : never
