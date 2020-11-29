@@ -3,6 +3,7 @@ import * as api from './api'
 import { pickKeys } from 'utils/object'
 import type * as T from 'gql/types'
 import { ChannelManager } from 'utils/msgChannel'
+import * as ws from './ws'
 
 export const dbProm = openDB<EchoDB>(self.location.hostname, 3, {
   upgrade(db) {
@@ -76,6 +77,8 @@ export abstract class Store {
     if (id in Store._podcasts) return Store._podcasts[id]
     const podcast = await api.podcast(id)
     if (!podcast) return
+    if (!podcast.episodes)
+      ws.send({ type: 'SUB_EPISODES', podcast: podcast.id })
     Store._podcasts[id] = podcast
     if (!podcast.episodes) return podcast
     Store.addEpisodes(podcast.id, podcast.episodes)
@@ -108,7 +111,7 @@ export abstract class Store {
   }
 
   private static async fetchRemainingEpisodes(id: string) {
-    // if (process.env.NODE_ENV === 'development') return
+    if (process.env.NODE_ENV === 'development') return
     const cursor = Store._episodes[id].cursor
     if (!cursor) return
     Store.addEpisodes(id, await api.episodes(id, 200, cursor))
