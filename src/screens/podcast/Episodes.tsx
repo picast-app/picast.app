@@ -19,7 +19,7 @@ export default function Episodes({ id, total, onLoading }: Props) {
   }, [hasEpisodes, onLoading])
 
   return (
-    <S.Feed episodes={total ?? 100}>
+    <S.Feed episodes={total ?? 10}>
       {episodes.map((node, i) => (
         <Episode key={node.id} {...node} index={i} />
       ))}
