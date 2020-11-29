@@ -9,9 +9,16 @@ type Props = {
   sc?: AnyStyledComponent
   el?: number
   alt?: boolean
+  onClick?(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void
 }
 
-export const Surface: React.FC<Props> = ({ sc, el = 0, alt, children }) => {
+export const Surface: React.FC<Props> = ({
+  sc,
+  el = 0,
+  alt,
+  children,
+  ...props
+}) => {
   const theme = useTheme()
   return (
     <S.Surface
@@ -33,6 +40,7 @@ export const Surface: React.FC<Props> = ({ sc, el = 0, alt, children }) => {
             )
       }
       {...(alt && { 'data-style': 'alt' })}
+      {...props}
     >
       {children}
     </S.Surface>

@@ -89,6 +89,10 @@ const S = {
       ${PlayerSC} ~ & {
         box-shadow: unset;
       }
+
+      transform: translateY(
+        calc(var(--player-in) * (100vh + var(--bar-height)))
+      );
     }
   `,
 

@@ -8,6 +8,7 @@
   --sidebar-width: 15rem;
   --progress-height: 0.2rem;
   --player-height: 3.5rem;
+  --player-in: 0;
 }
 
 body {

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Icon } from 'components/atoms'
 import { Surface } from 'components/structure'
@@ -7,6 +7,8 @@ import { desktop, mobile } from 'styles/responsive'
 import { useTrack, usePlayState, trackSub } from 'utils/player'
 import { useTheme, useMatchMedia } from 'utils/hooks'
 import ProgressBar from './player/ProgressBar'
+import Fullscreen from './player/Fullscreen'
+import { easeOutQuart as ease } from 'utils/ease'
 
 const audio = document.querySelector('#player') as HTMLAudioElement
 audio.volume = 0.4
@@ -25,6 +27,7 @@ export function Player() {
   const [playState, setPlayState] = usePlayState()
   const theme = useTheme()
   const isDesktop = useMatchMedia(desktop)
+  const [fullscreen, setFullscreen] = useState(false)
 
   useEffect(() => {
     if (!audio) return
@@ -72,7 +75,16 @@ export function Player() {
 
   if (!track) return <div />
   return (
-    <Surface sc={S.Player} el={4} alt={isDesktop && theme === 'light'}>
+    <Surface
+      sc={S.Player}
+      el={4}
+      alt={isDesktop && theme === 'light'}
+      onClick={({ target, currentTarget }) => {
+        if (target !== currentTarget) return
+        setFullscreen(true)
+        transition('in')
+      }}
+    >
       <S.PlayControls>
         <Icon
           icon={playState === 'paused' ? 'play' : 'pause'}
@@ -83,8 +95,39 @@ export function Player() {
       <S.Main>
         <ProgressBar barOnly={!isDesktop} />
       </S.Main>
+      <Fullscreen
+        hidden={isDesktop || !fullscreen}
+        onHide={() => {
+          transition('out')
+          setFullscreen(false)
+        }}
+      />
     </Surface>
   )
+}
+
+let state = 0
+let tLast: number | undefined
+const length = 500
+
+function transition(dir: 'in' | 'out') {
+  const now = performance.now()
+  if (!tLast) tLast = now
+  const td = now - tLast
+  tLast = now
+  if (dir === 'in' ? state >= 1 : state <= 0) {
+    tLast = undefined
+    console.log('done')
+    return
+  }
+  if (dir === 'in') state += td / length
+  else state -= td / length
+  const pos = dir === 'in' ? ease(state) : 1 - ease(1 - state)
+  document.documentElement.style.setProperty(
+    '--player-in',
+    Math.min(Math.max(pos, 0), 1).toString()
+  )
+  requestAnimationFrame(() => transition(dir))
 }
 
 const S = {
@@ -96,6 +139,9 @@ const S = {
     display: flex;
     justify-content: space-around;
     align-items: center;
+    transform: translateY(
+      calc(var(--player-in) * (-100vh + var(--bar-height) * 2))
+    );
 
     @media ${desktop} {
       bottom: 0;
