@@ -80,7 +80,7 @@ export function Player() {
       el={4}
       alt={isDesktop && theme === 'light'}
       onClick={({ target, currentTarget }) => {
-        if (target !== currentTarget) return
+        if (target !== currentTarget || tLast) return
         setFullscreen(true)
         transition('in')
       }}
@@ -98,6 +98,7 @@ export function Player() {
       <Fullscreen
         hidden={isDesktop || !fullscreen}
         onHide={() => {
+          if (tLast) return
           transition('out')
           setFullscreen(false)
         }}
@@ -117,7 +118,6 @@ function transition(dir: 'in' | 'out') {
   tLast = now
   if (dir === 'in' ? state >= 1 : state <= 0) {
     tLast = undefined
-    console.log('done')
     return
   }
   if (dir === 'in') state += td / length
@@ -142,6 +142,7 @@ const S = {
     transform: translateY(
       calc(var(--player-in) * (-100vh + var(--bar-height) * 2))
     );
+    will-change: transform;
 
     @media ${desktop} {
       bottom: 0;

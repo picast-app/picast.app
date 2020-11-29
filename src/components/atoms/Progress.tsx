@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import * as cl from 'utils/css/color'
 
@@ -6,9 +6,17 @@ type Props = {
   active?: boolean
 }
 
-export const Progress = ({ active = true }: Props) => (
-  <S.Bar data-collapsed={!active} />
-)
+export const Progress = ({ active = true }: Props) => {
+  const [visible, setVisible] = useState(active)
+
+  useEffect(() => {
+    if (active) setVisible(true)
+    else setTimeout(() => setVisible(false), 500)
+  }, [active])
+
+  if (!visible) return null
+  return <S.Bar data-collapsed={!active} />
+}
 
 const S = {
   Bar: styled.div`
