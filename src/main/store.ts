@@ -74,7 +74,13 @@ export abstract class Store {
 
   public static async podcast(id: string): Promise<any> {
     await Store._init
-    if (id in Store._podcasts) return Store._podcasts[id]
+    if (id in Store._podcasts) {
+      Store.addEpisodes(
+        id,
+        await (await dbProm).getAllFromIndex('episodes', 'podcast', id)
+      )
+      return Store._podcasts[id]
+    }
     const podcast = await api.podcast(id)
     if (!podcast) return
     if (!podcast.episodes)
@@ -193,6 +199,8 @@ export abstract class Store {
 
 ws.addListener(msg => {
   if (msg.type !== 'EPISODE_ADDED') return
-  console.log(msg)
-  Store.addEpisodes(msg.podcast, msg.episodes)
+  Store.addEpisodes(
+    msg.podcast,
+    msg.episodes.map(({ url, ...rest }: any) => ({ file: url, ...rest }))
+  )
 })

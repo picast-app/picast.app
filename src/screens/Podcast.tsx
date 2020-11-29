@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useAPICall } from 'utils/hooks'
 import { Screen } from 'components/structure'
 import Appbar from 'components/Appbar'
@@ -9,10 +9,11 @@ import Feed from './podcast/Episodes'
 export default function Podcast({
   match,
 }: RouteComponentProps<{ id: string }>) {
-  const [podcast, loading] = useAPICall('podcast', match.params.id)
+  const [podcast, _loading] = useAPICall('podcast', match.params.id)
+  const [loading, setLoading] = useState(false)
 
   return (
-    <Screen loading={loading}>
+    <Screen loading={_loading || loading}>
       <Appbar title={podcast?.title} back="/" />
       {podcast && (
         <>
@@ -20,6 +21,7 @@ export default function Podcast({
           <Feed
             id={podcast.id}
             total={podcast.episodes?.pageInfo?.total ?? podcast.episodeCount}
+            onLoading={setLoading}
           />
         </>
       )}
