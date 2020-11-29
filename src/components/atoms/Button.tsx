@@ -51,10 +51,12 @@ const S = {
       padding: 0;
       background-color: transparent;
       color: var(--cl-primary);
-      font-size: 0.9rem;
-      font-weight: 700;
+      font-size: 0.75rem;
+      font-weight: 400;
       border-radius: unset;
       border: none;
+      text-transform: uppercase;
+      letter-spacing: 0.1rem;
     }
 
     &:focus {

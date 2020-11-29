@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { Icon, Artwork, Button } from 'components/atoms'
 import { lineClamp } from 'styles/mixin'
 import { desktop } from 'styles/responsive'
-import { useMatchMedia } from 'utils/hooks'
+import { useMatchMedia, useSubscriptions } from 'utils/hooks'
 import type * as T from 'gql/types'
 import { main } from 'workers'
 
@@ -16,12 +16,19 @@ export default function Info({
 }: Partial<T.PodcastPage_podcast>) {
   const [showDescription, setShowDescription] = useState(false)
   const isDesktop = useMatchMedia(desktop)
+  const subscriptions = useSubscriptions()
 
   if (!id) return null
 
   const actions = (
     <S.Actions>
-      <Button onClick={() => main.subscribe(id)}>Subscribe</Button>
+      {subscriptions?.includes(id) ? (
+        <Button onClick={() => main.unsubscribe(id)} text>
+          subscribed
+        </Button>
+      ) : (
+        <Button onClick={() => main.subscribe(id)}>Subscribe</Button>
+      )}
       <Icon
         icon={`expand_${showDescription ? 'less' : 'more'}` as any}
         onClick={() => setShowDescription(!showDescription)}
@@ -116,6 +123,8 @@ const S = {
     }
 
     @media ${desktop} {
+      margin-top: 0;
+
       & > :last-child {
         display: none;
       }

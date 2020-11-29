@@ -10,7 +10,7 @@ import { Theme } from 'styles'
 import createSubscription from './subscription'
 import subscription, { Subscription } from './subscription'
 import throttle from 'lodash/throttle'
-import { main, channels } from 'workers'
+import { main, channels, subscriptionSub } from 'workers'
 
 export { useHistory } from 'react-router-dom'
 
@@ -303,4 +303,9 @@ export function useEpisodes(id: string) {
   }, [id])
 
   return episodes
+}
+
+export function useSubscriptions() {
+  const [subs] = useSubscription(subscriptionSub)
+  return subs
 }

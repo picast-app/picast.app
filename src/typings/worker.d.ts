@@ -5,7 +5,14 @@ type MainAPI = {
   feed(url: string): Promise<import('gql/types').FetchFeed['feed']>
   search(query: string): Promise<import('gql/types').SearchPodcast['search']>
   subscribe(id: string): void
+  unsubscribe(id: string): void
+  subscriptions(cb: SubscriptionListener): Promise<string[]>
 }
+
+type SubscriptionListener = (v: {
+  added?: string[]
+  removed?: string[]
+}) => void
 
 type WorkerName = 'service' | 'main' | 'ui'
 

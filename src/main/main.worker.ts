@@ -14,6 +14,8 @@ const api: MainAPI = {
   ...apiCalls,
   podcast: Store.podcast,
   subscribe: Store.subscribe,
+  unsubscribe: Store.unsubscribe,
+  subscriptions: Store.subscriptions,
 }
 expose(api)
 

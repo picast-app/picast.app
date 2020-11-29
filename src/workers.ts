@@ -1,6 +1,7 @@
-import { wrap } from 'comlink'
+import { wrap, proxy } from 'comlink'
 import MainWorker from 'main/main.worker'
 import { ChannelManager, msg } from 'utils/msgChannel'
+import createSub from 'utils/subscription'
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')
 
@@ -30,3 +31,25 @@ export const channels = new ChannelManager('ui')
     [port2]
   )
 }
+
+export const subscriptionSub = createSub<string[]>()
+
+main
+  .subscriptions(
+    proxy(({ added, removed }) => {
+      if (removed?.length)
+        subscriptionSub.setState(
+          subscriptionSub.state.filter(id => !removed.includes(id))
+        )
+      if (
+        added?.length &&
+        added.some(id => !subscriptionSub.state.includes(id))
+      )
+        subscriptionSub.setState(
+          Array.from(new Set([...subscriptionSub.state, ...added]))
+        )
+    })
+  )
+  .then(subscriptions => {
+    subscriptionSub.setState(subscriptions)
+  })

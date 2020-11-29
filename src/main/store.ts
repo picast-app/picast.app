@@ -33,6 +33,7 @@ export abstract class Store {
     { podcast: string; limit: number; state: string[]; channel: WorkerName }
   > = {}
   public static channels: ChannelManager<'main'>
+  private static subscriptionListeners: SubscriptionListener[] = []
 
   private static async __init() {
     const db = await dbProm
@@ -48,28 +49,33 @@ export abstract class Store {
     if (Store._subscriptions.includes(id)) return
     Store._subscriptions.push(id)
     const podcast = await Store.podcast(id)
+    console.log(podcast)
     if (!podcast) return
     await db.put('subscriptions', {
       ...pickKeys(podcast, ['id', 'title', 'author', 'artwork', 'description']),
       subscriptionDate: new Date(),
       episodeCount: (podcast as any).episodes?.pageInfo?.total,
     })
-    const episodes = ((podcast as any).episodes
-      .edges as T.PodcastPage_podcast_episodes_edges[]).map(({ node }) => node)
+    const episodes = Store._episodes[id]?.episodes ?? []
 
     const tx = db.transaction('episodes', 'readwrite')
     await Promise.all([
-      ...episodes.map(({ id: eId, title, file, publishDate }) =>
-        tx.store.put({
-          title,
-          file,
-          date: new Date(publishDate ?? 0).getTime(),
-          id: eId,
-          podcast: id,
-        })
-      ),
+      ...episodes.map(episode => tx.store.put({ ...episode, podcast: id })),
       tx.done,
     ] as Promise<any>[])
+
+    Store.subscriptionListeners.forEach(cb => cb({ added: [id] }))
+  }
+
+  public static async unsubscribe(id: string) {
+    const db = await Store._init
+    if (!Store._subscriptions.includes(id)) return
+    const episodes = await db.getAllKeysFromIndex('episodes', 'podcast', id)
+    const tx = db.transaction('episodes', 'readwrite')
+    await Promise.all([...episodes.map(id => tx.store.delete(id)), tx.done])
+    await db.delete('subscriptions', id)
+    Store._subscriptions = Store._subscriptions.filter(v => v !== id)
+    Store.subscriptionListeners.forEach(cb => cb({ removed: [id] }))
   }
 
   public static async podcast(id: string): Promise<any> {
@@ -90,6 +96,14 @@ export abstract class Store {
     Store.addEpisodesGQL(podcast.id, podcast.episodes)
     Store.fetchRemainingEpisodes(podcast.id)
     return podcast
+  }
+
+  public static async subscriptions(
+    cb: SubscriptionListener
+  ): Promise<string[]> {
+    await Store._init
+    Store.subscriptionListeners.push(cb)
+    return Store._subscriptions
   }
 
   public static addFeedSub(
