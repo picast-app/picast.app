@@ -81,7 +81,7 @@ export abstract class Store {
       ws.send({ type: 'SUB_EPISODES', podcast: podcast.id })
     Store._podcasts[id] = podcast
     if (!podcast.episodes) return podcast
-    Store.addEpisodes(podcast.id, podcast.episodes)
+    Store.addEpisodesGQL(podcast.id, podcast.episodes)
     Store.fetchRemainingEpisodes(podcast.id)
     return podcast
   }
@@ -114,7 +114,7 @@ export abstract class Store {
     if (process.env.NODE_ENV === 'development') return
     const cursor = Store._episodes[id].cursor
     if (!cursor) return
-    Store.addEpisodes(id, await api.episodes(id, 200, cursor))
+    Store.addEpisodesGQL(id, await api.episodes(id, 200, cursor))
     Store.fetchRemainingEpisodes(id)
   }
 
@@ -132,7 +132,7 @@ export abstract class Store {
     )
   }
 
-  private static addEpisodes(
+  private static addEpisodesGQL(
     podcastId: string,
     con?: T.PodcastPage_podcast_episodes
   ) {
@@ -147,9 +147,27 @@ export abstract class Store {
       (a, b) => b.published - a.published
     )
 
-    if (!con.pageInfo.hasPreviousPage) delete Store._episodes[podcastId].cursor
-    else
-      Store._episodes[podcastId].cursor = con.edges[con.edges.length - 1].cursor
+    if (con.pageInfo) {
+      if (!con.pageInfo.hasPreviousPage)
+        delete Store._episodes[podcastId].cursor
+      else
+        Store._episodes[podcastId].cursor =
+          con.edges[con.edges.length - 1].cursor
+    }
+
+    Object.entries(Store.feedSubs)
+      .filter(([, { podcast }]) => podcast === podcastId)
+      .forEach(([id]) => Store.subPush(id))
+  }
+
+  public static addEpisodes(podcastId: string, episodes: EpisodeMin[]) {
+    if (!(podcastId in Store._episodes))
+      Store._episodes[podcastId] = { episodes: [] }
+
+    Store._episodes[podcastId].episodes.push(...episodes)
+    Store._episodes[podcastId].episodes.sort(
+      (a, b) => b.published - a.published
+    )
 
     Object.entries(Store.feedSubs)
       .filter(([, { podcast }]) => podcast === podcastId)
@@ -172,3 +190,9 @@ export abstract class Store {
     sub.state = episodes.map(({ id }) => id)
   }
 }
+
+ws.addListener(msg => {
+  if (msg.type !== 'EPISODE_ADDED') return
+  console.log(msg)
+  Store.addEpisodes(msg.podcast, msg.episodes)
+})
