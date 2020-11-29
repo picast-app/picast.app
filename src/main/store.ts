@@ -184,6 +184,10 @@ export abstract class Store {
     if (!(podcastId in Store._episodes))
       Store._episodes[podcastId] = { episodes: [] }
 
+    episodes = episodes.filter(
+      ({ id }) => !Store._episodes[podcastId].episodes.find(e => e.id === id)
+    )
+
     Store._episodes[podcastId].episodes.push(...episodes)
     Store._episodes[podcastId].episodes.sort(
       (a, b) => b.published - a.published

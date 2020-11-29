@@ -8,8 +8,6 @@ import { useSubscriptions } from 'utils/hooks'
 export default function Library() {
   const subs = useSubscriptions()
 
-  console.log(subs)
-
   return (
     <Screen padd>
       <Appbar title="Podcasts" scrollOut />
