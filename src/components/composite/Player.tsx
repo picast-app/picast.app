@@ -81,7 +81,7 @@ export function Player() {
         />
       </S.PlayControls>
       <S.Main>
-        <ProgressBar />
+        <ProgressBar barOnly={!isDesktop} />
       </S.Main>
     </Surface>
   )
@@ -99,6 +99,10 @@ const S = {
 
     @media ${desktop} {
       bottom: 0;
+    }
+
+    @media ${mobile} {
+      z-index: 9002;
     }
   `,
 
@@ -152,6 +156,12 @@ const S = {
   Main: styled.div`
     width: calc(100% - 2rem);
     display: flex;
+
+    @media ${mobile} {
+      position: absolute;
+      bottom: -3px;
+      width: 100%;
+    }
   `,
 }
 

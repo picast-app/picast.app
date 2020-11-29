@@ -39,6 +39,7 @@ const S = {
     color: var(--cl-primary);
     border: 2px solid var(--cl-primary);
     border-radius: 1rem;
+    -webkit-tap-highlight-color: transparent;
 
     &[data-style~='icon-wrap'] {
       background-color: transparent;
