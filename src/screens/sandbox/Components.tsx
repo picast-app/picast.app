@@ -57,7 +57,6 @@ export default function Components() {
                 detail: {
                   text: 'There is an update available.',
                   action: 'reload',
-                  timeout: 8,
                 },
               })
             )

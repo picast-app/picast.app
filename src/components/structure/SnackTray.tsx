@@ -43,24 +43,55 @@ export function SnackTray() {
   }, [queue, snack])
 
   useEffect(() => {
-    if (!snack?.timeout) return
-    const toId = setTimeout(() => {
-      const remove = () => setSnack(undefined)
-      const el = ref.current?.firstChild as HTMLElement
-      if (!el) return remove()
-      animateTo(
-        el,
-        { transform: 'scale(0.7)', opacity: 0 },
-        { duration: 100, easing: 'ease-in' },
-        remove
-      )
-    }, snack.timeout)
-    return () => clearTimeout(toId)
+    const container = ref.current?.firstChild as HTMLDivElement
+    const clear: (() => void)[] = []
+    const clearAll = () => {
+      clear.forEach(func => func())
+    }
+    if (container) {
+      container.scrollBy({ left: window.innerWidth })
+      const onScroll = (e: any) => {
+        const target: HTMLElement = e.target
+        if (
+          target.scrollLeft === 0 ||
+          target.scrollLeft + target.offsetWidth === target.scrollWidth
+        ) {
+          clearAll()
+          setSnack(undefined)
+        }
+      }
+      container.addEventListener('scroll', onScroll)
+      clear.push(() => container?.removeEventListener('scroll', onScroll))
+    }
+    if (snack?.timeout) {
+      const toId = setTimeout(() => {
+        const remove = () => setSnack(undefined)
+        const el = Array.from(
+          ref.current?.firstChild?.childNodes as any
+        )[1] as HTMLElement
+        console.log(el)
+        if (!el) return remove()
+        animateTo(
+          el,
+          { transform: 'scale(0.7)', opacity: 0 },
+          { duration: 100, easing: 'ease-in' },
+          remove
+        )
+      }, snack.timeout)
+      clear.push(() => clearTimeout(toId))
+    }
+    return clearAll
   }, [snack])
 
   return (
     <S.Container ref={ref}>
-      {snack && <SnackBar text={snack.text} action={snack.action} />}
+      {snack && (
+        <S.Slider>
+          <S.ScrollStop />
+          <SnackBar text={snack.text} action={snack.action} />
+          <S.ScrollStop />
+        </S.Slider>
+      )}
     </S.Container>
   )
 }
@@ -85,5 +116,32 @@ const S = {
       right: 2rem;
       --bottom: 2rem;
     }
+  `,
+
+  Slider: styled.div`
+    width: 100vw;
+    overflow-x: auto;
+    display: flex;
+    scroll-snap-type: x mandatory;
+    scroll-snap-stop: always;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    @media ${desktop} {
+      display: contents;
+    }
+
+    & > * {
+      scroll-snap-align: center;
+      flex-shrink: 0;
+      scroll-snap-stop: always;
+    }
+  `,
+
+  ScrollStop: styled.div`
+    display: block;
+    width: 100vw;
   `,
 }
