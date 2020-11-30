@@ -8,7 +8,6 @@ import { useTrack, usePlayState, trackSub } from 'utils/player'
 import { useTheme, useMatchMedia } from 'utils/hooks'
 import ProgressBar from './player/ProgressBar'
 import Fullscreen from './player/Fullscreen'
-import { easeOutQuart as ease } from 'utils/ease'
 
 const audio = document.querySelector('#player') as HTMLAudioElement
 audio.volume = 0.4
@@ -80,10 +79,12 @@ export function Player() {
       el={4}
       alt={isDesktop && theme === 'light'}
       onClick={({ target, currentTarget }) => {
-        if (target !== currentTarget || tLast) return
+        console.log(target === currentTarget)
+        if (target !== currentTarget) return
         setFullscreen(true)
         transition('in')
       }}
+      id="player-container"
     >
       <S.PlayControls>
         <Icon
@@ -98,7 +99,6 @@ export function Player() {
       <Fullscreen
         hidden={isDesktop || !fullscreen}
         onHide={() => {
-          if (tLast) return
           transition('out')
           setFullscreen(false)
         }}
@@ -107,27 +107,60 @@ export function Player() {
   )
 }
 
-let state = 0
-let tLast: number | undefined
-const length = 500
-
 function transition(dir: 'in' | 'out') {
-  const now = performance.now()
-  if (!tLast) tLast = now
-  const td = now - tLast
-  tLast = now
-  if (dir === 'in' ? state >= 1 : state <= 0) {
-    tLast = undefined
-    return
+  const player = document.getElementById('player-container')
+  const fullscreen = document.getElementById('fullscreen-player')
+  const mainnav = document.getElementById('mainnav')
+
+  if (!player || !mainnav || !fullscreen) return
+
+  const duration = 250
+  const opts = { duration, easing: 'ease-out' }
+
+  if (dir === 'in') {
+    mainnav.style.zIndex = '13000'
+    fullscreen.style.pointerEvents = 'all'
+    ;(fullscreen.parentElement as HTMLElement).dataset.state = 'visible'
+    animateTo(
+      player,
+      { transform: `translateY(-${player.getBoundingClientRect().top}px)` },
+      opts
+    )
+    animateTo(fullscreen, { transform: 'translateY(0)' }, opts)
+    animateTo(fullscreen, { opacity: 1 }, { duration: duration / 4 })
+    animateTo(mainnav, { transform: 'translateY(100%)' }, opts)
+  } else {
+    fullscreen.style.pointerEvents = 'none'
+    animateTo(player, { transform: 'translateY(0)' }, opts)
+    animateTo(fullscreen, { transform: 'translateY(var(--bar-height))' }, opts)
+    animateTo(
+      fullscreen,
+      { opacity: 0 },
+      { duration: duration / 4, delay: (duration / 4) * 3 }
+    )
+    animateTo(mainnav, { transform: 'translateY(0)' }, opts, () => {
+      mainnav.style.zIndex = '9001'
+      ;(fullscreen.parentElement as HTMLElement).dataset.state = 'hidden'
+    })
   }
-  if (dir === 'in') state += td / length
-  else state -= td / length
-  const pos = dir === 'in' ? ease(state) : 1 - ease(1 - state)
-  document.documentElement.style.setProperty(
-    '--player-in',
-    Math.min(Math.max(pos, 0), 1).toString()
-  )
-  requestAnimationFrame(() => transition(dir))
+}
+
+function animateTo(
+  element: HTMLElement,
+  keyframes: Parameters<Animatable['animate']>[0],
+  options: Parameters<Animatable['animate']>[1],
+  cb?: () => void
+) {
+  const anim = element.animate(keyframes, {
+    ...(typeof options === 'object' && options),
+    fill: 'both',
+  })
+  anim.addEventListener('finish', () => {
+    const a = anim as any
+    a.commitStyles?.()
+    a.cancel()
+    cb?.()
+  })
 }
 
 const S = {
@@ -139,10 +172,7 @@ const S = {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    transform: translateY(
-      calc(var(--player-in) * (-100vh + var(--bar-height) * 2))
-    );
-    will-change: transform;
+    transform: translateY(0);
 
     @media ${desktop} {
       bottom: 0;

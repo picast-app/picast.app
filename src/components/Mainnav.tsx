@@ -18,6 +18,7 @@ export default function Mainnav() {
       sc={S.Navbar}
       el={isDesktop && theme === 'light' ? 0 : 4}
       alt={isDesktop && theme === 'light'}
+      id="mainnav"
     >
       <S.SearchWrap>
         <Search visual />
@@ -89,10 +90,6 @@ const S = {
       ${PlayerSC} ~ & {
         box-shadow: unset;
       }
-
-      transform: translateY(
-        calc(var(--player-in) * (100vh + var(--bar-height)))
-      );
     }
   `,
 

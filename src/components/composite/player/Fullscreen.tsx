@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 import { Icon } from 'components/atoms'
 
@@ -8,17 +8,9 @@ interface Props {
 }
 
 export default function Fullscreen({ hidden, onHide }: Props) {
-  const [visible, setVisible] = useState(hidden)
-
-  useEffect(() => {
-    if (!hidden) setVisible(true)
-    else setTimeout(() => setVisible(false), 600)
-  }, [hidden])
-
-  if (!visible) return null
   return (
     <S.Fullscreen>
-      <S.Main>
+      <S.Main id="fullscreen-player">
         <Icon icon="arrow_down" onClick={onHide} />
       </S.Main>
     </S.Fullscreen>
@@ -33,14 +25,15 @@ const S = {
     width: 100vw;
     height: 100vh;
     z-index: 12000;
+    pointer-events: none;
 
-    &::before {
+    &[data-state='visible']::before {
       content: '';
       background-color: var(--cl-background);
       position: absolute;
-      top: calc(var(--bar-height) * (1 - var(--player-in)));
+      top: var(--bar-height);
+      height: 100%;
       left: 0;
-      height: calc(var(--player-in) * 100vh);
       width: 100vw;
       z-index: -1;
     }
@@ -48,8 +41,9 @@ const S = {
 
   Main: styled.div`
     background-color: var(--cl-background);
-    opacity: calc(var(--player-in) * 3);
+    opacity: 0;
     width: 100%;
     height: 100%;
+    transform: translateY(var(--bar-height));
   `,
 }

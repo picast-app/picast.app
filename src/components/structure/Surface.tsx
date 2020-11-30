@@ -10,6 +10,7 @@ type Props = {
   el?: number
   alt?: boolean
   onClick?(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void
+  id?: string
 }
 
 export const Surface: React.FC<Props> = ({
