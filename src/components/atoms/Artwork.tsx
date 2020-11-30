@@ -4,9 +4,10 @@ import styled from 'styled-components'
 type Props = {
   src?: string | null
   title?: string
+  onClick?: () => void
 }
 
-export function Artwork({ src, title = '' }: Props) {
+export function Artwork({ src, title = '', onClick }: Props) {
   return (
     <S.Artwork
       src={
@@ -16,6 +17,7 @@ export function Artwork({ src, title = '' }: Props) {
       alt={title}
       width={200}
       height={200}
+      onClick={onClick}
     />
   )
 }

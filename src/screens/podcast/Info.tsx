@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Icon, Artwork, Button } from 'components/atoms'
+import { ArtworkShowcase } from 'components/composite'
 import { lineClamp } from 'styles/mixin'
 import { desktop } from 'styles/responsive'
 import { useMatchMedia, useSubscriptions } from 'utils/hooks'
@@ -16,6 +17,7 @@ export default function Info({
   const [showDescription, setShowDescription] = useState(false)
   const isDesktop = useMatchMedia(desktop)
   const [subscriptions, subscribe, unsubscribe] = useSubscriptions()
+  const [showcaseArt, setShowcaseArt] = useState(false)
 
   if (!id) return null
 
@@ -46,10 +48,16 @@ export default function Info({
           <span>{author}</span>
           {isDesktop && <S.Description>{description}</S.Description>}
         </div>
-        <Artwork src={artwork as string} />
+        <Artwork src={artwork as string} onClick={() => setShowcaseArt(true)} />
       </S.Head>
       {!isDesktop && actions}
       {showDescription && <S.Description>{description}</S.Description>}
+      {showcaseArt && (
+        <ArtworkShowcase
+          src={artwork as string}
+          onClose={() => setShowcaseArt(false)}
+        />
+      )}
     </S.Info>
   )
 }
@@ -77,6 +85,7 @@ const S = {
       width: 7rem;
       border-radius: 0.5rem;
       margin-left: 1rem;
+      cursor: zoom-in;
     }
 
     span {
