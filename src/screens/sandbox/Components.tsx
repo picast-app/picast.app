@@ -48,14 +48,44 @@ export default function Components() {
         <Title h6>Title h6</Title>
         <span>some text</span>
       </section>
+
+      <section>
+        <button
+          onClick={() =>
+            window.dispatchEvent(
+              new CustomEvent<EchoSnackEvent['detail']>('echo_snack', {
+                detail: {
+                  text: 'There is an update available.',
+                  action: 'reload',
+                  timeout: 8,
+                },
+              })
+            )
+          }
+        >
+          snack
+        </button>
+      </section>
     </Screen>
   )
 }
 
 const S = {
   Page: styled.div`
+    & > *:first-child {
+      margin-top: 0;
+    }
+
     input {
       width: 100%;
+    }
+
+    section {
+      padding: 2rem 0;
+    }
+
+    section:first-of-type {
+      padding-top: 0;
     }
   `,
 

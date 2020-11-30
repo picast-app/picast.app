@@ -3,7 +3,9 @@
     [
       "stylelint-processor-styled-components",
       {
-        "ignoreFiles": ["**/*.{css,scss}"]
+        "ignoreFiles": [
+          "**/*.{css,scss}"
+        ]
       }
     ]
   ],
@@ -23,10 +25,13 @@
     "selector-type-no-unknown": null,
     "declaration-block-semicolon-newline-after": null,
     "rule-empty-line-before": null,
+    "declaration-empty-line-before": null,
     "length-zero-no-unit": [
       true,
       {
-        "ignore": ["custom-properties"]
+        "ignore": [
+          "custom-properties"
+        ]
       }
     ]
   }

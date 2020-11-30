@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { forwardRef } from 'react'
 import styled, { AnyStyledComponent } from 'styled-components'
 import * as cl from 'utils/css/color'
 import { shadow } from 'styles/shadow'
@@ -11,15 +11,12 @@ type Props = {
   alt?: boolean
   onClick?(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void
   id?: string
-}
+} & Record<string, any>
 
-export const Surface: React.FC<Props> = ({
-  sc,
-  el = 0,
-  alt,
-  children,
-  ...props
-}) => {
+const _Surface: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (
+  { sc, el = 0, alt, children, ...props },
+  ref
+) => {
   const theme = useTheme()
   return (
     <S.Surface
@@ -42,11 +39,14 @@ export const Surface: React.FC<Props> = ({
       }
       {...(alt && { 'data-style': 'alt' })}
       {...props}
+      ref={ref}
     >
       {children}
     </S.Surface>
   )
 }
+
+export const Surface = forwardRef<HTMLDivElement, Props>(_Surface)
 
 const S = {
   Surface: styled.div<{ border?: string; el: number; color: string }>`
@@ -59,6 +59,7 @@ const S = {
       border: none;
 
       --cl-text: var(--cl-text-alt);
+      --cl-text-strong: var(--cl-text-alt-strong);
       --cl-surface: var(--cl-surface-alt);
     }
   `,

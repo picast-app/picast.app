@@ -8,6 +8,7 @@ import { useTrack, usePlayState, trackSub } from 'utils/player'
 import { useTheme, useMatchMedia } from 'utils/hooks'
 import ProgressBar from './player/ProgressBar'
 import Fullscreen from './player/Fullscreen'
+import { animateTo } from 'utils/animate'
 
 const audio = document.querySelector('#player') as HTMLAudioElement
 audio.volume = 0.4
@@ -72,7 +73,7 @@ export function Player() {
       window.removeEventListener('echo_pause', onPause)
       window.removeEventListener('echo_jump', onJump)
     }
-  }, [setTrack])
+  }, [setTrack, setPlayState])
 
   if (!track) return <div />
   return (
@@ -80,7 +81,7 @@ export function Player() {
       sc={S.Player}
       el={4}
       alt={isDesktop && theme === 'light'}
-      onClick={({ target, currentTarget }) => {
+      onClick={({ target, currentTarget }: any) => {
         if (target !== currentTarget) return
         setFullscreen(true)
         transition('in')
@@ -144,24 +145,6 @@ function transition(dir: 'in' | 'out') {
       ;(fullscreen.parentElement as HTMLElement).dataset.state = 'hidden'
     })
   }
-}
-
-function animateTo(
-  element: HTMLElement,
-  keyframes: Parameters<Animatable['animate']>[0],
-  options: Parameters<Animatable['animate']>[1],
-  cb?: () => void
-) {
-  const anim = element.animate(keyframes, {
-    ...(typeof options === 'object' && options),
-    fill: 'both',
-  })
-  anim.addEventListener('finish', () => {
-    const a = anim as any
-    a.commitStyles?.()
-    a.cancel()
-    cb?.()
-  })
 }
 
 const S = {
