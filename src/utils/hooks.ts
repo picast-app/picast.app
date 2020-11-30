@@ -305,7 +305,24 @@ export function useEpisodes(id: string) {
   return episodes
 }
 
-export function useSubscriptions() {
-  const [subs] = useSubscription(subscriptionSub)
-  return subs
+export function useSubscriptions(): [
+  subscriptions: string[],
+  subscribe: (v: string) => void,
+  unsubscribe: (v: string) => void
+] {
+  const [subs, set] = useSubscription(subscriptionSub)
+
+  function subscribe(id: string) {
+    if (subs.includes(id)) return
+    set([...subs, id])
+    main.subscribe(id)
+  }
+
+  function unsubscribe(id: string) {
+    if (!subs.includes(id)) return
+    set(subs.filter(v => v !== id))
+    main.unsubscribe(id)
+  }
+
+  return [subs, subscribe, unsubscribe]
 }

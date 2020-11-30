@@ -50,10 +50,12 @@ export function Player() {
   useEffect(() => {
     const onPlay = async (e: Event) => {
       const { track = audio.src } = (e as EchoPlayEvent).detail
+      setPlayState('playing')
       await play(track)
     }
 
     const onPause = () => {
+      setPlayState('paused')
       audio.pause()
     }
 
@@ -79,7 +81,6 @@ export function Player() {
       el={4}
       alt={isDesktop && theme === 'light'}
       onClick={({ target, currentTarget }) => {
-        console.log(target === currentTarget)
         if (target !== currentTarget) return
         setFullscreen(true)
         transition('in')

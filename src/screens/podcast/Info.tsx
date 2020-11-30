@@ -5,7 +5,6 @@ import { lineClamp } from 'styles/mixin'
 import { desktop } from 'styles/responsive'
 import { useMatchMedia, useSubscriptions } from 'utils/hooks'
 import type * as T from 'gql/types'
-import { main } from 'workers'
 
 export default function Info({
   id,
@@ -16,18 +15,18 @@ export default function Info({
 }: Partial<T.PodcastPage_podcast>) {
   const [showDescription, setShowDescription] = useState(false)
   const isDesktop = useMatchMedia(desktop)
-  const subscriptions = useSubscriptions()
+  const [subscriptions, subscribe, unsubscribe] = useSubscriptions()
 
   if (!id) return null
 
   const actions = (
     <S.Actions>
       {subscriptions?.includes(id) ? (
-        <Button onClick={() => main.unsubscribe(id)} text>
+        <Button onClick={() => unsubscribe(id)} text>
           subscribed
         </Button>
       ) : (
-        <Button onClick={() => main.subscribe(id)}>Subscribe</Button>
+        <Button onClick={() => subscribe(id)}>Subscribe</Button>
       )}
       <Icon
         icon={`expand_${showDescription ? 'less' : 'more'}` as any}

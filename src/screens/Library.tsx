@@ -6,7 +6,7 @@ import { Screen } from 'components/structure'
 import { useSubscriptions } from 'utils/hooks'
 
 export default function Library() {
-  const subs = useSubscriptions()
+  const [subs] = useSubscriptions()
 
   return (
     <Screen padd>

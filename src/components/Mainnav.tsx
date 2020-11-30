@@ -55,6 +55,7 @@ const S = {
     z-index: 1000;
     display: flex;
     flex-direction: column;
+    will-change: transform;
 
     ul {
       list-style: none;
