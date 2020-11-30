@@ -7,6 +7,10 @@ import App from './App'
 import './workers'
 import 'styles'
 
+window.addEventListener('echo_reload', () => {
+  location.reload()
+})
+
 ReactDOM.render(
   <React.StrictMode>
     <Router history={history}>

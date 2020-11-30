@@ -11,7 +11,7 @@ type Props = {
   onAction?(): void
 }
 
-export function SnackBar({ text, action }: Props) {
+export function SnackBar({ text, action, onAction }: Props) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -26,7 +26,11 @@ export function SnackBar({ text, action }: Props) {
   return (
     <Surface sc={S.Bar} alt role={action ? 'alertdialog' : 'alert'} ref={ref}>
       <span>{text}</span>
-      {action && <Button text>{action}</Button>}
+      {action && (
+        <Button text onClick={onAction}>
+          {action}
+        </Button>
+      )}
     </Surface>
   )
 }

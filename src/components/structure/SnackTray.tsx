@@ -8,6 +8,7 @@ type Snack = {
   text: string
   action?: string
   timeout?: number
+  actionEvent?: string
 }
 
 type QueueAction = { type: 'push'; snack: Snack } | { type: 'shift' }
@@ -23,12 +24,12 @@ export function SnackTray() {
 
   useEffect(() => {
     const onMsg: any = (e: CustomEvent<EchoSnackEvent['detail']>) => {
-      const { text, action, ...snack } = e.detail
+      const { text, action, actionEvent, ...snack } = e.detail
       let timeout: number | undefined = 4000
       if (typeof snack.timeout === 'number')
         timeout = Math.min(Math.max(snack.timeout, 4), 10) * 1000
       if (snack.timeout === 'never') timeout = undefined
-      set({ type: 'push', snack: { text, action, timeout } })
+      set({ type: 'push', snack: { text, action, actionEvent, timeout } })
     }
 
     window.addEventListener('echo_snack', onMsg)
@@ -69,7 +70,6 @@ export function SnackTray() {
         const el = Array.from(
           ref.current?.firstChild?.childNodes as any
         )[1] as HTMLElement
-        console.log(el)
         if (!el) return remove()
         animateTo(
           el,
@@ -88,7 +88,14 @@ export function SnackTray() {
       {snack && (
         <S.Slider>
           <S.ScrollStop />
-          <SnackBar text={snack.text} action={snack.action} />
+          <SnackBar
+            text={snack.text}
+            action={snack.action}
+            onAction={() => {
+              if (!snack.actionEvent) return
+              window.dispatchEvent(new CustomEvent(snack.actionEvent))
+            }}
+          />
           <S.ScrollStop />
         </S.Slider>
       )}

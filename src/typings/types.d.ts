@@ -11,6 +11,7 @@ type EchoSnackEvent = CustomEvent<{
   text: string
   action?: string
   timeout?: number | 'never'
+  actionEvent?: string
 }>
 
 type EpisodeMin = {

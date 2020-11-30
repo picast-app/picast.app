@@ -53,3 +53,35 @@ main
   .then(subscriptions => {
     subscriptionSub.setState(subscriptions)
   })
+
+const interactions = ['mousewheel', 'keydown', 'pointerdown']
+
+let hasInteracted = false
+
+const onInteract = () => {
+  hasInteracted = true
+  interactions.forEach(name => window.removeEventListener(name, onInteract))
+}
+
+interactions.forEach(name => window.addEventListener(name, onInteract))
+
+navigator.serviceWorker.onmessage = e => {
+  if (e.data.type === 'UPDATE_AVAILABLE') {
+    if (
+      !hasInteracted &&
+      Date.now() - performance.timing.navigationStart <= 2000
+    )
+      location.reload()
+    else
+      window.dispatchEvent(
+        new CustomEvent<EchoSnackEvent['detail']>('echo_snack', {
+          detail: {
+            text: 'There is an update available.',
+            action: 'reload',
+            actionEvent: 'echo_reload',
+            timeout: 8,
+          },
+        })
+      )
+  }
+}

@@ -57,6 +57,7 @@ export default function Components() {
                 detail: {
                   text: 'There is an update available.',
                   action: 'reload',
+                  actionEvent: 'echo_reload',
                 },
               })
             )
