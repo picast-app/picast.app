@@ -3,11 +3,10 @@ import styled from 'styled-components'
 import { Icon } from 'components/atoms'
 
 interface Props {
-  hidden?: boolean
   onHide(): void
 }
 
-export default function Fullscreen({ hidden, onHide }: Props) {
+export default function Fullscreen({ onHide }: Props) {
   return (
     <S.Fullscreen>
       <S.Main id="fullscreen-player">

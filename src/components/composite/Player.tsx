@@ -5,7 +5,7 @@ import { Surface } from 'components/structure'
 import { bar, center } from 'styles/mixin'
 import { desktop, mobile } from 'styles/responsive'
 import { useTrack, usePlayState, trackSub } from 'utils/player'
-import { useTheme, useMatchMedia } from 'utils/hooks'
+import { useTheme, useMatchMedia, useHistory } from 'utils/hooks'
 import ProgressBar from './player/ProgressBar'
 import Fullscreen from './player/Fullscreen'
 import { animateTo } from 'utils/animate'
@@ -27,7 +27,13 @@ export function Player() {
   const [playState, setPlayState] = usePlayState()
   const theme = useTheme()
   const isDesktop = useMatchMedia(desktop)
-  const [fullscreen, setFullscreen] = useState(false)
+  const [fsState, setFsState] = useState(false)
+  const [_fullscreen, setFullscreen] = useState(
+    new URLSearchParams(location.search).get('view') === 'player'
+  )
+  const history = useHistory()
+
+  const fullscreen = !isDesktop && _fullscreen
 
   useEffect(() => {
     if (!audio) return
@@ -75,6 +81,22 @@ export function Player() {
     }
   }, [setTrack, setPlayState])
 
+  // encode fullscreen state in url
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    if ((params.get('view') === 'player') === fsState) return
+    if (fsState) params.set('view', 'player')
+    else params.delete('view')
+    history.push(`${location.pathname}?${params.toString()}`.replace(/\?$/, ''))
+  }, [fsState, history])
+
+  useEffect(() => {
+    if (fsState === fullscreen) return
+    setFsState(fullscreen)
+    if (fullscreen) transition('in')
+    else transition('out')
+  }, [fullscreen, fsState])
+
   if (!track) return <div />
   return (
     <Surface
@@ -82,9 +104,9 @@ export function Player() {
       el={4}
       alt={isDesktop && theme === 'light'}
       onClick={({ target, currentTarget }: any) => {
+        if (isDesktop) return
         if (target !== currentTarget) return
         setFullscreen(true)
-        transition('in')
       }}
       id="player-container"
     >
@@ -99,9 +121,7 @@ export function Player() {
         <ProgressBar barOnly={!isDesktop} />
       </S.Main>
       <Fullscreen
-        hidden={isDesktop || !fullscreen}
         onHide={() => {
-          transition('out')
           setFullscreen(false)
         }}
       />
@@ -113,6 +133,8 @@ function transition(dir: 'in' | 'out') {
   const player = document.getElementById('player-container')
   const fullscreen = document.getElementById('fullscreen-player')
   const mainnav = document.getElementById('mainnav')
+
+  console.log(dir, player, mainnav, fullscreen)
 
   if (!player || !mainnav || !fullscreen) return
 
