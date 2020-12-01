@@ -9,6 +9,7 @@
   --cl-text-disabled: #00000060;
   --cl-border: #0002;
   --cl-primary: #d32f2f;
+  --cl-icon: var(--cl-text-strong);
 }
 
 @media (prefers-color-scheme: dark) {

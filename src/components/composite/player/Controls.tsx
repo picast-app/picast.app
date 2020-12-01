@@ -4,17 +4,20 @@ import { Icon } from 'components/atoms'
 import { usePlayState, togglePlay } from 'utils/player'
 import { center } from 'styles/mixin'
 import { desktop, mobile } from 'styles/responsive'
+import Skip from './SkipControl'
 
 export default function PlayControls() {
   const playState = usePlayState()
 
   return (
     <S.PlayControls>
+      <Skip ms={-15000} />
       <Icon
         icon={playState === 'paused' ? 'play' : 'pause'}
         label={playState === 'paused' ? 'play' : 'pause'}
         onClick={togglePlay}
       />
+      <Skip ms={30000} />
     </S.PlayControls>
   )
 }
@@ -22,26 +25,27 @@ export default function PlayControls() {
 const S = {
   PlayControls: styled.div`
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
     position: fixed;
     z-index: 9000;
 
     --pb-size: 2.5rem;
 
-    button[data-style~='icon-wrap'] {
-      background-color: var(--cl-text);
+    & > button[data-style~='icon-wrap'] {
       width: var(--pb-size);
       height: var(--pb-size);
       border-radius: 50%;
       position: relative;
-    }
+      margin: 0 1rem;
+      background-color: var(--cl-icon);
 
-    svg {
-      fill: var(--cl-surface);
-      width: 80%;
-      height: 80%;
-      ${center}
+      svg {
+        width: 80%;
+        height: 80%;
+        ${center}
+        --cl-icon: var(--cl-surface);
+      }
     }
 
     @media ${desktop} {
@@ -55,10 +59,10 @@ const S = {
 
       button[data-style~='icon-wrap'] {
         background-color: transparent;
-      }
 
-      svg {
-        fill: var(--cl-text);
+        svg {
+          --cl-icon: unset;
+        }
       }
     }
 

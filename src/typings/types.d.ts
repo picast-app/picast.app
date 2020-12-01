@@ -7,6 +7,7 @@ type RGBA_ = [number, number, number, number]
 
 type EchoPlayEvent = CustomEvent<{ episode?: EpisodeId }>
 type EchoJumpEvent = CustomEvent<{ location: number }>
+type EchoSkipEvent = CustomEvent<{ seconds: number }>
 type EchoSnackEvent = CustomEvent<{
   text: string
   action?: string

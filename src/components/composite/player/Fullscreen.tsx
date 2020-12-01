@@ -42,6 +42,7 @@ const S = {
     height: 100vh;
     z-index: 12000;
     pointer-events: none;
+    --cl-icon: #fff !important;
 
     &[data-state='visible']::before {
       content: '';
@@ -76,12 +77,17 @@ const S = {
       transform: unset;
       margin: 1rem 0;
 
-      svg {
-        fill: var(--cl-surface-alt);
+      button {
+        transform: scale(1.3);
       }
 
-      button {
+      & > button {
+        margin: 0 15vmin;
         transform: scale(1.7);
+
+        & > svg {
+          fill: var(--cl-surface-alt);
+        }
       }
     }
   `,

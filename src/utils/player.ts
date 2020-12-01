@@ -57,3 +57,6 @@ window.addEventListener('echo_pause', pause)
 window.addEventListener('echo_jump', (e: Event) => {
   audio.currentTime = (e as EchoJumpEvent).detail.location
 })
+window.addEventListener('echo_skip', (e: Event) => {
+  audio.currentTime += (e as EchoSkipEvent).detail.seconds
+})
