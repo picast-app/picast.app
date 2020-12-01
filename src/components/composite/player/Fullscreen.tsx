@@ -2,8 +2,8 @@ import React from 'react'
 import styled from 'styled-components'
 import { Icon, Artwork } from 'components/atoms'
 import Controls, { ControlsSC } from './Controls'
+import Progress, { ProgressSC } from './ProgressBar'
 import { usePlaying } from 'utils/player'
-import Progress from './ProgressBar'
 
 interface Props {
   onHide(): void
@@ -19,10 +19,15 @@ export default function Fullscreen({ onHide }: Props) {
         <S.Navigation>
           <Icon icon="arrow_down" onClick={onHide} label="minimize player" />
         </S.Navigation>
-        <Artwork src={podcast.artwork} />
-        <span>{episode.title}</span>
-        <Progress />
-        <Controls />
+        <S.Content>
+          <S.Info>
+            <Artwork src={podcast.artwork} />
+            <span>{episode.title}</span>
+            <span>{podcast.title}</span>
+          </S.Info>
+          <Progress />
+          <Controls />
+        </S.Content>
       </S.Main>
     </S.Fullscreen>
   )
@@ -69,11 +74,41 @@ const S = {
     ${ControlsSC} {
       position: static;
       transform: unset;
-      margin-bottom: 2rem;
+      margin: 1rem 0;
 
       svg {
         fill: var(--cl-surface-alt);
       }
+
+      button {
+        transform: scale(1.7);
+      }
+    }
+  `,
+
+  Content: styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    flex-grow: 1;
+  `,
+
+  Info: styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    img {
+      margin-bottom: 1rem;
+      width: 90vw;
+      max-width: 40vh;
+      border-radius: 0.5rem;
+    }
+
+    span:last-of-type {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-top: 0.7rem;
     }
   `,
 
@@ -96,5 +131,6 @@ const S = {
     display: flex;
     align-items: center;
     width: 100%;
+    justify-self: flex-start;
   `,
 }

@@ -267,3 +267,5 @@ const S = {
     }
   `,
 }
+
+export const ProgressSC = S.Wrap
