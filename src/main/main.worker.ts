@@ -17,6 +17,10 @@ const api: MainAPI = {
   subscribe: Store.subscribe,
   unsubscribe: Store.unsubscribe,
   subscriptions: Store.subscriptions,
+  playing: Store.playing as any,
+  setPlaying: Store.setPlaying,
+  progress: Store.progress as any,
+  setProgress: Store.setProgress,
 }
 expose(api)
 

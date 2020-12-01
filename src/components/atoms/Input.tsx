@@ -3,6 +3,7 @@ import ReactDOMServer from 'react-dom/server'
 import styled from 'styled-components'
 import type { StyledComponent } from 'styled-components'
 import { Icon } from './Icon'
+import * as cl from 'utils/css/color'
 
 type Props = {
   value?: string
@@ -29,10 +30,11 @@ export function Input({ value = '', onChange, blend, style, type }: Props) {
   )
 }
 
+const clearColor = cl.format.hex(cl.read('text'))
 const cancelSvg = encodeURIComponent(
   ReactDOMServer.renderToString(<Icon icon="cancel" />).replace(
     /class="[^"]*"/,
-    'fill="#fffc"'
+    `fill="${clearColor}"`
   )
 )
 

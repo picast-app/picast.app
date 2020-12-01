@@ -101,8 +101,38 @@ export abstract class Store {
   public static async episode([podcast, episode]: EpisodeId): Promise<
     EpisodeMin | undefined
   > {
-    await Store._init
-    return Store._episodes[podcast]?.episodes.find(({ id }) => id === episode)
+    const db = await Store._init
+    let ep = Store._episodes[podcast]?.episodes.find(({ id }) => id === episode)
+    if (ep) return ep
+    ep = await db.get('episodes', episode)
+    return ep
+  }
+
+  public static async playing() {
+    const db = await Store._init
+    return await db.get('meta', 'playing')
+  }
+
+  public static async setPlaying(episode: EpisodeId | null, progress = 0) {
+    const db = await Store._init
+    if (episode) {
+      await db.put('meta', episode, 'playing')
+      await Store.setProgress(progress ?? 0)
+    } else {
+      await db.delete('meta', 'playing')
+      await Store.setProgress(null)
+    }
+  }
+
+  public static async progress() {
+    const db = await Store._init
+    return db.get('meta', 'progress')
+  }
+
+  public static async setProgress(v: number | null) {
+    const db = await Store._init
+    if (typeof v === 'number') await db.put('meta', v, 'progress')
+    else await db.delete('meta', 'progress')
   }
 
   public static async subscriptions(

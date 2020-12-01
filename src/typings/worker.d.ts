@@ -6,6 +6,10 @@ type MainAPI = {
   subscribe(id: string): void
   unsubscribe(id: string): void
   subscriptions(cb: SubscriptionListener): Promise<string[]>
+  playing(): EpisodeId
+  setPlaying(episode: EpisodeId | null, progress?: number): void
+  progress(): number
+  setProgress(v: number): void
 }
 
 type SubscriptionListener = (v: {

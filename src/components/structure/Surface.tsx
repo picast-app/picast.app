@@ -60,7 +60,6 @@ const S = {
 
       --cl-text: var(--cl-text-alt);
       --cl-text-strong: var(--cl-text-alt-strong);
-      --cl-surface: var(--cl-surface-alt);
       --cl-icon: var(--cl-text-strong);
     }
   `,
