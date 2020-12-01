@@ -94,6 +94,7 @@ function transition(dir: 'in' | 'out') {
 
   if (dir === 'in') {
     mainnav.style.zIndex = '13000'
+    mainnav.style.pointerEvents = 'none'
     fullscreen.style.pointerEvents = 'all'
     ;(fullscreen.parentElement as HTMLElement).dataset.state = 'visible'
     animateTo(
@@ -115,6 +116,7 @@ function transition(dir: 'in' | 'out') {
     )
     animateTo(mainnav, { transform: 'translateY(0)' }, opts, () => {
       mainnav.style.zIndex = '9001'
+      mainnav.style.pointerEvents = ''
       ;(fullscreen.parentElement as HTMLElement).dataset.state = 'hidden'
     })
   }

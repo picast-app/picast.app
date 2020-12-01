@@ -39,6 +39,24 @@ export async function play(epId?: EpisodeId) {
   if (!audio.src) return
   if (playState.state !== 'playing') playState.setState('playing')
   await audio.play()
+
+  const mediaSession = navigator.mediaSession
+  if (!epId || !mediaSession) return
+
+  const [podcast, episode] = playing.state
+
+  mediaSession.metadata = new MediaMetadata({
+    title: episode.title,
+    artist: podcast.author ?? undefined,
+    album: podcast.title,
+    artwork: [{ src: podcast.artwork as string }],
+  })
+  mediaSession.setActionHandler('seekbackward', () => {
+    skip(-15)
+  })
+  mediaSession.setActionHandler('seekforward', () => {
+    skip(30)
+  })
 }
 
 export function pause() {
@@ -60,8 +78,14 @@ window.addEventListener('echo_pause', pause)
 window.addEventListener('echo_jump', (e: Event) => {
   audio.currentTime = (e as EchoJumpEvent).detail.location
 })
+
+function skip(dt: number) {
+  const time = Math.min(Math.max(audio.currentTime + dt, 0), audio.duration)
+  audio.currentTime = time
+}
+
 window.addEventListener('echo_skip', (e: Event) => {
-  audio.currentTime += (e as EchoSkipEvent).detail.seconds
+  skip((e as EchoSkipEvent).detail.seconds)
 })
 
 audio.addEventListener('ended', () => {
