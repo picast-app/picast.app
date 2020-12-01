@@ -17,7 +17,7 @@ export default function ProgressBar({ barOnly = false }: Props) {
   const [ctx, width, height] = useCanvas(canvasRef.current)
   const visibility = useVisibility()
   const visible = visibility === 'visible'
-  const [playState] = usePlayState()
+  const playState = usePlayState()
   const playing = playState === 'playing'
   const [seekKey, setSeekKey] = useState<any>()
   const [manualProg, setManualProg] = useState(false)

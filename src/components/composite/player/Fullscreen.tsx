@@ -1,16 +1,25 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Icon } from 'components/atoms'
+import { Icon, Artwork } from 'components/atoms'
+import Controls, { ControlsSC } from './Controls'
+import { usePlaying } from 'utils/player'
 
 interface Props {
   onHide(): void
 }
 
 export default function Fullscreen({ onHide }: Props) {
+  const [podcast, episode] = usePlaying()
+
   return (
     <S.Fullscreen>
       <S.Main id="fullscreen-player">
-        <Icon icon="arrow_down" onClick={onHide} />
+        <S.Navigation>
+          <Icon icon="arrow_down" onClick={onHide} label="minimize player" />
+        </S.Navigation>
+        <Artwork src={podcast.artwork} />
+        <span>{episode.title}</span>
+        <Controls />
       </S.Main>
     </S.Fullscreen>
   )
@@ -44,5 +53,22 @@ const S = {
     width: 100%;
     height: 100%;
     transform: translateY(var(--bar-height));
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+
+    ${ControlsSC} {
+      position: static;
+      transform: unset;
+      margin-bottom: 2rem;
+    }
+  `,
+
+  Navigation: styled.div`
+    display: flex;
+    align-items: center;
+    width: 100%;
   `,
 }

@@ -5,7 +5,7 @@ type ReactProps<
 type RGBA = number
 type RGBA_ = [number, number, number, number]
 
-type EchoPlayEvent = CustomEvent<{ track?: string }>
+type EchoPlayEvent = CustomEvent<{ episode?: EpisodeId }>
 type EchoJumpEvent = CustomEvent<{ location: number }>
 type EchoSnackEvent = CustomEvent<{
   text: string
@@ -14,9 +14,15 @@ type EchoSnackEvent = CustomEvent<{
   actionEvent?: string
 }>
 
+type EpisodeId = [podcast: string, episode: string]
+
 type EpisodeMin = {
   id: string
   title: string
   file: string
   published: number
+}
+
+type Podcast = import('gql/types').PodcastPage_podcast & {
+  episodeCount?: number
 }

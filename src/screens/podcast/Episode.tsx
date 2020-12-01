@@ -5,16 +5,19 @@ import { Button, Icon } from 'components/atoms'
 import { center } from 'styles/mixin'
 import { useTrackState } from 'utils/player'
 
-type Props = EpisodeMin & { index: number }
+type Props = EpisodeMin & { index: number; podcast: string }
 
-export default function Episode({ title, file, index }: Props) {
+export default function Episode({ id, title, file, index, podcast }: Props) {
   const state = useTrackState(file as string)
 
   return (
     <S.Episode style={{ top: `${index * 3.8}rem` }}>
       <article>
         <h1>{title}</h1>
-        <Button iconWrap="play" onClick={() => file && toggle(file, state)}>
+        <Button
+          iconWrap="play"
+          onClick={() => file && toggle([podcast, id], state)}
+        >
           <Icon icon={state === 'paused' ? 'play' : 'pause'} />
         </Button>
       </article>
@@ -22,13 +25,13 @@ export default function Episode({ title, file, index }: Props) {
   )
 }
 
-function toggle(file: string, state: 'playing' | 'paused') {
-  if (!file) return
+function toggle(episode: EpisodeId, state: 'playing' | 'paused') {
+  if (!episode) return
   if (state === 'playing') window.dispatchEvent(new CustomEvent('echo_pause'))
   else
     window.dispatchEvent(
       new CustomEvent<EchoPlayEvent['detail']>('echo_play', {
-        detail: { track: file },
+        detail: { episode },
       })
     )
 }

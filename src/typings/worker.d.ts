@@ -1,7 +1,6 @@
 type MainAPI = {
-  podcast(
-    id: string
-  ): Promise<GqlType<import('gql/types').PodcastPage['podcast']>>
+  podcast(id: string): Promise<Podcast>
+  episode(id: EpisodeId): Promise<EpisodeMin | undefined>
   feed(url: string): Promise<import('gql/types').FetchFeed['feed']>
   search(query: string): Promise<import('gql/types').SearchPodcast['search']>
   subscribe(id: string): void

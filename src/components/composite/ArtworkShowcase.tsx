@@ -58,10 +58,6 @@ const S = {
       height: var(--size);
       cursor: zoom-out;
       transform: scale(0.7);
-
-      @media ${mobile} {
-        --size: 100vmin;
-      }
     }
   `,
 

@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
 import { useSubscription } from 'utils/hooks'
 import createSub from 'utils/subscription'
+import { main } from 'workers'
 
 const audio = document.querySelector('#player') as HTMLAudioElement
 audio.volume = 0.4
@@ -18,11 +20,23 @@ export function useTrackState(episode: string): PlayState {
   return track === episode ? state : 'paused'
 }
 
-export async function play(track?: string) {
-  if (track && track !== audio.src) {
-    audio.src = track
-    trackSub.setState(track)
+const playing = createSub<[Podcast, EpisodeMin]>()
+export const usePlaying = () => useSubscription(playing)[0]
+
+export async function play(epId?: EpisodeId) {
+  if (epId) {
+    // const podcast = await main.podcast(epId[0])
+    // const episode = await main.episode(epId)
+    const [podcast, episode] = await Promise.all([
+      main.podcast(epId[0]),
+      main.episode(epId),
+    ])
+    if (!episode) throw Error("couldn't find episode " + epId.join(', '))
+    playing.setState([podcast, episode])
+    trackSub.setState(episode.file)
+    audio.src = episode.file
   }
+
   if (!audio.src) return
   if (playState.state !== 'playing') playState.setState('playing')
   await audio.play()
@@ -39,8 +53,8 @@ export async function togglePlay() {
 }
 
 window.addEventListener('echo_play', async (e: Event) => {
-  const { track = audio.src } = (e as EchoPlayEvent).detail
-  await play(track)
+  const { episode } = (e as EchoPlayEvent).detail
+  await play(episode)
 })
 window.addEventListener('echo_pause', pause)
 window.addEventListener('echo_jump', (e: Event) => {

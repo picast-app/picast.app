@@ -13,6 +13,7 @@ Store.channels = channels
 const api: MainAPI = {
   ...apiCalls,
   podcast: Store.podcast,
+  episode: Store.episode,
   subscribe: Store.subscribe,
   unsubscribe: Store.unsubscribe,
   subscriptions: Store.subscriptions,

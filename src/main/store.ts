@@ -98,6 +98,13 @@ export abstract class Store {
     return podcast
   }
 
+  public static async episode([podcast, episode]: EpisodeId): Promise<
+    EpisodeMin | undefined
+  > {
+    await Store._init
+    return Store._episodes[podcast]?.episodes.find(({ id }) => id === episode)
+  }
+
   public static async subscriptions(
     cb: SubscriptionListener
   ): Promise<string[]> {

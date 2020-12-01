@@ -67,3 +67,5 @@ const S = {
     }
   `,
 }
+
+export const ControlsSC = S.PlayControls
