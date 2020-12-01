@@ -24,11 +24,20 @@ export function Player() {
   // encode fullscreen state in url
   useEffect(() => {
     const params = new URLSearchParams(location.search)
+    if (!track) {
+      if (!fsState) return
+      params.delete('view')
+      setFsState(false)
+      history.push(
+        `${location.pathname}?${params.toString()}`.replace(/\?$/, '')
+      )
+      return
+    }
     if ((params.get('view') === 'player') === fsState) return
     if (fsState) params.set('view', 'player')
     else params.delete('view')
     history.push(`${location.pathname}?${params.toString()}`.replace(/\?$/, ''))
-  }, [fsState, history])
+  }, [fsState, history, track])
 
   // react to history
   useEffect(() => {
