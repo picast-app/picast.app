@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { useSubscription } from 'utils/hooks'
 import createSub from 'utils/subscription'
 import { main } from 'workers'
@@ -25,8 +24,6 @@ export const usePlaying = () => useSubscription(playing)[0]
 
 export async function play(epId?: EpisodeId) {
   if (epId) {
-    // const podcast = await main.podcast(epId[0])
-    // const episode = await main.episode(epId)
     const [podcast, episode] = await Promise.all([
       main.podcast(epId[0]),
       main.episode(epId),

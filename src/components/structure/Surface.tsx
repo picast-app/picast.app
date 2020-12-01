@@ -55,7 +55,7 @@ const S = {
       border ? `border: 1px solid ${border};` : shadow(el)}
 
     &[data-style~='alt'] {
-      background-color: var(--surface-alt);
+      background-color: var(--cl-surface-alt);
       border: none;
 
       --cl-text: var(--cl-text-alt);
