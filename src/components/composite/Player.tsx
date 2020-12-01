@@ -90,6 +90,16 @@ export function Player() {
     history.push(`${location.pathname}?${params.toString()}`.replace(/\?$/, ''))
   }, [fsState, history])
 
+  // react to history
+  useEffect(() => {
+    let last = new URLSearchParams(location.search).get('view') === 'player'
+    return history.listen(({ search }) => {
+      const qFull = new URLSearchParams(search).get('view') === 'player'
+      if (qFull !== last) setFullscreen(qFull)
+      last = qFull
+    })
+  }, [history])
+
   useEffect(() => {
     if (fsState === fullscreen) return
     setFsState(fullscreen)
@@ -133,8 +143,6 @@ function transition(dir: 'in' | 'out') {
   const player = document.getElementById('player-container')
   const fullscreen = document.getElementById('fullscreen-player')
   const mainnav = document.getElementById('mainnav')
-
-  console.log(dir, player, mainnav, fullscreen)
 
   if (!player || !mainnav || !fullscreen) return
 
