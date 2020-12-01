@@ -88,6 +88,14 @@ window.addEventListener('echo_skip', (e: Event) => {
   skip((e as EchoSkipEvent).detail.seconds)
 })
 
+audio.addEventListener('play', () => {
+  playState.setState('playing')
+})
+
+audio.addEventListener('pause', () => {
+  playState.setState('paused')
+})
+
 audio.addEventListener('ended', () => {
   playState.setState('paused')
   trackSub.setState(null)
