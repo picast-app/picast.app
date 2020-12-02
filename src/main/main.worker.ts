@@ -21,8 +21,13 @@ const api: MainAPI = {
   setPlaying: Store.setPlaying,
   progress: Store.progress as any,
   setProgress: Store.setProgress,
+  signIn,
 }
 expose(api)
+
+async function signIn(v: SignInCreds) {
+  await apiCalls.signInGoogle(v.accessToken)
+}
 
 self.addEventListener('message', async ({ data }) => {
   if (typeof data !== 'object') return

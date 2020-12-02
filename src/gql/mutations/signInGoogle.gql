@@ -1,0 +1,3 @@
+mutation SignInGoogle($accessToken: ID!) {
+  signInGoogle(accessToken: $accessToken)
+}

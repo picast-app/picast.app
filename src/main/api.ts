@@ -4,6 +4,7 @@ import podcastQuery from 'gql/queries/podcast.gql'
 import feedQuery from 'gql/queries/feed.gql'
 import searchQuery from 'gql/queries/search.gql'
 import episodeQuery from 'gql/queries/podcastEpisodes.gql'
+import googleSigninMutation from 'gql/mutations/signInGoogle.gql'
 
 export const client = new GraphQLClient(process.env.REACT_APP_API as string, {
   headers: {},
@@ -43,4 +44,11 @@ export async function episodes(id: string, limit: number, cursor: string) {
     last: limit,
   })
   return podcast?.episodes
+}
+
+export async function signInGoogle(accessToken: string) {
+  await client.request<T.SignInGoogle, T.SignInGoogleVariables>(
+    googleSigninMutation,
+    { accessToken }
+  )
 }

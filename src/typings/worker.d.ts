@@ -10,6 +10,11 @@ type MainAPI = {
   setPlaying(episode: EpisodeId | null, progress?: number): void
   progress(): number
   setProgress(v: number): void
+  signIn(v: SignInCreds): void
+}
+
+type SignInCreds = {
+  accessToken: string
 }
 
 type SubscriptionListener = (v: {

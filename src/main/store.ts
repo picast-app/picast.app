@@ -171,7 +171,7 @@ export abstract class Store {
     if (process.env.NODE_ENV === 'development') return
     const cursor = Store._episodes[id].cursor
     if (!cursor) return
-    Store.addEpisodesGQL(id, await api.episodes(id, 200, cursor))
+    Store.addEpisodesGQL(id, (await api.episodes(id, 200, cursor)) as any)
     Store.fetchRemainingEpisodes(id)
   }
 
