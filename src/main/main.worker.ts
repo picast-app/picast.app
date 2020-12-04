@@ -10,6 +10,23 @@ export default null
 const channels = new ChannelManager('main')
 Store.channels = channels
 
+let me = Store.subscriptions().then(subs => apiCalls.me(subs))
+
+syncSubs()
+
+async function syncSubs() {
+  const user = await me
+  if (!user) return
+  const subs = await Store.subscriptions()
+
+  const remove = user.subscriptions.removed.filter(id => subs.includes(id))
+  await Promise.all(remove.map(id => Store.unsubscribe(id)))
+
+  const add = user.subscriptions.added.filter(({ id }) => !subs.includes(id))
+  add.forEach(podcast => Store.addPodcastGQL(podcast))
+  await Promise.all(add.map(({ id }) => Store.subscribe(id)))
+}
+
 const api: MainAPI = {
   ...apiCalls,
   podcast: Store.podcast,
@@ -22,11 +39,13 @@ const api: MainAPI = {
   progress: Store.progress as any,
   setProgress: Store.setProgress,
   signIn,
+  me: async () => await me,
 }
 expose(api)
 
 async function signIn(v: SignInCreds) {
-  await apiCalls.signInGoogle(v.accessToken)
+  me = apiCalls.signInGoogle(v.accessToken)
+  await syncSubs()
 }
 
 self.addEventListener('message', async ({ data }) => {

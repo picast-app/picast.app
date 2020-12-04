@@ -1,3 +1,7 @@
-mutation SignInGoogle($accessToken: ID!) {
-  signInGoogle(accessToken: $accessToken)
+#import "../fragments/user.gql"
+
+mutation SignInGoogle($accessToken: ID!, $known: [ID!] = []) {
+  signInGoogle(accessToken: $accessToken) {
+    ...MeInitial
+  }
 }

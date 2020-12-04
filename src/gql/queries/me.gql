@@ -1,0 +1,7 @@
+#import "../fragments/user.gql"
+
+query Me($known: [ID!]) {
+  me {
+    ...MeInitial
+  }
+}

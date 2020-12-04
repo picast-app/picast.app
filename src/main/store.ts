@@ -49,8 +49,7 @@ export abstract class Store {
     if (Store._subscriptions.includes(id)) return
     Store._subscriptions.push(id)
     const podcast = await Store.podcast(id)
-    console.log(podcast)
-    if (!podcast) return
+    if (!podcast) throw Error('failed to fetch podcast ' + id)
     await db.put('subscriptions', {
       ...pickKeys(podcast, ['id', 'title', 'author', 'artwork', 'description']),
       subscriptionDate: new Date(),
@@ -91,11 +90,17 @@ export abstract class Store {
     if (!podcast) return
     if (!podcast.episodes)
       ws.send({ type: 'SUB_EPISODES', podcast: podcast.id })
-    Store._podcasts[id] = podcast
-    if (!podcast.episodes) return podcast
+
+    Store.addPodcastGQL(podcast)
+    return podcast
+  }
+
+  public static addPodcastGQL(podcast: T.PodcastPage_podcast) {
+    if (!podcast?.id || podcast.id in Store._podcasts) return
+    Store._podcasts[podcast.id] = podcast
+    if (!podcast.episodes) return
     Store.addEpisodesGQL(podcast.id, podcast.episodes)
     Store.fetchRemainingEpisodes(podcast.id)
-    return podcast
   }
 
   public static async episode([podcast, episode]: EpisodeId): Promise<
@@ -136,10 +141,10 @@ export abstract class Store {
   }
 
   public static async subscriptions(
-    cb: SubscriptionListener
+    cb?: SubscriptionListener
   ): Promise<string[]> {
     await Store._init
-    Store.subscriptionListeners.push(cb)
+    if (cb) Store.subscriptionListeners.push(cb)
     return Store._subscriptions
   }
 

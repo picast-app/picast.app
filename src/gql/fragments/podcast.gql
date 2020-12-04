@@ -1,0 +1,22 @@
+fragment PodcastPageInfo on Podcast {
+  id
+  title
+  author
+  description
+  artwork
+  episodes(last: 50) {
+    pageInfo {
+      total
+      hasPreviousPage
+    }
+    edges {
+      node {
+        id
+        title
+        publishDate
+        file
+      }
+      cursor
+    }
+  }
+}

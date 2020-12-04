@@ -1,24 +1,7 @@
+#import "../fragments/podcast.gql"
+
 query PodcastPage($id: ID!) {
   podcast(id: $id) {
-    id
-    title
-    author
-    description
-    artwork
-    episodes(last: 50) {
-      pageInfo {
-        total
-        hasPreviousPage
-      }
-      edges {
-        node {
-          id
-          title
-          publishDate
-          file
-        }
-        cursor
-      }
-    }
+    ...PodcastPageInfo
   }
 }

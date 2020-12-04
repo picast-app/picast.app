@@ -11,6 +11,7 @@ type MainAPI = {
   progress(): number
   setProgress(v: number): void
   signIn(v: SignInCreds): void
+  me(): Promise<import('gql/types').Me['me']>
 }
 
 type SignInCreds = {
