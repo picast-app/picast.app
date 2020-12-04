@@ -44,9 +44,10 @@ export abstract class Store {
     })
   }
 
-  public static async subscribe(id: string) {
+  public static async subscribe(id: string, sync = true) {
     const db = await Store._init
     if (Store._subscriptions.includes(id)) return
+    if (sync) api.subscribe(id)
     Store._subscriptions.push(id)
     const podcast = await Store.podcast(id)
     if (!podcast) throw Error('failed to fetch podcast ' + id)
@@ -66,7 +67,8 @@ export abstract class Store {
     Store.subscriptionListeners.forEach(cb => cb({ added: [id] }))
   }
 
-  public static async unsubscribe(id: string) {
+  public static async unsubscribe(id: string, sync = true) {
+    if (sync) api.unsubscribe(id)
     const db = await Store._init
     if (!Store._subscriptions.includes(id)) return
     const episodes = await db.getAllKeysFromIndex('episodes', 'podcast', id)

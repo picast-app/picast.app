@@ -6,6 +6,8 @@ import searchQuery from 'gql/queries/search.gql'
 import episodeQuery from 'gql/queries/podcastEpisodes.gql'
 import googleSigninMutation from 'gql/mutations/signInGoogle.gql'
 import meQuery from 'gql/queries/me.gql'
+import subscribeMutation from 'gql/mutations/subscribe.gql'
+import unsubscribeMutation from 'gql/mutations/unsubscribe.gql'
 
 export const client = new GraphQLClient(process.env.REACT_APP_API as string, {
   headers: {},
@@ -59,4 +61,19 @@ export async function signInGoogle(accessToken: string) {
 export async function me(known?: string[]) {
   const data = await client.request<T.Me, T.MeVariables>(meQuery, { known })
   return data.me
+}
+
+export async function subscribe(...ids: string[]) {
+  await client.request<T.Subscribe, T.SubscribeVariables>(subscribeMutation, {
+    ids,
+  })
+}
+
+export async function unsubscribe(...ids: string[]) {
+  await client.request<T.Unsubscribe, T.UnsubscribeVariables>(
+    unsubscribeMutation,
+    {
+      ids,
+    }
+  )
 }

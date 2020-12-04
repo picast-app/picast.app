@@ -20,11 +20,11 @@ async function syncSubs() {
   const subs = await Store.subscriptions()
 
   const remove = user.subscriptions.removed.filter(id => subs.includes(id))
-  await Promise.all(remove.map(id => Store.unsubscribe(id)))
+  await Promise.all(remove.map(id => Store.unsubscribe(id, false)))
 
   const add = user.subscriptions.added.filter(({ id }) => !subs.includes(id))
   add.forEach(podcast => Store.addPodcastGQL(podcast))
-  await Promise.all(add.map(({ id }) => Store.subscribe(id)))
+  await Promise.all(add.map(({ id }) => Store.subscribe(id, false)))
 }
 
 const api: MainAPI = {
