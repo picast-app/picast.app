@@ -39,7 +39,7 @@ const desktopBreakPoints = Array(10)
   .map(
     columns =>
       `@media (min-width: ${Math.max(
-        maxWidth(columns - 1, 200, cardPadd, sideBarWidth),
+        maxWidth(columns - 1, 256, cardPadd, sideBarWidth),
         DESKTOP_MIN_WIDTH
       )}px) { --columns: ${columns}; }`
   )

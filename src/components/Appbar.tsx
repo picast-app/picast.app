@@ -83,6 +83,7 @@ const SAppBar = styled.div`
   ${ProgressSC} {
     top: unset;
     bottom: 0;
+    transform-origin: bottom;
   }
 `
 

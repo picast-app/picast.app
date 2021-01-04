@@ -13,7 +13,7 @@ export default function Profile() {
       <Appbar title="Profile" />
       {!loading && (
         <>
-          <span>logged in with {me?.authProvider}</span>
+          <span>signed in with {me?.authProvider}</span>
         </>
       )}
     </Screen>
