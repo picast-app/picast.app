@@ -46,6 +46,7 @@ const S = {
       padding: 0;
       border: none;
       border-radius: unset;
+      height: 24px;
     }
 
     &[data-style~='text'] {

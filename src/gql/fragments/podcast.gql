@@ -4,6 +4,7 @@ fragment PodcastPageInfo on Podcast {
   author
   description
   artwork
+  feed
   episodes(last: 50) {
     pageInfo {
       total

@@ -95,6 +95,8 @@ const S = {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+    height: 2rem;
+    line-height: 2rem;
 
     & + * {
       margin-left: auto;

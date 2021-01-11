@@ -5,6 +5,7 @@ import { ArtworkShowcase } from 'components/composite'
 import { lineClamp } from 'styles/mixin'
 import { desktop } from 'styles/responsive'
 import { useMatchMedia, useSubscriptions } from 'utils/hooks'
+import ContextMenu from './ContextMenu'
 import type * as T from 'gql/types'
 
 export default function Info({
@@ -13,6 +14,7 @@ export default function Info({
   author,
   artwork,
   description,
+  feed,
 }: Partial<T.PodcastPage_podcast>) {
   const [showDescription, setShowDescription] = useState(false)
   const isDesktop = useMatchMedia(desktop)
@@ -23,6 +25,7 @@ export default function Info({
 
   const actions = (
     <S.Actions>
+      <ContextMenu feed={feed} />
       {subscriptions?.includes(id) ? (
         <Button onClick={() => unsubscribe(id)} text>
           subscribed
@@ -88,12 +91,6 @@ const S = {
       cursor: zoom-in;
     }
 
-    span {
-      display: block;
-      margin-top: 1rem;
-      color: var(--cl-primary);
-    }
-
     @media ${desktop} {
       flex-direction: row-reverse;
       justify-content: flex-end;
@@ -125,6 +122,7 @@ const S = {
     display: flex;
     justify-content: flex-start;
     margin-top: 1rem;
+    align-items: center;
 
     & > :last-child {
       margin-left: auto;
