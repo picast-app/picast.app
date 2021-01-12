@@ -1,15 +1,30 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { Surface } from 'components/structure'
 
 type Props = {
   visible?: boolean
+  onToggle?(v: boolean): void
 }
 
-export const Dropdown: React.FC<Props> = ({ visible = true, children }) => {
+export const Dropdown: React.FC<Props> = ({
+  visible = true,
+  children,
+  onToggle,
+}) => {
+  const toggleRef = useRef(onToggle)
+
+  useEffect(() => {
+    const toggle = toggleRef.current
+    if (!toggle || !visible) return
+    const onClick = () => toggle(false)
+    window.addEventListener('click', onClick)
+    return () => window.removeEventListener('click', onClick)
+  }, [visible])
+
   if (!visible) return null
   return (
-    <Surface sc={S.Menu} el={10}>
+    <Surface sc={S.Menu} el={10} onClick={(e: any) => e.stopPropagation()}>
       {React.Children.map(children, v => (
         <S.Item>{v}</S.Item>
       ))}

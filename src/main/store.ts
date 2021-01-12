@@ -52,7 +52,14 @@ export abstract class Store {
     const podcast = await Store.podcast(id)
     if (!podcast) throw Error('failed to fetch podcast ' + id)
     await db.put('subscriptions', {
-      ...pickKeys(podcast, ['id', 'title', 'author', 'artwork', 'description']),
+      ...pickKeys(podcast, [
+        'id',
+        'title',
+        'author',
+        'artwork',
+        'description',
+        'feed',
+      ]),
       subscriptionDate: new Date(),
       episodeCount: (podcast as any).episodes?.pageInfo?.total,
     })
