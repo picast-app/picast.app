@@ -20,6 +20,7 @@ export const send = (msg: any) => {
 }
 
 ws.onopen = () => {
+  logger.info('ws connection open')
   queue.forEach(msg => ws.send(JSON.stringify(msg)))
   queue = []
 }

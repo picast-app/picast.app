@@ -1,7 +1,9 @@
-interface EchoDB extends import('idb').DBSchema {
+import type { DBSchema } from 'idb'
+
+export default interface Schema extends DBSchema {
   meta: {
-    key: 'updateStatus'
-    value: 'UP_TO_DATE' | 'EVICT_PENDING'
+    key: string
+    value: any
   }
   subscriptions: {
     key: string
@@ -11,7 +13,8 @@ interface EchoDB extends import('idb').DBSchema {
       author: string | null
       artwork: string | null
       description: string | null
-      subscriptionTime?: Date
+      subscriptionDate?: Date
+      episodeCount?: number
     }
   }
   episodes: {
@@ -21,7 +24,8 @@ interface EchoDB extends import('idb').DBSchema {
       podcast: string
       title: string
       file: string
-      date: number
+      published: number
     }
+    indexes: { date: string; podcast: string }
   }
 }

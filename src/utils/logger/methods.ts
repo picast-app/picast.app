@@ -1,20 +1,27 @@
-const local = process.env.NODE_ENV
+const timeStamp = () =>
+  `${['Hours', 'Minutes', 'Seconds']
+    .map(n => `0${(new Date() as any)[`get${n}`]()}`.slice(-2))
+    .join(':')}:${`00${new Date().getMilliseconds()}`.slice(-3)}`
+
+const local = process.env.NODE_ENV === 'development'
 const devNull = (...args: any) => void 0
 const devLog = (method: keyof typeof console, prefix: string = method) =>
-  (() =>
-    Function.prototype.bind.call(
-      // eslint-disable-next-line no-console
-      console[method],
-      console,
-      prefix && `[${prefix}]:`
-    ))()
+  local
+    ? (() =>
+        Function.prototype.bind.call(
+          // eslint-disable-next-line no-console
+          console[method],
+          console,
+          prefix && `[${prefix}]: <${timeStamp()}>`
+        ))()
+    : null
 
-export const info = local ? devLog('info') : devNull
-export const warn = local ? devLog('warn') : devNull
-export const error = local ? devLog('error') : devNull
-export const assert = local
-  ? devLog('assert', undefined)
-  : (cond: boolean) => {
-      if (cond) return
-      throw Error('assertion failed')
-    }
+export const info = devLog('info') ?? devNull
+export const warn = devLog('warn') ?? devNull
+export const error = devLog('error') ?? devNull
+export const assert =
+  devLog('assert', undefined) ??
+  ((cond: boolean) => {
+    if (cond) return
+    throw Error('assertion failed')
+  })

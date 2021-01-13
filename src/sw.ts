@@ -1,5 +1,6 @@
 import { ChannelManager } from 'utils/msgChannel'
 import logger from 'utils/logger'
+import type { WorkerMsg, WorkerName } from 'utils/msgTypes'
 
 declare let self: ServiceWorkerGlobalScope
 export default null
@@ -17,7 +18,7 @@ const channels = new ChannelManager('service')
 
 self.addEventListener('message', ({ data }) => {
   if (typeof data !== 'object') return
-  const msg: WorkerMsg = data
+  const msg: WorkerMsg<any> = data
   if (typeof data?.type !== 'string') return
   if (msg.type === 'ADD_MSG_CHANNEL') {
     const { target, port } = (msg as WorkerMsg<'ADD_MSG_CHANNEL'>).payload

@@ -1,7 +1,9 @@
 import { expose } from 'comlink'
 import * as apiCalls from './api'
 import { ChannelManager } from 'utils/msgChannel'
-import { dbProm, Store } from './store'
+import { Store } from './store'
+import dbProm from './store/idb'
+import type { WorkerMsg, WorkerName } from 'utils/msgTypes'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare let self: DedicatedWorkerGlobalScope
@@ -50,7 +52,7 @@ async function signIn(v: SignInCreds) {
 
 self.addEventListener('message', async ({ data }) => {
   if (typeof data !== 'object') return
-  const msg: WorkerMsg = data
+  const msg: WorkerMsg<any> = data
   if (typeof data?.type !== 'string') return
 
   switch (msg.type) {

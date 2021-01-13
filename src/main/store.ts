@@ -1,26 +1,18 @@
-import { openDB } from 'idb/with-async-ittr'
 import * as api from './api'
 import { pickKeys } from 'utils/object'
 import type * as T from 'gql/types'
 import { ChannelManager } from 'utils/msgChannel'
 import * as ws from './ws'
+import dbProm from './store/idb'
+import type Schema from './store/schema'
+import type { WorkerName } from 'utils/msgTypes'
 import logger from 'utils/logger'
-
-export const dbProm = openDB<EchoDB>(self.location.hostname, 3, {
-  upgrade(db) {
-    db.createObjectStore('meta').put('UP_TO_DATE', 'updateStatus')
-    db.createObjectStore('subscriptions', { keyPath: 'id' })
-    const epStore = db.createObjectStore('episodes', { keyPath: 'id' })
-    epStore.createIndex('date', 'date')
-    epStore.createIndex('podcast', 'podcast')
-  },
-})
 
 export abstract class Store {
   private static _subscriptions: string[] = []
   private static _podcasts: Record<
     string,
-    EchoDB['subscriptions']['value']
+    Schema['subscriptions']['value']
   > = {}
   private static _episodes: Record<
     string,
@@ -37,8 +29,6 @@ export abstract class Store {
   private static subscriptionListeners: SubscriptionListener[] = []
 
   private static async __init() {
-    // console.log('init')
-    logger.info('init')
     const db = await dbProm
     const subs = await db.getAll('subscriptions')
     Store._subscriptions = subs?.map(({ id }) => id) ?? []
@@ -70,7 +60,9 @@ export abstract class Store {
 
     const tx = db.transaction('episodes', 'readwrite')
     await Promise.all([
-      ...episodes.map(episode => tx.store.put({ ...episode, podcast: id })),
+      ...episodes.map(episode =>
+        tx.store.put({ ...episode, podcast: id } as Schema['episodes']['value'])
+      ),
       tx.done,
     ] as Promise<any>[])
 
@@ -96,6 +88,7 @@ export abstract class Store {
         id,
         await (await dbProm).getAllFromIndex('episodes', 'podcast', id)
       )
+      // Store.checkUpdate(id)
       return Store._podcasts[id]
     }
     const podcast = await api.podcast(id)
@@ -106,6 +99,11 @@ export abstract class Store {
     Store.addPodcastGQL(podcast)
     return podcast
   }
+
+  // private static async checkUpdate(id: string) {
+  //   logger.info('check update', id)
+
+  // }
 
   public static addPodcastGQL(podcast: T.PodcastPage_podcast) {
     if (!podcast?.id || podcast.id in Store._podcasts) return

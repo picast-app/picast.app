@@ -1,4 +1,10 @@
 import { OptWeakValues } from './weak'
+import {
+  WorkerMsg,
+  WorkerMsgType,
+  WorkerMsgPayload,
+  WorkerName,
+} from './msgTypes'
 
 export const msg = <T extends WorkerMsgType>(
   type: T,
@@ -16,16 +22,18 @@ type Listener<T extends WorkerMsgType = any> = (msg: WorkerMsg<T>) => void
 export class ChannelManager<T extends WorkerName> {
   private static workers: TupleUnion<WorkerName> = ['main', 'service', 'ui']
   private channels: { [k in WorkerName]?: MessagePort } = {}
-  private queues: { [k in WorkerName]: WorkerMsg[] }
+  private queues: { [k in WorkerName]: WorkerMsg<any>[] }
   public onMessage?: (
-    message: WorkerMsg,
+    message: WorkerMsg<any>,
     source: Exclude<WorkerName, T>,
     respond: <T extends WorkerMsgType>(
       type: T,
       payload: WorkerMsgPayload<T>
     ) => void
   ) => void
-  private readonly ansResolvers = new OptWeakValues<(msg: WorkerMsg) => void>()
+  private readonly ansResolvers = new OptWeakValues<
+    (msg: WorkerMsg<any>) => void
+  >()
   private listeners: { type: WorkerMsgType; handler: Listener }[] = []
 
   constructor(private readonly owner: T) {
@@ -40,7 +48,7 @@ export class ChannelManager<T extends WorkerName> {
     this.channels = { ...this.channels, [name]: port }
 
     port.onmessage = e => {
-      const msg = e.data as WorkerMsg
+      const msg = e.data as WorkerMsg<any>
       this.ansResolvers.get(msg.responseTo)?.(msg)
       this.onMessage?.(msg, name, (t, p) => {
         this.post(name, t, p, msg.id)
