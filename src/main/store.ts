@@ -4,6 +4,7 @@ import { pickKeys } from 'utils/object'
 import type * as T from 'gql/types'
 import { ChannelManager } from 'utils/msgChannel'
 import * as ws from './ws'
+import logger from 'utils/logger'
 
 export const dbProm = openDB<EchoDB>(self.location.hostname, 3, {
   upgrade(db) {
@@ -36,6 +37,8 @@ export abstract class Store {
   private static subscriptionListeners: SubscriptionListener[] = []
 
   private static async __init() {
+    // console.log('init')
+    logger.info('init')
     const db = await dbProm
     const subs = await db.getAll('subscriptions')
     Store._subscriptions = subs?.map(({ id }) => id) ?? []

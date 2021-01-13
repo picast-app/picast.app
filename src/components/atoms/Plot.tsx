@@ -2,6 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { useComputed } from 'utils/hooks'
 import * as color from 'utils/css/color'
+import logger from 'utils/logger'
 
 type Props = {
   data: Datum[]
@@ -29,7 +30,7 @@ export function Plot({
   let xMax = useComputed(bounds.xMax ?? data, bound('max', 0), 'json')
   let yMin = useComputed(bounds.yMin ?? data, bound('min', 1), 'json')
   let yMax = useComputed(bounds.yMax ?? data, bound('max', 1), 'json')
-  console.assert(xMax >= xMin && yMax >= yMin)
+  logger.assert(xMax >= xMin && yMax >= yMin)
 
   let width = xMax - xMin
   let height = yMax - yMin

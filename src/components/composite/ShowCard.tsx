@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { Artwork, Link } from 'components/atoms'
 import { lineClamp } from 'styles/mixin'
 import { useAPICall } from 'utils/hooks'
+import logger from 'utils/logger'
 
 type Podcast = {
   id: string
@@ -28,7 +29,7 @@ export function ShowCard({
   title = false,
   author = title,
 }: Props) {
-  console.assert(!!card !== !!strip && !!_pod !== !!id)
+  logger.assert(!!card !== !!strip && !!_pod !== !!id)
   const data = useAPICall('podcast', id)
   const podcast = _pod ?? data?.[0]
   const style = card ? ['card'] : ['strip']

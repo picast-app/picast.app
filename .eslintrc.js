@@ -19,5 +19,6 @@ module.exports = {
     'no-useless-computed-key': 'off',
     'prefer-const': 'warn',
     'import/no-anonymous-default-export': 'off',
+    'no-console': 'error',
   },
 }

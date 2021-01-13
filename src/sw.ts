@@ -1,4 +1,5 @@
 import { ChannelManager } from 'utils/msgChannel'
+import logger from 'utils/logger'
 
 declare let self: ServiceWorkerGlobalScope
 export default null
@@ -100,7 +101,7 @@ async function getStatic() {
       head?.match(/href="([^"]+)/gs)?.map(v => v.replace(/^href="/, '')) ?? []
     staticFiles.push(...links)
   } catch (e) {
-    console.warn(e)
+    logger.warn(e)
   }
 
   return Array.from(new Set(staticFiles))

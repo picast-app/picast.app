@@ -1,3 +1,5 @@
+import logger from 'utils/logger'
+
 export const ws = new WebSocket(process.env.REACT_APP_WS as string)
 
 let queue: any[] = []
@@ -8,7 +10,7 @@ ws.onmessage = e => {
     const msg = JSON.parse(e.data)
     listeners.forEach(listener => listener(msg))
   } catch (e) {
-    console.error(e)
+    logger.error(e)
   }
 }
 

@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Icon, Artwork } from 'components/atoms'
 import Controls, { ControlsSC } from './Controls'
-import Progress, { ProgressSC } from './ProgressBar'
+import Progress from './ProgressBar'
 import { usePlaying } from 'utils/player'
 
 interface Props {

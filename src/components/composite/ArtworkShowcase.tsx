@@ -1,6 +1,5 @@
 import React, { useRef, useEffect } from 'react'
 import styled from 'styled-components'
-import { mobile } from 'styles/responsive'
 import { animateTo } from 'utils/animate'
 
 type Props = {

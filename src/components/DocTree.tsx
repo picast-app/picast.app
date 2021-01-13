@@ -99,8 +99,8 @@ const Node: React.FC<{ expanded?: boolean }> = ({
 }
 
 export default function DocTree({ document }: Props) {
-  console.log(document)
-  ;(window as any).doc = document
+  const global = window as any
+  global.doc = document
   const ref = useRef<HTMLDivElement>(null)
 
   useNavbarWidget(
