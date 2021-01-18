@@ -3,7 +3,6 @@ import styled from 'styled-components'
 import { Artwork, Link } from 'components/atoms'
 import { lineClamp } from 'styles/mixin'
 import { useAPICall } from 'utils/hooks'
-import logger from 'utils/logger'
 
 type Podcast = {
   id: string

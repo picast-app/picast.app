@@ -10,10 +10,11 @@ export default interface Schema extends DBSchema {
     value: {
       id: string
       title: string
-      author: string | null
-      artwork: string | null
-      description: string | null
+      author?: string
+      artwork?: string
+      description?: string
       subscriptionDate?: Date
+      check?: string
       episodeCount?: number
     }
   }
@@ -26,6 +27,6 @@ export default interface Schema extends DBSchema {
       file: string
       published: number
     }
-    indexes: { date: string; podcast: string }
+    indexes: { published: string; podcast: string }
   }
 }

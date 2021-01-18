@@ -10,7 +10,8 @@ import { Theme } from 'styles'
 import createSubscription from './subscription'
 import subscription, { Subscription } from './subscription'
 import throttle from 'lodash/throttle'
-import { main, channels, subscriptionSub } from 'workers'
+import { main, subscriptionSub } from 'workers'
+import type { API } from 'main/main.worker'
 
 export { useHistory } from 'react-router-dom'
 
@@ -71,6 +72,31 @@ export function useScrollDir({
   }, [target])
 
   return dir
+}
+
+export function useScrollPos(
+  target: HTMLElement | null | undefined,
+  rate = 50
+) {
+  const [pos, setPos] = useState(target?.scrollTop ?? 0)
+
+  useEffect(() => {
+    if (!target) return
+
+    const onScroll = throttle(
+      ({ target }: Event) => {
+        setPos((target as HTMLElement).scrollTop)
+      },
+      rate,
+      { leading: false, trailing: true }
+    )
+
+    target.addEventListener('scroll', onScroll, { passive: true })
+
+    return () => target.removeEventListener('scroll', onScroll)
+  }, [target, rate])
+
+  return pos
 }
 
 export function useComputed<T, K>(
@@ -246,12 +272,12 @@ type MapToOptional<T> = { [K in keyof T]: T[K] | undefined }
 type Arr<T> = T extends any[] ? T : []
 
 export function useAPICall<
-  T extends FilterKeys<MainAPI, (...v: any[]) => Promise<any>>,
-  P = Parameters<MainAPI[T]>,
-  R = PromType<ReturnType<MainAPI[T]>>
+  T extends FilterKeys<API, (...v: any[]) => Promise<any>>,
+  P = Parameters<API[T]>,
+  R = PromType<ReturnType<API[T]>>
 >(
   opts: T | { method: T },
-  ...args: Arr<MapToOptional<Parameters<MainAPI[T]>>>
+  ...args: Arr<MapToOptional<Parameters<API[T]>>>
 ): [data: R | undefined, loading: boolean, args: P] {
   const [value, setValue] = useState<R>()
   const [loading, setLoading] = useState(args.every(v => v !== undefined))
@@ -274,35 +300,22 @@ export function useAPICall<
   return [value as any, loading, params as P]
 }
 
-export function useEpisodes(id: string) {
-  const [episodes, addEpisodes] = useReducer(
-    (c: EpisodeMin[], v: EpisodeMin[]) =>
-      [...c, ...v].sort((a, b) => b.published - a.published),
-    []
-  )
+export function useFeed(...podcasts: string[]) {
+  const [id, setId] = useState<string>()
+  const dep = useComputed(podcasts, v => Array.from(new Set(v)), 'json')
 
   useEffect(() => {
-    let subId: string
-
-    channels
-      .post('main', 'ADD_FEED_SUB', { podcast: id })
-      .then(({ payload }) => {
-        subId = payload.subId
-      })
-
-    const unsub = channels.on('FEED_ADDED', msg => {
-      if (msg.payload.subId !== subId) return
-      addEpisodes(msg.payload.episodes)
+    let id: string
+    main.feedSubscription(...dep).then(v => {
+      id = v
+      setId(v)
     })
-
     return () => {
-      if (subId) channels.post('main', 'CANCEL_FEED_SUB', { subId })
-      unsub()
+      if (id) main.cancelFeedSubscription(id)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id])
+  }, [dep])
 
-  return episodes
+  return id
 }
 
 export function useSubscriptions(): [
@@ -315,13 +328,13 @@ export function useSubscriptions(): [
   function subscribe(id: string) {
     if (subs.includes(id)) return
     set([...subs, id])
-    main.subscribe(id)
+    main.addSubscription(id, false, false)
   }
 
   function unsubscribe(id: string) {
     if (!subs.includes(id)) return
     set(subs.filter(v => v !== id))
-    main.unsubscribe(id)
+    main.removeSubscription(id, false, false)
   }
 
   return [subs, subscribe, unsubscribe]

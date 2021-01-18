@@ -1,0 +1,7 @@
+#import "../fragments/episodeFull.gql"
+
+query SingleEpisode($podId: ID!, $epId: ID!) {
+  episode(epId: $epId, podId: $podId) {
+    ...EpisodeFull
+  }
+}

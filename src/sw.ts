@@ -1,6 +1,7 @@
-import { ChannelManager } from 'utils/msgChannel'
-import logger from 'utils/logger'
-import type { WorkerMsg, WorkerName } from 'utils/msgTypes'
+import 'utils/logger'
+import { wrap } from 'comlink'
+import type { Remote } from 'comlink'
+import type { API as MainAPI } from 'main/main.worker'
 
 declare let self: ServiceWorkerGlobalScope
 export default null
@@ -14,15 +15,14 @@ const expectedCaches = [STATIC_CACHE, PHOTO_CACHE]
 
 const IS_LOCAL = ['localhost', '127.0.0.1'].includes(self.location.hostname)
 
-const channels = new ChannelManager('service')
+let setMainWorker: (v: Remote<MainAPI>) => void
+const mainWorker: Promise<Remote<MainAPI>> = new Promise(res => {
+  setMainWorker = res
+})
 
-self.addEventListener('message', ({ data }) => {
-  if (typeof data !== 'object') return
-  const msg: WorkerMsg<any> = data
-  if (typeof data?.type !== 'string') return
-  if (msg.type === 'ADD_MSG_CHANNEL') {
-    const { target, port } = (msg as WorkerMsg<'ADD_MSG_CHANNEL'>).payload
-    channels.addChannel(target as Exclude<WorkerName, 'service'>, port)
+self.addEventListener('message', ({ data: { type, ...data } }) => {
+  if (type === 'MAIN_WORKER_PORT') {
+    setMainWorker(wrap<MainAPI>(data.port))
   }
 })
 
@@ -46,37 +46,28 @@ self.addEventListener('activate', event => {
   )
 })
 
+type FetchHandler<T extends boolean = false> = (
+  e: FetchEvent
+) => T extends false ? Promise<Response | void> : Promise<Response>
+
+const staticHandler: FetchHandler = async e => {
+  if (e.request.method !== 'GET' || IS_LOCAL) return
+  const isNav = e.request.mode === 'navigate'
+  if (isNav) e.waitUntil(checkForUpdate())
+  const cache = await caches.open(STATIC_CACHE)
+  return await cache.match(isNav ? '/index.html' : e.request)
+}
+
+const defaultHandler: FetchHandler<true> = async e => await fetch(e.request)
+
+// prettier-ignore
+const handleFetch = async (e: FetchEvent): Promise<Response> =>
+// @ts-ignore
+  await staticHandler(e) ?? 
+  await defaultHandler(e)
+
 self.addEventListener('fetch', event => {
-  const handleDefault = async () => {
-    if (IS_LOCAL) return fetch(event.request)
-    const cache = await caches.open(STATIC_CACHE)
-    const isNav = event.request.mode === 'navigate'
-    if (isNav) event.waitUntil(checkForUpdate())
-    return (
-      (await cache.match(isNav ? '/index.html' : event.request)) ??
-      fetch(event.request)
-    )
-  }
-
-  const handlePhoto = async () => {
-    const cache = await caches.open(PHOTO_CACHE)
-    const match = await cache.match(event.request)
-    const fetchProm = fetch(event.request).then(res =>
-      cache.put(event.request, res.clone()).then(() => res)
-    )
-    event.waitUntil(fetchProm)
-    return match ?? fetchProm
-  }
-
-  event.respondWith(
-    event.request.method === 'POST'
-      ? fetch(event.request)
-      : event.request.url.startsWith(
-          process.env.REACT_APP_PHOTO_BUCKET as string
-        )
-      ? handlePhoto()
-      : handleDefault()
-  )
+  event.respondWith(handleFetch(event))
 })
 
 async function cacheStatic() {
@@ -109,14 +100,8 @@ async function getStatic() {
 }
 
 async function checkForUpdate() {
-  const { payload: updateStatus } = await channels.post<'DB_READ', 'DB_DATA'>(
-    'main',
-    'DB_READ',
-    {
-      table: 'meta',
-      key: 'updateStatus',
-    }
-  )
+  const main = await mainWorker
+  const updateStatus = await main.idbGet('meta', 'updateStatus')
 
   if (updateStatus === 'UP_TO_DATE') {
     const cache = await caches.open(STATIC_CACHE)
@@ -125,11 +110,7 @@ async function checkForUpdate() {
     const latest = await fetch('/index.html').then(res => res.text())
     if ((await cached.text()) !== latest) {
       await cacheStatic()
-      channels.post('main', 'DB_WRITE', {
-        table: 'meta',
-        key: 'updateStatus',
-        data: 'EVICT_PENDING',
-      })
+      await main.idbPut('meta', 'updateStatus', 'EVICT_PENDING')
       const clients = await self.clients.matchAll()
       clients.forEach(client =>
         client.postMessage?.({ type: 'UPDATE_AVAILABLE' })
@@ -143,10 +124,6 @@ async function checkForUpdate() {
       ({ url }) => !staticFiles.includes(url.replace(self.location.origin, ''))
     )
     await Promise.all(toEvict.map(v => cache.delete(v)))
-    channels.post('main', 'DB_WRITE', {
-      table: 'meta',
-      key: 'updateStatus',
-      data: 'UP_TO_DATE',
-    })
+    await main.idbPut('meta', 'updateStatus', 'UP_TO_DATE')
   }
 }

@@ -1,42 +1,31 @@
-import { wrap, proxy } from 'comlink'
+import { wrap } from 'comlink'
 import MainWorker from 'main/main.worker'
-import { ChannelManager, msg } from 'utils/msgChannel'
 import createSub from 'utils/subscription'
+import type { API } from 'main/main.worker'
+import { proxy, createEndpoint } from 'comlink'
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')
 
 const mainWorker: Worker = new (MainWorker as any)()
-export const main = wrap<MainAPI>(mainWorker)
+export const main = wrap<API>(mainWorker)
 
-navigator.serviceWorker.ready.then(({ active }) => {
-  if (!active) return
-  const { port1, port2 } = new MessageChannel()
-
-  mainWorker.postMessage(
-    msg('ADD_MSG_CHANNEL', { target: 'service', port: port1 }),
-    [port1]
-  )
-  active.postMessage(msg('ADD_MSG_CHANNEL', { target: 'main', port: port2 }), [
-    port2,
+async function init() {
+  const [{ active }, port] = await Promise.all([
+    navigator.serviceWorker.ready,
+    main[createEndpoint](),
   ])
-})
+  if (!active) return
 
-export const channels = new ChannelManager('ui')
-
-{
-  const { port1, port2 } = new MessageChannel()
-  channels.addChannel('main', port1)
-  mainWorker.postMessage(
-    msg('ADD_MSG_CHANNEL', { target: 'ui', port: port2 }),
-    [port2]
-  )
+  active!.postMessage({ type: 'MAIN_WORKER_PORT', port }, [port])
 }
+init()
 
-export const subscriptionSub = createSub<string[]>()
+export const subscriptionSub = createSub<string[]>([])
 
 main
-  .subscriptions(
+  .setSubscriptionCB(
     proxy(({ added, removed }) => {
+      logger.info('got called')
       if (removed?.length)
         subscriptionSub.setState(
           subscriptionSub.state.filter(id => !removed.includes(id))

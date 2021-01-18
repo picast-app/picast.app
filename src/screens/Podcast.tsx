@@ -15,18 +15,12 @@ export default function Podcast({
   return (
     <Screen loading={_loading || loading}>
       <Appbar title={podcast?.title} back="/" />
-      {podcast && (
-        <>
-          <Info {...podcast} />
-          <Feed
-            id={podcast.id}
-            total={
-              (podcast as any).episodes?.pageInfo?.total ?? podcast.episodeCount
-            }
-            onLoading={setLoading}
-          />
-        </>
-      )}
+      <Info {...podcast} />
+      <Feed
+        id={match.params.id}
+        total={podcast?.episodeCount}
+        onLoading={setLoading}
+      />
     </Screen>
   )
 }

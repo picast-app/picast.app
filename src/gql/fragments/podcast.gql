@@ -1,3 +1,5 @@
+#import "./episodeBase.gql"
+
 fragment PodcastPageInfo on Podcast {
   id
   title
@@ -5,17 +7,16 @@ fragment PodcastPageInfo on Podcast {
   description
   artwork
   feed
+  check
   episodes(last: 50) {
     pageInfo {
       total
       hasPreviousPage
+      hasNextPage
     }
     edges {
       node {
-        id
-        title
-        publishDate
-        file
+        ...EpisodeBase
       }
       cursor
     }

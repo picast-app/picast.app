@@ -1,92 +1,45 @@
 import { expose } from 'comlink'
+import 'utils/logger'
 import * as apiCalls from './api'
-import { ChannelManager } from 'utils/msgChannel'
-import { Store } from './store'
-import dbProm from './store/idb'
-import type { WorkerMsg, WorkerName } from 'utils/msgTypes'
+import Store from './store'
+import bufferInstance from 'utils/instantiationBuffer'
+import IDBInterface from './store/idbInterface'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-declare let self: DedicatedWorkerGlobalScope
+declare const self: DedicatedWorkerGlobalScope
 export default null
 
-const channels = new ChannelManager('main')
-Store.channels = channels
+async function fetchMe(subs: string[]) {
+  const me = await apiCalls.me(subs)
+  if (!me) return
 
-let me = Store.subscriptions().then(subs => apiCalls.me(subs))
+  const remove = me.subscriptions.removed.filter(id => subs.includes(id))
+  await Promise.all(remove.map(id => store.removeSubscription(id, true)))
 
-syncSubs()
-
-async function syncSubs() {
-  const user = await me
-  if (!user) return
-  const subs = await Store.subscriptions()
-
-  const remove = user.subscriptions.removed.filter(id => subs.includes(id))
-  await Promise.all(remove.map(id => Store.unsubscribe(id, false)))
-
-  const add = user.subscriptions.added.filter(({ id }) => !subs.includes(id))
-  add.forEach(podcast => Store.addPodcastGQL(podcast))
-  await Promise.all(add.map(({ id }) => Store.subscribe(id, false)))
+  const add = me.subscriptions.added.filter(({ id }) => !subs.includes(id))
+  await Promise.all(add.map(({ id }) => store.addSubscription(id, true)))
 }
 
-const api: MainAPI = {
-  ...apiCalls,
-  podcast: Store.podcast,
-  episode: Store.episode,
-  subscribe: Store.subscribe,
-  unsubscribe: Store.unsubscribe,
-  subscriptions: Store.subscriptions,
-  playing: Store.playing as any,
-  setPlaying: Store.setPlaying,
-  progress: Store.progress as any,
-  setProgress: Store.setProgress,
-  signIn,
-  me: async () => await me,
-}
-expose(api)
-
-async function signIn(v: SignInCreds) {
-  me = apiCalls.signInGoogle(v.accessToken)
-  await syncSubs()
-}
-
-self.addEventListener('message', async ({ data }) => {
-  if (typeof data !== 'object') return
-  const msg: WorkerMsg<any> = data
-  if (typeof data?.type !== 'string') return
-
-  switch (msg.type) {
-    case 'ADD_MSG_CHANNEL':
-      {
-        const { target, port } = (msg as WorkerMsg<'ADD_MSG_CHANNEL'>).payload
-        channels.addChannel(target as Exclude<WorkerName, 'main'>, port)
-      }
-      break
-  }
+const _store = Store.create().then(store => {
+  fetchMe(store.getSubscriptions())
+  return store
 })
 
-channels.onMessage = async (msg, source, respond) => {
-  switch (msg.type) {
-    case 'DB_READ': {
-      const { table, key } = (msg as WorkerMsg<'DB_READ'>).payload
-      respond('DB_DATA', await (await dbProm).get(table, key))
-      break
-    }
-    case 'DB_WRITE': {
-      const { table, key, data } = (msg as WorkerMsg<'DB_WRITE'>).payload
-      await (await dbProm).put(table, data, key)
-      break
-    }
-    case 'ADD_FEED_SUB':
-      respond('CONFIRM_FEED_SUB', {
-        subId: Store.addFeedSub(
-          (msg as WorkerMsg<'ADD_FEED_SUB'>).payload,
-          source
-        ),
-      })
-      break
-    case 'CANCEL_FEED_SUB':
-      Store.cancelFeedSub((msg as WorkerMsg<'CANCEL_FEED_SUB'>).payload.subId)
-      break
-  }
+const store = bufferInstance(Store, _store)
+const idbInterface = bufferInstance(IDBInterface, IDBInterface.create())
+
+const api = {
+  ...apiCalls,
+  ...idbInterface,
+  ...store,
+  signIn,
+} as const
+
+export type API = typeof api
+
+expose(api)
+
+async function signIn(creds: SignInCreds) {
+  await apiCalls.signInGoogle(creds.accessToken)
+  await fetchMe(await store.getSubscriptions())
 }

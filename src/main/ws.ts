@@ -1,5 +1,3 @@
-import logger from 'utils/logger'
-
 export const ws = new WebSocket(process.env.REACT_APP_WS as string)
 
 let queue: any[] = []

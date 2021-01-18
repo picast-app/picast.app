@@ -27,7 +27,6 @@ export default function ContextMenu({ feed }: Props) {
 
 const S = {
   Wrap: styled.div`
-    height: 100%;
     margin-right: 1rem;
     position: relative;
 

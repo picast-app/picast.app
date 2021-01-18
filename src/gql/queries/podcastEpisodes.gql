@@ -1,10 +1,11 @@
-query PodcastEpisodes($podcast: ID!, $last: Int!, $cursor: ID!) {
+query PodcastEpisodes($podcast: ID!, $last: Int!, $cursor: ID) {
   podcast(id: $podcast) {
     id
     episodes(last: $last, before: $cursor) {
       pageInfo {
         total
         hasPreviousPage
+        hasNextPage
       }
       edges {
         node {

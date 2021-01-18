@@ -154,6 +154,7 @@ const S = {
     color: var(--cl-text);
     margin-top: 1rem;
     font-size: 0.9rem;
+    line-height: 1.5;
 
     @media ${mobile} {
       [data-view='contained'] & {

@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.12.3",
+    "@babel/plugin-proposal-logical-assignment-operators": "^7.12.1",
     "@graphql-codegen/cli": "^1.19.1",
     "@graphql-codegen/fragment-matcher": "^2.0.0",
     "@graphql-codegen/introspection": "^1.18.0",

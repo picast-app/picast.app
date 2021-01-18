@@ -31,7 +31,7 @@ export function Artwork({
         width={200}
         height={200}
         alt={title}
-        src="data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
+        src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
         loading={lazy ? 'lazy' : 'eager'}
         onError={() => {
           if (imgSrc?.startsWith(process.env.PHOTON_ENDPOINT!)) setImgSrc(src)

@@ -1,9 +1,10 @@
 import { GraphQLClient } from 'graphql-request'
 import type * as T from 'gql/types'
 import podcastQuery from 'gql/queries/podcast.gql'
+import episodeQuery from 'gql/queries/episode.gql'
 import feedQuery from 'gql/queries/feed.gql'
 import searchQuery from 'gql/queries/search.gql'
-import episodeQuery from 'gql/queries/podcastEpisodes.gql'
+import episodesQuery from 'gql/queries/podcastEpisodes.gql'
 import googleSigninMutation from 'gql/mutations/signInGoogle.gql'
 import meQuery from 'gql/queries/me.gql'
 import subscribeMutation from 'gql/mutations/subscribe.gql'
@@ -22,6 +23,14 @@ export async function podcast(id: string) {
   return podcast
 }
 
+export async function episode([podId, epId]: EpisodeId) {
+  const { episode } = await client.request<
+    T.SingleEpisode,
+    T.SingleEpisodeVariables
+  >(episodeQuery, { podId, epId })
+  return episode
+}
+
 export async function feed(url: string) {
   const { feed } = await client.request<T.FetchFeed, T.FetchFeedVariables>(
     feedQuery,
@@ -38,13 +47,13 @@ export async function search(query: string) {
   return search
 }
 
-export async function episodes(id: string, limit: number, cursor: string) {
+export async function episodes(id: string, limit: number, cursor?: string) {
   const { podcast } = await client.request<
     T.PodcastEpisodes,
     T.PodcastEpisodesVariables
-  >(episodeQuery, {
+  >(episodesQuery, {
     podcast: id,
-    cursor,
+    cursor: cursor as any,
     last: limit,
   })
   return podcast?.episodes

@@ -2,6 +2,8 @@ type ReactProps<
   T extends (...args: any[]) => JSX.Element | import('react').Component | null
 > = Parameters<T>[0]
 
+type PromiseType<T> = T extends PromiseLike<infer I> ? I : T
+
 type RGBA = number
 type RGBA_ = [number, number, number, number]
 
@@ -24,6 +26,9 @@ type EpisodeMin = {
   published: number
 }
 
-type Podcast = import('gql/types').PodcastPage_podcast & {
-  episodeCount?: number
+// eslint-disable-next-line no-var
+declare var logger: import('utils/logger').default
+
+type SignInCreds = {
+  accessToken: string
 }

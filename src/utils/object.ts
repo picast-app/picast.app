@@ -14,9 +14,18 @@ export const filter = <T extends obj>(
     Object.entries(o).filter(([k, v]) => func(k as any, v))
   ) as Partial<T>
 
-type Foo<T extends any[]> = T[number]
+export const pick = <T extends obj, K extends keyof T>(
+  v: T,
+  ...keys: K[]
+): Pick<T, K> =>
+  Object.fromEntries(
+    Object.entries(v).map(([k, v]) => (keys.includes(k as any) ? [k, v] : []))
+  )
 
-export const pickKeys = <T extends obj, K extends (keyof T)[]>(
-  o: T,
-  keys: K
-): Pick<T, Foo<K>> => filter(o, k => keys.includes(k)) as any
+export const omit = <T extends obj, K extends keyof T>(
+  v: T,
+  ...keys: K[]
+): Omit<T, K> =>
+  Object.fromEntries(
+    Object.entries(v).map(([k, v]) => (keys.includes(k as any) ? [] : [k, v]))
+  )

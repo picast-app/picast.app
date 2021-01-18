@@ -1,0 +1,6 @@
+#import "./episodeBase.gql"
+
+fragment EpisodeFull on Episode {
+  ...EpisodeBase
+  description
+}

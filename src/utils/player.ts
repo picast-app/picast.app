@@ -1,6 +1,7 @@
 import { useSubscription } from 'utils/hooks'
 import createSub from 'utils/subscription'
 import { main } from 'workers'
+import type { Podcast } from 'main/store'
 
 const audio = document.querySelector('#player') as HTMLAudioElement
 audio.volume = 0.4
@@ -13,7 +14,7 @@ type PlayState = 'playing' | 'paused'
 export const playState = createSub<PlayState>()
 export const usePlayState = () => useSubscription(playState)[0]
 
-export function useTrackState(episode: string): PlayState {
+export function useTrackState(episode?: string): PlayState {
   const state = usePlayState()
   const track = useTrack()
   return track === episode ? state : 'paused'
@@ -23,12 +24,13 @@ const playing = createSub<[Podcast, EpisodeMin]>()
 export const usePlaying = () => useSubscription(playing)[0]
 
 async function setEpisode(epId: EpisodeId) {
+  logger.info(epId)
   const [podcast, episode] = await Promise.all([
     main.podcast(epId[0]),
     main.episode(epId),
   ])
   if (!episode) throw Error("couldn't find episode " + epId.join(', '))
-  playing.setState([podcast, episode])
+  playing.setState([podcast!, episode])
   trackSub.setState(episode.file)
   audio.src = episode.file
   main.setPlaying(epId)
@@ -45,12 +47,15 @@ export async function play(epId?: EpisodeId) {
 
   const [podcast, episode] = playing.state
 
-  mediaSession.metadata = new MediaMetadata({
+  const meta = {
     title: episode.title,
     artist: podcast.author ?? undefined,
     album: podcast.title,
     artwork: [{ src: podcast.artwork as string }],
-  })
+  }
+  logger.info(meta)
+
+  mediaSession.metadata = new MediaMetadata(meta)
   mediaSession.setActionHandler('seekbackward', () => {
     skip(-15)
   })
@@ -131,7 +136,7 @@ self.addEventListener(
   { capture: true }
 )
 
-Promise.all([main.playing(), main.progress()]).then(
+Promise.all([main.getPlaying(), main.getProgress()]).then(
   async ([episode, progress]) => {
     if (trackSub.state || !episode) return
     playState.setState('paused')

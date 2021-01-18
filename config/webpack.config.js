@@ -330,6 +330,8 @@ const shared = (cst, { emitManifest = true } = {}) => webpackEnv => {
                 formatter: require.resolve('react-dev-utils/eslintFormatter'),
                 eslintPath: require.resolve('eslint'),
                 resolvePluginsRelativeTo: __dirname,
+                emitWarning: isEnvDevelopment,
+                failOnWarning: isEnvProduction,
               },
               loader: require.resolve('eslint-loader'),
             },

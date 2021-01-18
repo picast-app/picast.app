@@ -2,7 +2,6 @@ import React from 'react'
 import styled from 'styled-components'
 import { useComputed } from 'utils/hooks'
 import * as color from 'utils/css/color'
-import logger from 'utils/logger'
 
 type Props = {
   data: Datum[]

@@ -8,7 +8,7 @@ const migrations: Record<number, Migration> = {
     db.createObjectStore('meta').put('UP_TO_DATE', 'updateStatus')
     db.createObjectStore('subscriptions', { keyPath: 'id' })
     const epStore = db.createObjectStore('episodes', { keyPath: 'id' })
-    epStore.createIndex('date', 'date')
+    epStore.createIndex('published', 'published')
     epStore.createIndex('podcast', 'podcast')
   },
 }

@@ -9,6 +9,9 @@ module.exports = {
   ],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
+  globals: {
+    logger: 'readonly',
+  },
   rules: {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
@@ -19,6 +22,10 @@ module.exports = {
     'no-useless-computed-key': 'off',
     'prefer-const': 'warn',
     'import/no-anonymous-default-export': 'off',
-    'no-console': 'error',
+    'no-console': 'warn',
+    '@typescript-eslint/no-extra-semi': 'off',
+    'semi-style': ['error', 'first'],
+    'no-async-promise-executor': 'off',
+    'no-sequences': 'off',
   },
 }
