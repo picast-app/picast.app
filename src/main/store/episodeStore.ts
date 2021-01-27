@@ -72,7 +72,8 @@ export class Podcast {
   }
 
   private async read(index: number) {
-    const [id] = this.keys[index]
+    const id = this.keys[index]?.[0]
+    if (!id) return
     if (!this.subscribed) return this.cache![id]
     return await this.db.get('episodes', id)
   }

@@ -62,11 +62,12 @@ export default class Store {
     )
 
     const remote = await api.podcast(id)
-    resolve!(
+    const episodes =
       remote?.episodes?.edges.map(
         ({ node }) => convert.episode(node as any, id)!
       ) ?? []
-    )
+    resolve!(episodes)
+    if (!episodes.length) ws.send({ type: 'SUB_EPISODES', podcast: id })
     if (!remote) return null
 
     const podcast = convert.podcast(remote)
