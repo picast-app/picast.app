@@ -1,22 +1,28 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled, { AnyStyledComponent } from 'styled-components'
 import { desktop, mobile } from 'styles/responsive'
-import Appbar from 'components/Appbar'
-import { Progress, ProgressSC } from 'components/atoms'
+import Appbar, { AppbarSC } from 'components/Appbar'
+import { Progress, ProgressSC, Icon } from 'components/atoms'
 import { PlayerSC } from 'components/composite'
+import { animateTo } from 'utils/animate'
 
 type Props = {
   style?: AnyStyledComponent
   padd?: boolean
   loading?: boolean
+  refreshAction?: () => void
 }
 
 export const Screen: React.FC<Props> = ({
   style,
   padd,
   loading = false,
+  refreshAction,
   ...props
 }) => {
+  const [el, setEl] = useState<HTMLElement | null>(null)
+  usePullEffect(el, refreshAction)
+
   const progress = <Progress active={loading} />
 
   const children = React.Children.toArray(props.children)
@@ -37,12 +43,66 @@ export const Screen: React.FC<Props> = ({
       offsetTop={appbar !== React.Fragment ? 'var(--bar-height)' : '0px'}
       as={style}
       padd={padd}
+      ref={setEl}
     >
       {progress}
       {appbar}
-      {children}
+      <div>
+        {children}
+        <S.Refresher>
+          <Icon icon="arrow" />
+        </S.Refresher>
+      </div>
     </S.Screen>
   )
+}
+
+function usePullEffect(node: HTMLElement | null, action?: () => void) {
+  useEffect(() => {
+    if (!node || !action) return
+    const content = Array.from(node.children).find(
+      el => !el.classList.contains(AppbarSC.Wrap.styledComponentId)
+    ) as HTMLElement
+
+    let startY: number
+    let lastOff = 0
+    const actionOff = 200
+
+    const onTouch = ({ touches: [{ screenY }] }: TouchEvent) => {
+      startY = screenY
+      node.addEventListener('touchmove', onDrag, { passive: true })
+      node.addEventListener(
+        'touchend',
+        () => {
+          if (lastOff > actionOff) action()
+          lastOff = 0
+          delete content.dataset.action
+          node.removeEventListener('touchmove', onDrag)
+          animateTo(
+            content,
+            { transform: 'translateY(0)' },
+            { easing: 'ease', duration: 200 }
+          )
+        },
+        { once: true }
+      )
+    }
+
+    const onDrag = ({ touches: [{ screenY }] }: TouchEvent) => {
+      const off = screenY - startY
+      if (lastOff > actionOff !== off > actionOff)
+        content.dataset.action = off > actionOff ? 'refresh' : 'none'
+      lastOff = off
+      if (off <= 0 || content.scrollTop > 0)
+        return (content.style.transform = '')
+      content.style.transform = `translateY(${(off ** 0.75) | 0}px)`
+    }
+
+    node.addEventListener('touchstart', onTouch)
+
+    return () => node.removeEventListener('touchstart', onTouch)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [node])
 }
 
 const S = {
@@ -84,6 +144,23 @@ const S = {
     section:not(:first-of-type) {
       margin-top: 2rem;
       border-top: 1px solid var(--cl-text-disabled);
+    }
+  `,
+
+  Refresher: styled.div`
+    position: absolute;
+    top: -1rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
+
+    svg {
+      opacity: 0.5;
+      transition: transform 0.2s ease;
+      transform: scale(0.9);
+
+      [data-action='refresh'] & {
+        transform: scale(0.9) rotate(180deg);
+      }
     }
   `,
 }

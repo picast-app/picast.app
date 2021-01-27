@@ -10,7 +10,7 @@ export default function Library() {
   const [subs] = useSubscriptions()
 
   return (
-    <Screen>
+    <Screen refreshAction={logger.info}>
       <Appbar title="Podcasts" scrollOut />
       <S.Grid>
         {subs?.map(id => (
