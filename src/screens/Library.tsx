@@ -1,16 +1,43 @@
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import Appbar from 'components/Appbar'
 import { ShowCard } from 'components/composite'
 import { Screen } from 'components/structure'
 import { useSubscriptions } from 'utils/hooks'
 import { desktop } from 'styles/responsive'
+import { snack } from 'utils/notification'
+import { main } from 'workers'
 
 export default function Library() {
   const [subs] = useSubscriptions()
+  const [loading, setLoading] = useState(false)
+
+  async function sync() {
+    setLoading(true)
+    const { added, removed } = await main.syncSubscriptions()
+    const msg =
+      added.length + removed.length === 0
+        ? 'no changes in subscriptions found'
+        : [
+            added.length &&
+              'added ' +
+                (added.length > 1
+                  ? `${added.length} podcasts`
+                  : `"${added[0]}"`),
+            removed.length &&
+              'removed ' +
+                (removed.length > 1
+                  ? `${removed.length} podcasts`
+                  : `"${removed[0]}"`),
+          ]
+            .filter(Boolean)
+            .join(' and ')
+    snack({ text: msg[0].toUpperCase() + msg.slice(1) + '.' })
+    setLoading(false)
+  }
 
   return (
-    <Screen refreshAction={logger.info}>
+    <Screen refreshAction={sync} loading={loading}>
       <Appbar title="Podcasts" scrollOut />
       <S.Grid>
         {subs?.map(id => (

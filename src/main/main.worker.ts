@@ -9,19 +9,8 @@ import IDBInterface from './store/idbInterface'
 declare const self: DedicatedWorkerGlobalScope
 export default null
 
-async function fetchMe(subs: string[]) {
-  const me = await apiCalls.me(subs)
-  if (!me) return
-
-  const remove = me.subscriptions.removed.filter(id => subs.includes(id))
-  await Promise.all(remove.map(id => store.removeSubscription(id, true)))
-
-  const add = me.subscriptions.added.filter(({ id }) => !subs.includes(id))
-  await Promise.all(add.map(({ id }) => store.addSubscription(id, true)))
-}
-
 const _store = Store.create().then(store => {
-  fetchMe(store.getSubscriptions())
+  store.syncSubscriptions()
   return store
 })
 
@@ -41,5 +30,5 @@ expose(api)
 
 async function signIn(creds: SignInCreds) {
   await apiCalls.signInGoogle(creds.accessToken)
-  await fetchMe(await store.getSubscriptions())
+  await store.syncSubscriptions()
 }

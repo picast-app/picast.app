@@ -38,6 +38,7 @@ const _Surface: React.ForwardRefRenderFunction<HTMLDivElement, Props> = (
             )
       }
       {...(alt && { 'data-style': 'alt' })}
+      data-theme={theme}
       {...props}
       ref={ref}
     >
@@ -54,7 +55,7 @@ const S = {
     ${({ el, border }) =>
       border ? `border: 1px solid ${border};` : shadow(el)}
 
-    &[data-style~='alt'] {
+    &[data-style~='alt'][data-theme='light'] {
       background-color: var(--cl-surface-alt);
       border: none;
 

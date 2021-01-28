@@ -24,7 +24,13 @@ export function SnackBar({ text, action, onAction }: Props) {
   }, [])
 
   return (
-    <Surface sc={S.Bar} alt role={action ? 'alertdialog' : 'alert'} ref={ref}>
+    <Surface
+      sc={S.Bar}
+      alt
+      role={action ? 'alertdialog' : 'alert'}
+      ref={ref}
+      el={4}
+    >
       <span>{text}</span>
       {action && (
         <Button text onClick={onAction}>

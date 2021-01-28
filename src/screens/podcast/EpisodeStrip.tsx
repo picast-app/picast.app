@@ -74,6 +74,10 @@ const S = {
     height: var(--height);
     top: calc(${({ index }) => index} * var(--height));
     padding: 0 1rem;
+
+    @media (pointer: coarse) {
+      user-select: none;
+    }
   `,
 
   TextSec: styled.div`

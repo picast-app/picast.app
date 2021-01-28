@@ -3,6 +3,7 @@ import MainWorker from 'main/main.worker'
 import createSub from 'utils/subscription'
 import type { API } from 'main/main.worker'
 import { proxy, createEndpoint } from 'comlink'
+import { snack } from 'utils/notification'
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')
 
@@ -62,15 +63,11 @@ navigator.serviceWorker.onmessage = e => {
     )
       location.reload()
     else
-      window.dispatchEvent(
-        new CustomEvent<EchoSnackEvent['detail']>('echo_snack', {
-          detail: {
-            text: 'There is an update available.',
-            action: 'reload',
-            actionEvent: 'echo_reload',
-            timeout: 8,
-          },
-        })
-      )
+      snack({
+        text: 'There is an update available.',
+        action: 'reload',
+        actionEvent: 'echo_reload',
+        timeout: 8,
+      })
   }
 }

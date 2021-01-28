@@ -137,6 +137,32 @@ export default class Store {
     if (!existing) await api.unsubscribe(id)
   }
 
+  public async syncSubscriptions(): Promise<{
+    removed: string[]
+    added: string[]
+  }> {
+    logger.info('sync subscriptions')
+    const me = await api.me(this.subscriptions)
+    if (!me) return logger.info('not logged in')
+    logger.info({ me })
+
+    const remove = me.subscriptions.removed.filter(id =>
+      this.subscriptions.includes(id)
+    )
+    const removed = remove.map(id => this.podcasts[id]!.title)
+    await Promise.all(remove.map(id => this.removeSubscription(id, true)))
+
+    const add = me.subscriptions.added.filter(
+      ({ id }) => !this.subscriptions.includes(id)
+    )
+    await Promise.all(add.map(({ id }) => this.addSubscription(id, true)))
+
+    return {
+      removed,
+      added: add.map(({ title }) => title),
+    }
+  }
+
   public async setSubscriptionCB(cb: SubscriptionCB): Promise<string[]> {
     this.subCB = cb
     return this.subscriptions

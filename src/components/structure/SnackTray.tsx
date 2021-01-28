@@ -4,7 +4,7 @@ import { PlayerSC, SnackBar } from 'components/composite'
 import { desktop } from 'styles/responsive'
 import { animateTo } from 'utils/animate'
 
-type Snack = {
+export type Snack = {
   text: string
   action?: string
   timeout?: number
