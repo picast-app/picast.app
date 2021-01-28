@@ -2,11 +2,14 @@ import React from 'react'
 import styled from 'styled-components'
 import { Link as RouterLink } from 'react-router-dom'
 
-type Props = { append?: boolean; to: string; wrap?: boolean } & ReactProps<
-  typeof RouterLink
->
+type Props = {
+  append?: boolean
+  to: string
+  wrap?: boolean
+  nav?: boolean
+} & ReactProps<typeof RouterLink>
 
-export const Link = ({ children, to, append, wrap, ...props }: Props) => {
+export const Link = ({ children, to, append, wrap, nav, ...props }: Props) => {
   const isExternal = /^https?:\/\//.test(to)
   return (
     <SLink
@@ -21,6 +24,7 @@ export const Link = ({ children, to, append, wrap, ...props }: Props) => {
             },
           })}
       {...(wrap && { style: { display: 'contents', textDecoration: 'none' } })}
+      {...(nav && location.pathname === to && { 'aria-current': 'page' })}
       {...props}
     >
       {children}

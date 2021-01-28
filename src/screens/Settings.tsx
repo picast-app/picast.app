@@ -5,6 +5,8 @@ import { Screen } from 'components/structure'
 import Appbar from 'components/Appbar'
 import { Link as HLink, Icon } from 'components/atoms'
 import { scrollTo } from 'utils/animate'
+import { desktop } from 'styles/responsive'
+import { useMatchMedia } from 'utils/hooks'
 
 type SettingsRoute = {
   name: string
@@ -21,7 +23,11 @@ const routes: SettingsRoute[] = [
 const switchComp = (
   <Switch>
     {routes.map(
-      ({ name, path = name.toLowerCase(), component = () => <div /> }) => (
+      ({
+        name,
+        path = name.toLowerCase(),
+        component = () => <div>{name}</div>,
+      }) => (
         <Route
           key={path}
           exact
@@ -38,11 +44,17 @@ export default function Settings() {
   const ref = useRef<HTMLDivElement>(null)
   const history = useHistory()
   const [mounted, setMounted] = useState(false)
+  const isDesktop = useMatchMedia(desktop)
 
   const path = location.pathname.split('/').slice(2)[0]
   const route = routes.find(v => (v.path ?? v.name.toLowerCase()) === path)
 
   useEffect(() => {
+    if (isDesktop) {
+      if (!location.pathname.split('/').slice(2)[0])
+        history.push('/settings/general')
+      return
+    }
     const isSub = ref.current!.scrollLeft > 0
     if (isSub === !!route) return
 
@@ -112,7 +124,7 @@ const Link: React.FunctionComponent<LinkProps> = ({
   icon,
 }) => (
   <li>
-    <HLink to={`/settings/${to}`}>
+    <HLink to={`/settings/${to}`} nav>
       <Icon icon={icon} />
       {children}
     </HLink>
@@ -130,20 +142,51 @@ const S = {
       flex-shrink: 0;
       overflow-y: auto;
     }
+
+    @media ${desktop} {
+      --padd: 2rem;
+      padding: var(--padd);
+
+      & > * {
+        width: unset;
+        flex-shrink: unset;
+
+        &:last-child {
+          flex-grow: 1;
+          margin-right: calc(var(--padd) * -1);
+          margin-bottom: calc(var(--padd) * -1);
+          padding-right: var(--padd);
+          padding-bottom: var(--padd);
+          margin-left: 1vw;
+          margin-top: 0.5rem;
+        }
+      }
+    }
   `,
 
   Menu: styled.nav`
     padding: 1rem;
+    --size: 2.5rem;
 
     a {
-      height: 2.5rem;
-
+      height: var(--size);
       display: flex;
       text-decoration: none;
       align-items: center;
 
       svg {
-        width: 2.5rem;
+        width: var(--size);
+      }
+    }
+
+    @media ${desktop} {
+      padding: 0;
+      padding-right: 2rem;
+      max-width: 20rem;
+      width: calc((100vw - var(--sidebar-width)) / 3);
+
+      a[aria-current] {
+        background-color: var(--cl-surface);
       }
     }
   `,
