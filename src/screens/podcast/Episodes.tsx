@@ -16,7 +16,7 @@ const itemHeight = 3.8 * 16
 
 export default function Episodes({ id, total = 100, onLoading }: Props) {
   const [ref, setRef] = useState<HTMLOListElement | null>(null)
-  const scrollTarget = useComputed(ref, el => el?.parentElement)
+  const scrollTarget = useComputed(ref, el => el?.parentElement?.parentElement)
   const scrollPos = useScrollPos(scrollTarget)
   const feed = useFeed(id)
 

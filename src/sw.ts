@@ -62,11 +62,17 @@ const defaultHandler: FetchHandler<true> = async e => await fetch(e.request)
 
 // prettier-ignore
 const handleFetch = async (e: FetchEvent): Promise<Response> =>
-// @ts-ignore
+  // @ts-ignore
   await staticHandler(e) ?? 
   await defaultHandler(e)
 
 self.addEventListener('fetch', event => {
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=823392
+  if (
+    event.request.cache === 'only-if-cached' &&
+    event.request.mode !== 'same-origin'
+  )
+    return
   event.respondWith(handleFetch(event))
 })
 
