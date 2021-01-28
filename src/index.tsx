@@ -3,10 +3,15 @@ import ReactDOM from 'react-dom'
 import reportWebVitals from './reportWebVitals'
 import { Router } from 'react-router-dom'
 import history from 'utils/history'
-import 'utils/logger'
+import { togglePrint } from 'utils/logger'
 import App from './App'
-import './workers'
+import { main } from './workers'
 import 'styles'
+
+main.idbGet('meta', 'printLogs').then((v?: boolean) => {
+  if (v === undefined) return
+  togglePrint(v)
+})
 
 window.addEventListener('echo_reload', () => {
   location.reload()

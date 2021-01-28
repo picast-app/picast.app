@@ -3,10 +3,10 @@ const timeStamp = () =>
     .map(n => `0${(new Date() as any)[`get${n}`]()}`.slice(-2))
     .join(':')}:${`00${new Date().getMilliseconds()}`.slice(-3)}`
 
-const local = process.env.NODE_ENV === 'development'
+let print = process.env.NODE_ENV === 'development'
 const devNull = (...args: any) => void 0
 const devLog = (method: keyof typeof console, prefix: string = method) =>
-  local
+  print
     ? (() =>
         Function.prototype.bind.call(
           // eslint-disable-next-line no-console
@@ -25,3 +25,7 @@ export const assert =
     if (cond) return
     throw Error('assertion failed')
   })
+
+export const togglePrint = (v: boolean) => {
+  print = v
+}

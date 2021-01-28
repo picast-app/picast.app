@@ -11,10 +11,17 @@ type Props = {
   title?: string
   children?: JSX.Element
   back?: string
+  backAction?: () => void
   scrollOut?: boolean
 }
 
-export default function Appbar({ title, back, children, scrollOut }: Props) {
+export default function Appbar({
+  title,
+  back,
+  backAction,
+  children,
+  scrollOut,
+}: Props) {
   const isDesktop = useMatchMedia(desktop)
   const history = useHistory()
   const lastPath = (history.location.state as any)?.previous
@@ -29,6 +36,12 @@ export default function Appbar({ title, back, children, scrollOut }: Props) {
           {...(!back.startsWith('!') && lastPath
             ? { onClick: history.goBack, label: 'go back' }
             : { linkTo: back.replace(/^!/, '') })}
+          {...(backAction && {
+            onClick(e) {
+              e.preventDefault()
+              backAction()
+            },
+          })}
         />
       )}
       {title && <S.Title>{title}</S.Title>}

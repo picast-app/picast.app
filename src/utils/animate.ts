@@ -1,3 +1,5 @@
+import debounce from 'lodash/debounce'
+
 export function animateTo(
   element: HTMLElement,
   keyframes: Parameters<Animatable['animate']>[0],
@@ -13,5 +15,21 @@ export function animateTo(
     a.commitStyles?.()
     a.cancel()
     cb?.()
+  })
+}
+
+export async function scrollTo(element: HTMLElement, opts: ScrollToOptions) {
+  logger.info('scroll')
+  return new Promise<void>(res => {
+    const onScroll = debounce(
+      () => {
+        element.removeEventListener('scroll', onScroll)
+        res()
+      },
+      50,
+      { leading: false, trailing: true }
+    )
+    element.addEventListener('scroll', onScroll)
+    element.scrollTo(opts)
   })
 }

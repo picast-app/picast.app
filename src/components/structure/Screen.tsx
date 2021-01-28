@@ -47,12 +47,12 @@ export const Screen: React.FC<Props> = ({
     >
       {progress}
       {appbar}
-      <div>
+      <S.Content>
         {children}
         <S.Refresher>
           <Icon icon="arrow" />
         </S.Refresher>
-      </div>
+      </S.Content>
     </S.Screen>
   )
 }
@@ -145,6 +145,10 @@ const S = {
       margin-top: 2rem;
       border-top: 1px solid var(--cl-text-disabled);
     }
+  `,
+
+  Content: styled.div`
+    height: 100%;
   `,
 
   Refresher: styled.div`

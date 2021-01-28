@@ -17,7 +17,7 @@ export default function Library() {
     const { added, removed } = await main.syncSubscriptions()
     const msg =
       added.length + removed.length === 0
-        ? 'no changes in subscriptions found'
+        ? 'no changes to subscriptions found'
         : [
             added.length &&
               'added ' +

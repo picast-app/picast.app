@@ -144,7 +144,6 @@ export default class Store {
     logger.info('sync subscriptions')
     const me = await api.me(this.subscriptions)
     if (!me) return logger.info('not logged in')
-    logger.info({ me })
 
     const remove = me.subscriptions.removed.filter(id =>
       this.subscriptions.includes(id)
