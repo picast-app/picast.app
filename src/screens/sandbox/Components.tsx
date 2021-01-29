@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Screen } from 'components/structure'
-import { Title, Input, Artwork } from 'components/atoms'
+import { Title, Input, Artwork, Switch } from 'components/atoms'
 import { ShowCard } from 'components/composite'
 import { useComputed } from 'utils/hooks'
 
@@ -50,6 +50,11 @@ export default function Components() {
       </section>
 
       <section>
+        <Title h2>Switch</Title>
+        <Switch />
+      </section>
+
+      <section>
         <button
           onClick={() =>
             window.dispatchEvent(
@@ -74,10 +79,6 @@ const S = {
   Page: styled.div`
     & > *:first-child {
       margin-top: 0;
-    }
-
-    input {
-      width: 100%;
     }
 
     section {
