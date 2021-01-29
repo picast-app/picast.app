@@ -22,6 +22,17 @@
     <meta name="msapplication-TileColor" content="#d32f2f" />
     <meta name="theme-color" content="#d32f2f" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <script>
+      document.documentElement.dataset.theme = window.matchMedia(
+        '(prefers-color-scheme: dark)'
+      ).matches
+        ? localStorage.getItem('custom-theme') === 'light'
+          ? 'light'
+          : 'dark'
+        : localStorage.getItem('custom-theme') === 'dark'
+        ? 'dark'
+        : 'light'
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

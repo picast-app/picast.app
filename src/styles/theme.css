@@ -13,17 +13,14 @@
   --cl-icon: var(--cl-text-strong);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --cl-background: #1f2022;
-    --cl-surface: #2c2e30;
-    --cl-text: #fffd;
-    --cl-text-strong: #fff;
-    --cl-text-disabled: #ffffff60;
-    --cl-border: #fff3;
-    --cl-border-light: #fff1;
-
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+:root[data-theme='dark'] {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --cl-background: #1f2022;
+  --cl-surface: #2c2e30;
+  --cl-text: #fffd;
+  --cl-text-strong: #fff;
+  --cl-text-disabled: #ffffff60;
+  --cl-border: #fff3;
+  --cl-border-light: #fff1;
 }

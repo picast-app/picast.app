@@ -8,6 +8,7 @@ import { animateTo } from 'utils/animate'
 import { desktop, mobile } from 'styles/responsive'
 import { useMatchMedia } from 'utils/hooks'
 import About from './settings/About'
+import Appearance from './settings/Appearance'
 
 type SettingsRoute = {
   name: string
@@ -17,7 +18,7 @@ type SettingsRoute = {
 }
 const routes: SettingsRoute[] = [
   { name: 'General', icon: 'gear' },
-  { name: 'Appearance', icon: 'palette', component: Theme },
+  { name: 'Appearance', icon: 'palette', component: Appearance },
   { name: 'Notifications', icon: 'bell' },
   { name: 'About', icon: 'info', component: About },
 ]
@@ -107,18 +108,6 @@ function Main({ isDesktop }: { isDesktop: boolean }) {
         ))}
       </ol>
     </S.Menu>
-  )
-}
-
-function Theme() {
-  return (
-    <div>
-      {Array(100)
-        .fill(0)
-        .map((_, i) => (
-          <p key={i}>{i}</p>
-        ))}
-    </div>
   )
 }
 

@@ -1,8 +1,20 @@
 import React from 'react'
 import styled from 'styled-components'
 
-export function Switch() {
-  return <S.Switch type="checkbox"></S.Switch>
+type Props = {
+  id?: string
+  checked?: boolean
+  onChange?: (v: boolean) => void
+}
+
+export function Switch({ onChange, ...props }: Props) {
+  return (
+    <S.Switch
+      type="checkbox"
+      {...props}
+      onChange={({ target }) => onChange?.(target.checked)}
+    ></S.Switch>
+  )
 }
 
 const S = {
@@ -12,6 +24,10 @@ const S = {
     margin: 0;
     padding: 0;
     overflow: hidden;
+    display: block;
+    flex-grow: 0;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
 
     --tray-height: 1.5rem;
     --tray-border-width: 2px;
@@ -62,7 +78,7 @@ const S = {
       transform: translateX(calc(var(--width) - var(--tray-height)));
     }
 
-    @media (prefers-color-scheme: dark) {
+    html[data-theme='dark'] & {
       background-color: #eee;
       border: none;
 
@@ -71,8 +87,8 @@ const S = {
       }
 
       &::after {
-        top: var(--cl-border-width);
-        left: var(--cl-border-width);
+        top: 0;
+        left: 0;
         border-color: var(--cl-text);
         background: var(--cl-background);
       }
