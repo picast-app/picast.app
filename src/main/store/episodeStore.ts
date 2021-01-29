@@ -51,15 +51,13 @@ export class Podcast {
     ])
   }
 
-  public get = async (index: number) => (
-    logger.info(index),
+  public get = async (index: number) =>
     await this.addTask(async () => {
       if (index >= this.keys.length) {
         await this.fetch(index - this.keys.length + 1)
       }
       return this.read(index)
     })
-  )
 
   public getById = async (id: string): Promise<EpisodeMin | undefined> => {
     if (!this.subscribed) return this.cache![id]
@@ -81,6 +79,8 @@ export class Podcast {
   }
 
   private async fetch(n: number) {
+    if (this.hasFeedStart)
+      return logger.warn('skip episode fetch', this.keys.length, n)
     n = Math.max(n, 200)
     const data = await api.episodes(this.id, n, this.keys.slice(-1)[0]?.[0])
     if (!data) return logger.error('failed to fetch', this.id)
