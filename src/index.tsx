@@ -14,6 +14,11 @@ window.addEventListener('echo_reload', () => {
   location.reload()
 })
 
+matchMedia('(prefers-color-scheme: dark)').onchange = ({ matches }) => {
+  if (localStorage.getItem('custom-theme')) return
+  document.documentElement.dataset.theme = matches ? 'dark' : 'light'
+}
+
 ReactDOM.render(
   <React.StrictMode>
     <Router history={history}>

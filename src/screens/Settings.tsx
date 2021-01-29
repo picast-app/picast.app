@@ -195,6 +195,10 @@ const S = {
 
       a[aria-current] {
         background-color: var(--cl-surface);
+
+        html[data-theme='light'] & {
+          background-color: var(--cl-border-light);
+        }
       }
     }
   `,
