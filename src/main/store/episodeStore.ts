@@ -83,7 +83,11 @@ export class Podcast {
       return logger.warn('skip episode fetch', this.keys.length, n)
     n = Math.max(n, 200)
     const data = await api.episodes(this.id, n, this.keys.slice(-1)[0]?.[0])
-    if (!data) return logger.error('failed to fetch', this.id)
+    if (!data) {
+      this.hasFeedStart = true
+      logger.error('failed to fetch', this.id)
+      return
+    }
     if (!data.pageInfo.hasNextPage) this.hasFeedStart = true
     const nodes = data.edges.map(({ node }) => node)
     const episodes = nodes.map(node => convert.episode(node as any, this.id)!)
