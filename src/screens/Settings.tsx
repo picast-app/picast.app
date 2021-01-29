@@ -4,8 +4,8 @@ import { Switch, Redirect, Route, useHistory } from 'react-router-dom'
 import { Screen } from 'components/structure'
 import Appbar from 'components/Appbar'
 import { Link as HLink, Icon } from 'components/atoms'
-import { scrollTo } from 'utils/animate'
-import { desktop } from 'styles/responsive'
+import { animateTo } from 'utils/animate'
+import { desktop, mobile } from 'styles/responsive'
 import { useMatchMedia } from 'utils/hooks'
 import About from './settings/About'
 
@@ -17,7 +17,7 @@ type SettingsRoute = {
 }
 const routes: SettingsRoute[] = [
   { name: 'General', icon: 'gear' },
-  { name: 'Theme', icon: 'palette', component: Theme },
+  { name: 'Appearance', icon: 'palette', component: Theme },
   { name: 'Notifications', icon: 'bell' },
   { name: 'About', icon: 'info', component: About },
 ]
@@ -42,6 +42,8 @@ const switchComp = (
   </Switch>
 )
 
+const animation = { duration: 200, easing: 'ease' }
+
 export default function Settings() {
   const ref = useRef<HTMLDivElement>(null)
   const history = useHistory()
@@ -61,11 +63,9 @@ export default function Settings() {
     }
     const isSub = ref.current!.scrollLeft > 0
     if (isSub === !!route) return
-
-    ref.current!.scrollTo({
-      left: route ? window.innerWidth : 0,
-      behavior: mounted ? 'smooth' : 'auto',
-    })
+    const transform = `translateX(${route ? '-100vw' : 0})`
+    if (!mounted) ref.current!.style.transform = transform
+    else animateTo(ref.current!, { transform }, animation)
     setMounted(true)
     // eslint-disable-next-line
   }, [route])
@@ -77,15 +77,21 @@ export default function Settings() {
         back={route ? '!/settings' : '/profile'}
         {...(route && {
           async backAction() {
-            await scrollTo(ref.current!, { left: 0, behavior: 'smooth' })
+            await animateTo(
+              ref.current!,
+              { transform: 'translateX(0)' },
+              animation
+            )
             history.push('/settings')
           },
         })}
       />
-      <S.Page ref={ref}>
-        <Main isDesktop={isDesktop} />
-        <S.SubWrap>{switchComp}</S.SubWrap>
-      </S.Page>
+      <S.Container>
+        <S.Page ref={ref}>
+          <Main isDesktop={isDesktop} />
+          <S.SubWrap>{switchComp}</S.SubWrap>
+        </S.Page>
+      </S.Container>
     </Screen>
   )
 }
@@ -138,10 +144,20 @@ const Link: React.FunctionComponent<LinkProps> = ({
 )
 
 const S = {
+  Container: styled.div`
+    overflow-x: hidden;
+    height: 100%;
+
+    @media ${mobile} {
+      width: 100vw;
+    }
+  `,
+
   Page: styled.div`
     display: flex;
     height: 100%;
-    overflow: hidden;
+    width: 200vw;
+    overflow-y: hidden;
     --nav-size: 3.5rem;
 
     & > * {
@@ -153,6 +169,7 @@ const S = {
     @media ${desktop} {
       --padd: 2rem;
       padding: var(--padd);
+      width: unset;
 
       & > * {
         width: unset;

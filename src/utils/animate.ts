@@ -6,20 +6,22 @@ export function animateTo(
   options: Parameters<Animatable['animate']>[1],
   cb?: () => void
 ) {
-  const anim = element.animate(keyframes, {
-    ...(typeof options === 'object' && options),
-    fill: 'both',
-  })
-  anim.addEventListener('finish', () => {
-    const a = anim as any
-    a.commitStyles?.()
-    a.cancel()
-    cb?.()
+  return new Promise<void>(res => {
+    const anim = element.animate(keyframes, {
+      ...(typeof options === 'object' && options),
+      fill: 'both',
+    })
+    anim.addEventListener('finish', () => {
+      const a = anim as any
+      a.commitStyles?.()
+      a.cancel()
+      cb?.()
+      res()
+    })
   })
 }
 
 export async function scrollTo(element: HTMLElement, opts: ScrollToOptions) {
-  logger.info('scroll')
   return new Promise<void>(res => {
     const onScroll = debounce(
       () => {

@@ -28,6 +28,7 @@ export default function Mainnav() {
         <Item path="/feed" label="Feed" icon="subscriptions" />
         <Item path="/discover" label="Discover" icon="search" />
         <Item path="/profile" label="Profile" icon="person" />
+        {isDesktop && <Item path="/settings" label="Settings" icon="gear" />}
       </ul>
       {isDesktop && <S.WidgetTray>{widgets}</S.WidgetTray>}
     </Surface>
@@ -40,7 +41,7 @@ type ItemProps = ReactProps<typeof Icon> & {
 }
 
 const Item = ({ path, label, ...props }: ItemProps) => (
-  <S.Item>
+  <S.Item data-label={label.toLowerCase()}>
     <Link to={path}>
       <Icon {...props} />
       <span>{label}</span>
@@ -117,6 +118,10 @@ const S = {
       span {
         display: initial;
       }
+    }
+
+    &[data-label='settings'] {
+      margin-top: 2rem;
     }
   `,
 

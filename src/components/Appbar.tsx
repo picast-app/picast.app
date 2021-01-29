@@ -98,6 +98,10 @@ const SAppBar = styled.div`
     bottom: 0;
     transform-origin: bottom;
   }
+
+  svg {
+    opacity: 0.85;
+  }
 `
 
 const S = {
