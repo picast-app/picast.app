@@ -63,7 +63,7 @@ export default function Settings() {
       return
     }
     const isSub = ref.current!.scrollLeft > 0
-    if (isSub === !!route) return
+    if (isSub && !!route) return
     const transform = `translateX(${route ? '-100vw' : 0})`
     if (!mounted) ref.current!.style.transform = transform
     else animateTo(ref.current!, { transform }, animation)
