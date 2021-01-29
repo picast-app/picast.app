@@ -6,6 +6,7 @@ import { Player } from 'components/composite'
 import { SnackTray } from 'components/structure'
 import { Theme } from 'styles'
 import { desktop } from 'styles/responsive'
+import { HelmetProvider, Helmet } from 'react-helmet-async'
 
 export default function App() {
   const [isDarkMode, setDarkMode] = useState(
@@ -25,14 +26,19 @@ export default function App() {
   }, [])
 
   return (
-    <Theme.Provider value={isDarkMode ? 'dark' : 'light'}>
-      <S.App>
-        <Player />
-        <Routes />
-        <SnackTray />
-        <Mainnav />
-      </S.App>
-    </Theme.Provider>
+    <HelmetProvider>
+      <Theme.Provider value={isDarkMode ? 'dark' : 'light'}>
+        <S.App>
+          <Helmet>
+            <title>Picast</title>
+          </Helmet>
+          <Player />
+          <Routes />
+          <SnackTray />
+          <Mainnav />
+        </S.App>
+      </Theme.Provider>
+    </HelmetProvider>
   )
 }
 

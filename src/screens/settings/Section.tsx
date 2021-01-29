@@ -21,6 +21,7 @@ const S = {
     padding: calc((var(--nav-size) - 1rem) / 2);
     user-select: none;
     color: var(--cl-text-strong);
+    --row-height: 3rem;
   `,
 
   Title: styled.h2`
@@ -30,8 +31,8 @@ const S = {
     letter-spacing: 0.04rem;
     color: var(--cl-text-strong);
     opacity: 0.7;
-    height: 2.5rem;
-    line-height: 2.5rem;
+    height: var(--row-height);
+    line-height: var(--row-height);
 
     @media ${desktop} {
       font-size: 0.95rem;
@@ -44,7 +45,7 @@ const S = {
   Content: styled.div`
     display: grid;
     grid-template-columns: 1fr auto;
-    --row-height: 2.5rem;
+
     grid-auto-rows: var(--row-height);
     align-items: center;
 

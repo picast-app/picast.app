@@ -1,6 +1,12 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Screen, Surface, ExpandoGrid, ExpandoSC } from 'components/structure'
+import {
+  Screen,
+  Surface,
+  ExpandoGrid,
+  ExpandoSC,
+  Helmet,
+} from 'components/structure'
 import { ShowCard } from 'components/composite'
 import { Icon, Button } from 'components/atoms'
 import Appbar from 'components/Appbar'
@@ -22,6 +28,7 @@ export default function Search() {
   if (isDesktop && !query) return <Redirect to="/discover" />
   return (
     <Screen loading={loading} style={S.Page}>
+      <Helmet title={(query && term) ?? 'Search'} join={query && term && '-'} />
       <Appbar back="/discover">
         <PodcastSearch />
       </Appbar>

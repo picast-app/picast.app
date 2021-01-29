@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { bar } from 'styles/mixin'
 import { Icon, ProgressSC } from 'components/atoms'
-import { Surface } from 'components/structure'
+import { Surface, Helmet } from 'components/structure'
 import { useScrollDir, useMatchMedia } from 'utils/hooks'
 import { desktop } from 'styles/responsive'
 import { useHistory } from 'react-router-dom'
@@ -26,7 +26,7 @@ export default function Appbar({
   const history = useHistory()
   const lastPath = (history.location.state as any)?.previous
 
-  if (isDesktop) return null
+  if (isDesktop) return !title ? null : <Helmet title={title} />
   const appbar = (
     <Surface el={4} sc={S.AppBar}>
       {back && (
@@ -44,7 +44,12 @@ export default function Appbar({
           })}
         />
       )}
-      {title && <S.Title>{title}</S.Title>}
+      {title && (
+        <>
+          <Helmet title={title} />
+          <S.Title>{title}</S.Title>
+        </>
+      )}
       {children}
     </Surface>
   )
