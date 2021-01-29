@@ -69,6 +69,7 @@ const handleFetch = async (e: FetchEvent): Promise<Response> =>
   await defaultHandler(e)
 
 self.addEventListener('fetch', event => {
+  if (event.request.destination === 'audio') return
   // https://bugs.chromium.org/p/chromium/issues/detail?id=823392
   if (
     event.request.cache === 'only-if-cached' &&
