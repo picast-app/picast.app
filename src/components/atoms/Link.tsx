@@ -6,12 +6,12 @@ type Props = {
   append?: boolean
   to: string
   wrap?: boolean
-  nav?: boolean
+  nav?: boolean | string
 } & ReactProps<typeof RouterLink>
 
 export const Link = ({ children, to, append, wrap, nav, ...props }: Props) => {
   const isExternal = /^https?:\/\//.test(to)
-  return (
+  const link = (
     <SLink
       {...(isExternal
         ? { to, target: '_blank', rel: 'noopener noreferrer' }
@@ -30,6 +30,9 @@ export const Link = ({ children, to, append, wrap, nav, ...props }: Props) => {
       {children}
     </SLink>
   )
+  if (typeof nav !== 'string') return link
+  const Wrap: 'h1' = nav as any
+  return <Wrap>{link}</Wrap>
 }
 
 const SLink = styled(RouterLink)`

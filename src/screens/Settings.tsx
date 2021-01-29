@@ -7,6 +7,7 @@ import { Link as HLink, Icon } from 'components/atoms'
 import { scrollTo } from 'utils/animate'
 import { desktop } from 'styles/responsive'
 import { useMatchMedia } from 'utils/hooks'
+import About from './settings/About'
 
 type SettingsRoute = {
   name: string
@@ -18,6 +19,7 @@ const routes: SettingsRoute[] = [
   { name: 'General', icon: 'gear' },
   { name: 'Theme', icon: 'palette', component: Theme },
   { name: 'Notifications', icon: 'bell' },
+  { name: 'About', icon: 'info', component: About },
 ]
 
 const switchComp = (
@@ -43,7 +45,9 @@ const switchComp = (
 export default function Settings() {
   const ref = useRef<HTMLDivElement>(null)
   const history = useHistory()
-  const [mounted, setMounted] = useState(false)
+  const [mounted, setMounted] = useState(
+    location.pathname === '/settings' ? true : false
+  )
   const isDesktop = useMatchMedia(desktop)
 
   const path = location.pathname.split('/').slice(2)[0]
@@ -79,19 +83,19 @@ export default function Settings() {
         })}
       />
       <S.Page ref={ref}>
-        <Main />
-        <div>{switchComp}</div>
+        <Main isDesktop={isDesktop} />
+        <S.SubWrap>{switchComp}</S.SubWrap>
       </S.Page>
     </Screen>
   )
 }
 
-function Main() {
+function Main({ isDesktop }: { isDesktop: boolean }) {
   return (
     <S.Menu>
       <ol>
         {routes.map(({ name, path = name.toLowerCase(), icon }) => (
-          <Link key={path} icon={icon} to={path}>
+          <Link key={path} icon={icon} to={path} isDesktop={isDesktop}>
             {name}
           </Link>
         ))}
@@ -116,15 +120,17 @@ type LinkProps = {
   to?: string
   children: string
   icon: ReactProps<typeof Icon>['icon']
+  isDesktop: boolean
 }
 
 const Link: React.FunctionComponent<LinkProps> = ({
   children,
   to = children.toLowerCase(),
   icon,
+  isDesktop,
 }) => (
   <li>
-    <HLink to={`/settings/${to}`} nav>
+    <HLink to={`/settings/${to}`} nav={isDesktop ? 'h1' : true}>
       <Icon icon={icon} />
       {children}
     </HLink>
@@ -136,6 +142,7 @@ const S = {
     display: flex;
     height: 100%;
     overflow: hidden;
+    --nav-size: 3.5rem;
 
     & > * {
       width: 100vw;
@@ -150,32 +157,25 @@ const S = {
       & > * {
         width: unset;
         flex-shrink: unset;
-
-        &:last-child {
-          flex-grow: 1;
-          margin-right: calc(var(--padd) * -1);
-          margin-bottom: calc(var(--padd) * -1);
-          padding-right: var(--padd);
-          padding-bottom: var(--padd);
-          margin-left: 1vw;
-          margin-top: 0.5rem;
-        }
       }
     }
   `,
 
   Menu: styled.nav`
-    padding: 1rem;
-    --size: 2.5rem;
+    padding: 0.5rem 0;
+
+    li:not(:last-of-type) {
+      border-bottom: 1px solid var(--cl-border-light);
+    }
 
     a {
-      height: var(--size);
+      height: var(--nav-size);
       display: flex;
       text-decoration: none;
       align-items: center;
 
       svg {
-        width: var(--size);
+        width: var(--nav-size);
       }
     }
 
@@ -188,6 +188,17 @@ const S = {
       a[aria-current] {
         background-color: var(--cl-surface);
       }
+    }
+  `,
+
+  SubWrap: styled.div`
+    @media ${desktop} {
+      flex-grow: 1;
+      margin-right: calc(var(--padd) * -1);
+      margin-bottom: calc(var(--padd) * -1);
+      padding-right: var(--padd);
+      padding-bottom: var(--padd);
+      margin-left: 1vw;
     }
   `,
 }

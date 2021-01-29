@@ -8,6 +8,7 @@
   --cl-text-alt-strong: #fffffff5;
   --cl-text-disabled: #00000060;
   --cl-border: #0002;
+  --cl-border-light: #0001;
   --cl-primary: #d32f2f;
   --cl-icon: var(--cl-text-strong);
 }
@@ -20,5 +21,9 @@
     --cl-text-strong: #fff;
     --cl-text-disabled: #ffffff60;
     --cl-border: #fff3;
+    --cl-border-light: #fff1;
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
