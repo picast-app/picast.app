@@ -1,4 +1,4 @@
-import 'utils/logger'
+import { togglePrint } from 'utils/logger'
 import { wrap } from 'comlink'
 import type { Remote } from 'comlink'
 import type { API as MainAPI } from 'main/main.worker'
@@ -22,7 +22,9 @@ const mainWorker: Promise<Remote<MainAPI>> = new Promise(res => {
 
 self.addEventListener('message', ({ data: { type, ...data } }) => {
   if (type === 'MAIN_WORKER_PORT') {
-    setMainWorker(wrap<MainAPI>(data.port))
+    const main = wrap<MainAPI>(data.port)
+    setMainWorker(main)
+    main.idbGet('meta', 'print-logs').then(togglePrint)
   }
 })
 

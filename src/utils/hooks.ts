@@ -339,3 +339,23 @@ export function useSubscriptions(): [
 
   return [subs, subscribe, unsubscribe]
 }
+
+export function useIDBState<T>(
+  key: string
+): [T | undefined, (v: T) => void, boolean] {
+  const [state, setState] = useState<T>()
+  const [loading, setLoading] = useState(true)
+  const setter = useComputed(key, key => (v: T) => {
+    setState(v)
+    main.idbPut('meta', key, v)
+  })
+
+  useEffect(() => {
+    main.idbGet('meta', key).then((v: T) => {
+      setState(v)
+      setLoading(false)
+    })
+  }, [key])
+
+  return [state, setter, loading]
+}

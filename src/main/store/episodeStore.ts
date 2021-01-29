@@ -51,13 +51,15 @@ export class Podcast {
     ])
   }
 
-  public get = async (index: number) =>
+  public get = async (index: number) => (
+    logger.info(index),
     await this.addTask(async () => {
       if (index >= this.keys.length) {
         await this.fetch(index - this.keys.length + 1)
       }
       return this.read(index)
     })
+  )
 
   public getById = async (id: string): Promise<EpisodeMin | undefined> => {
     if (!this.subscribed) return this.cache![id]

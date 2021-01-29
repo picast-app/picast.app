@@ -202,7 +202,7 @@ const S = {
   `,
 
   Root: styled.div`
-    font-family: 'Menlo', 'Source Code Pro', monospace;
+    font-family: 'Menlo', monospace;
     font-size: 12px;
     line-height: 1.5em;
 

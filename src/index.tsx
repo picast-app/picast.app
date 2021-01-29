@@ -8,10 +8,7 @@ import App from './App'
 import { main } from './workers'
 import 'styles'
 
-main.idbGet('meta', 'printLogs').then((v?: boolean) => {
-  if (v === undefined) return
-  togglePrint(v)
-})
+main.idbGet('meta', 'print_logs').then(togglePrint)
 
 window.addEventListener('echo_reload', () => {
   location.reload()

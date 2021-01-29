@@ -9,6 +9,7 @@ import { desktop, mobile } from 'styles/responsive'
 import { useMatchMedia } from 'utils/hooks'
 import About from './settings/About'
 import Appearance from './settings/Appearance'
+import Debug from './settings/Debug'
 
 type SettingsRoute = {
   name: string
@@ -20,6 +21,7 @@ const routes: SettingsRoute[] = [
   { name: 'General', icon: 'gear' },
   { name: 'Appearance', icon: 'palette', component: Appearance },
   { name: 'Notifications', icon: 'bell' },
+  { name: 'Debug', icon: 'bug', component: Debug },
   { name: 'About', icon: 'info', component: About },
 ]
 
