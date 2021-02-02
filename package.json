@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/start.js",
-    "build": "npm run gql:types && node scripts/build.js",
+    "build": "npm run types && node scripts/build.js",
     "test": "node scripts/test.js",
     "lint:check": "eslint . --cache",
     "lint:fix": "eslint . --fix --cache",
@@ -13,7 +13,9 @@
     "lint": "npm run lint:check && npm run format:check",
     "format": "npm run lint:fix && npm run format:fix",
     "gql:check": "npx apollo client:check",
-    "gql:types": "rm -rf src/gql/types && mkdir src/gql/types && npx apollo client:download-schema src/gql/types/schema.json && npx apollo client:codegen --target typescript --outputFlat src/gql/types && npx graphql-codegen && node src/gql/bundleTypes && prettier --write \"./src/gql/types/*.ts\""
+    "gql:types": "rm -rf src/types/gql && mkdir -p src/types/gql && npx apollo client:download-schema src/types/gql/schema.json && npx apollo client:codegen --target typescript --outputFlat src/types/gql && npx graphql-codegen && node src/gql/bundleTypes && prettier --write \"./src/types/gql/*.ts\"",
+    "ws:types": "typerpc schema socket.picast.app -o src/types/ws/index.ts",
+    "types": "npm run gql:types && npm run ws:types"
   },
   "dependencies": {
     "comlink": "^4.3.0",

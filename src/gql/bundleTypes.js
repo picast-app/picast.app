@@ -1,6 +1,7 @@
 const fs = require('fs')
+const path = require('path')
 
-const typeDir = __dirname + '/types'
+const typeDir = path.join(__dirname, '../types/gql')
 
 let schema = fs.readFileSync(`${typeDir}/schema.ts`, 'utf-8')
 

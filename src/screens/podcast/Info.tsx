@@ -6,7 +6,7 @@ import { lineClamp } from 'styles/mixin'
 import { desktop, mobile } from 'styles/responsive'
 import { useMatchMedia, useSubscriptions } from 'utils/hooks'
 import ContextMenu from './ContextMenu'
-import type * as T from 'gql/types'
+import type * as T from 'types/gql'
 
 export default function Info(podcast: Partial<T.PodcastPage_podcast>) {
   const [showDescription, setShowDescription] = useState(false)

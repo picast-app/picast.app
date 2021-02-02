@@ -1,5 +1,5 @@
 import { GraphQLClient } from 'graphql-request'
-import type * as T from 'gql/types'
+import type * as T from 'types/gql'
 import podcastQuery from 'gql/queries/podcast.gql'
 import episodeQuery from 'gql/queries/episode.gql'
 import feedQuery from 'gql/queries/feed.gql'

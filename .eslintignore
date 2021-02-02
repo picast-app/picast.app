@@ -3,6 +3,6 @@ scripts
 config
 scripts
 react-app-env.d.ts
-src/gql/types
+src/types
 src/typings/lib.esnext.weakref.d.ts
 apollo.config.js

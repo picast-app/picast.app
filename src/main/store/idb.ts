@@ -1,7 +1,7 @@
 import { openDB } from 'idb/with-async-ittr'
 import type Schema from './schema'
 import migrations from './migrations'
-import type * as GQL from 'gql/types'
+import type * as GQL from 'types/gql'
 import { omit } from 'utils/object'
 
 const VERSION = 3
