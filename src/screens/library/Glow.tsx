@@ -12,7 +12,8 @@ export default function Glow() {
   useEffect(() => {
     if (!ref) return
     const grid = ref.previousElementSibling!
-    const observer = new MutationObserver(() => {
+
+    const update = () => {
       setBoxes(
         (Array.from(grid.children).filter(
           node => node.nodeName === 'A'
@@ -26,10 +27,13 @@ export default function Glow() {
           return [x, y, width, height]
         })
       )
-    })
+    }
+    update()
+
+    const observer = new MutationObserver(update)
     observer.observe(grid, { childList: true })
     return () => observer.disconnect()
-  }, [ref])
+  }, [ref, width])
 
   useEffect(() => {
     if (!ctx || !boxes.length || !moving) return
@@ -115,6 +119,7 @@ function render(
   )
 
   gradient.addColorStop(0, '#ffff')
+  gradient.addColorStop(0.3, '#fff8')
   gradient.addColorStop(1, '#fff0')
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, canvas.width, canvas.height)

@@ -4,7 +4,7 @@ import Appbar from 'components/Appbar'
 import { ShowCard } from 'components/composite'
 import { Screen } from 'components/structure'
 import Glow from './library/Glow'
-import { useSubscriptions } from 'utils/hooks'
+import { useSubscriptions, useMatchMedia, useTheme } from 'utils/hooks'
 import { desktop } from 'styles/responsive'
 import { snack } from 'utils/notification'
 import { main } from 'workers'
@@ -12,6 +12,8 @@ import { main } from 'workers'
 export default function Library() {
   const [subs] = useSubscriptions()
   const [loading, setLoading] = useState(false)
+  const isDesktop = useMatchMedia(desktop)
+  const theme = useTheme()
 
   async function sync() {
     setLoading(true)
@@ -45,7 +47,7 @@ export default function Library() {
           <ShowCard id={id} key={id} />
         ))}
       </S.Grid>
-      <Glow />
+      {isDesktop && theme !== 'light' && <Glow />}
     </Screen>
   )
 }
@@ -105,6 +107,20 @@ const S = {
     @media ${desktop} {
       grid-gap: ${cardPadd}px;
       padding: ${cardPadd}px;
+    }
+
+    img {
+      transition: filter 0.15s ease, box-shadow 0.15s ease;
+      --shadow-cl: #fff4;
+
+      html[data-theme='light'] & {
+        --shadow-cl: #0008;
+      }
+    }
+
+    img:hover {
+      filter: saturate(120%) brightness(110%);
+      box-shadow: 0 0 6px 0 var(--shadow-cl);
     }
   `,
 }
