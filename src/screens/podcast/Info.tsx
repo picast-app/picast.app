@@ -71,7 +71,7 @@ const S = {
     --action-height: 2rem;
 
     padding: var(--padding);
-    height: calc(var(--height) + 2 * var(--padding));
+    min-height: calc(var(--height) + 2 * var(--padding));
     width: 100%;
 
     @media ${desktop} {
@@ -91,7 +91,7 @@ const S = {
   Head: styled.div`
     display: flex;
     justify-content: space-between;
-    height: var(--height);
+    min-height: var(--height);
 
     & > div {
       width: 100%;

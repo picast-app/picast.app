@@ -45,11 +45,11 @@ const episode = <T extends GQL.EpisodeFull | null>(
   podcast: string
 ): T extends null ? undefined : Schema['episodes']['value'] => {
   if (!gql) return undefined as any
-  const data = omit(filterEmpty(gql as any), '__typename')
+  const data = omit(filterEmpty(gql as any), '__typename', 'publishDate')
   return {
     ...data,
     podcast,
-    published: new Date(data.publishDate).getTime(),
+    published: new Date(gql.publishDate!).getTime(),
   } as any
 }
 

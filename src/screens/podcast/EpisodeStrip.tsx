@@ -5,6 +5,8 @@ import { main } from 'workers'
 import type { EpisodeBase } from 'main/store'
 import { proxy } from 'comlink'
 import { useTrackState } from 'utils/player'
+import { useComputed } from 'utils/hooks'
+import { mobile } from 'styles/responsive'
 
 type Props = {
   feed: string
@@ -13,17 +15,27 @@ type Props = {
 
 export default function EpisodeStrip({ feed, index }: Props) {
   const episode = useEpisode(feed, index)
+  const date = useComputed(episode?.published, format)
 
   return (
     <S.Strip index={index}>
-      <S.TextSec>{episode?.title}</S.TextSec>
-      <PlayButton
-        file={episode?.file}
-        id={[episode?.podcast, episode?.id] as any}
-      />
+      <S.Title>{episode?.title}</S.Title>
+      <S.Date>{date}</S.Date>
+      <S.Actions>
+        <PlayButton
+          file={episode?.file}
+          id={[episode?.podcast, episode?.id] as any}
+        />
+      </S.Actions>
     </S.Strip>
   )
 }
+
+const { format } = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+})
 
 function useEpisode(feed: string, index: number) {
   const [episode, setEpisode] = useState<EpisodeBase>()
@@ -62,32 +74,74 @@ function toggle(episode: EpisodeId, state: 'playing' | 'paused') {
 }
 
 const S = {
-  Strip: styled.div<{ index: number }>`
+  Strip: styled.article.attrs<{ index: number }>(({ index }) => ({
+    style: { top: `calc(${index} * var(--height))` },
+  }))<{
+    index: number
+  }>`
     position: absolute;
     width: 100%;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
 
     --height: 3.8rem;
     --height: var(--item-height);
     height: var(--height);
-    top: calc(${({ index }) => index} * var(--height));
     padding: 0 1rem;
 
     @media (pointer: coarse) {
       user-select: none;
     }
+
+    @media ${mobile} {
+      flex-direction: column-reverse;
+      justify-content: space-around;
+      padding-right: 3rem;
+
+      & > *:not(div) {
+        flex-grow: unset;
+        width: 100%;
+        text-align: left;
+        margin: 0;
+      }
+    }
   `,
 
-  TextSec: styled.div`
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
+  Title: styled.h1`
+    flex-grow: 1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    color: var(--cl-text-strong);
+
+    @media ${mobile} {
+      white-space: unset;
+      /* stylelint-disable */
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+  `,
+
+  Date: styled.span`
+    flex-shrink: 0;
+    margin-right: 3vw;
+    text-align: right;
+    min-width: 7rem;
+    opacity: 0.9;
+
+    @media ${mobile} {
+      font-size: 0.8rem;
+    }
   `,
 
   Actions: styled.div`
     width: 2rem;
+
+    @media ${mobile} {
+      position: absolute;
+      right: 0;
+    }
   `,
 }
