@@ -109,13 +109,28 @@ function render(
   ctx.fillStyle = '#fff'
   ctx.lineWidth = devicePixelRatio * 2
 
+  const cx = x * devicePixelRatio
+  const cy = y * devicePixelRatio
+  const rm = devicePixelRatio * 100
+
+  const inSight: Box[] = []
+  for (const box of boxes) {
+    if (
+      Math.abs(box[0] + box[2] / 2 - cx) >= rm + box[2] / 2 ||
+      Math.abs(box[1] + box[3] / 2 - cy) >= rm + box[3] / 2
+    )
+      continue
+    inSight.push(box)
+  }
+  if (inSight.length === 0) return
+
   const gradient = ctx.createRadialGradient(
-    x * devicePixelRatio,
-    y * devicePixelRatio,
+    cx,
+    cy,
     devicePixelRatio * 20,
-    x * devicePixelRatio,
-    y * devicePixelRatio,
-    devicePixelRatio * 100
+    cx,
+    cy,
+    rm
   )
 
   gradient.addColorStop(0, '#ffff')
@@ -127,7 +142,7 @@ function render(
   ctx.globalCompositeOperation = 'destination-in'
   ctx.beginPath()
 
-  for (const [x, y, w, h] of boxes) ctx.rect(x, y, w, h)
+  for (const box of inSight) ctx.rect(...box)
 
   ctx.closePath()
   ctx.stroke()
