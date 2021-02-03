@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import Appbar from 'components/Appbar'
 import { ShowCard } from 'components/composite'
 import { Screen } from 'components/structure'
+import Glow from './library/Glow'
 import { useSubscriptions } from 'utils/hooks'
 import { desktop } from 'styles/responsive'
 import { snack } from 'utils/notification'
@@ -44,6 +45,7 @@ export default function Library() {
           <ShowCard id={id} key={id} />
         ))}
       </S.Grid>
+      <Glow />
     </Screen>
   )
 }
@@ -103,10 +105,6 @@ const S = {
     @media ${desktop} {
       grid-gap: ${cardPadd}px;
       padding: ${cardPadd}px;
-
-      img {
-        border-radius: 0.25rem;
-      }
     }
   `,
 }

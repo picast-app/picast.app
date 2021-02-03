@@ -86,6 +86,10 @@ const S = {
         width: 4rem;
       }
     }
+
+    picture {
+      display: contents;
+    }
   `,
 
   Info: styled.div`
