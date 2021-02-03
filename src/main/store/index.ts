@@ -4,7 +4,7 @@ import { proxy } from 'comlink'
 import { Podcast, Episode, EpisodeBase } from './types'
 import * as Feed from './feed'
 import EpisodeStore from './episodeStore'
-import * as ws from 'main/ws'
+import ws, { wsApi } from 'main/ws'
 export * from './types'
 
 type SubscriptionCB = (v: { added?: string[]; removed?: string[] }) => void
@@ -23,13 +23,12 @@ export default class Store {
     this.subscriptions = subs.map(({ id }) => id)
     for (const podcast of subs) this.podcasts[podcast.id] = podcast
 
-    ws.addListener(async msg => {
-      if (msg.type !== 'EPISODE_ADDED') return
-      await (await this.epStore.getPodcast(msg.podcast)).addEpisodes(
-        msg.episodes.map(({ url, published, ...rest }: any) => ({
+    ws.on('episodeAdded', async ({ podcast, episodes }) => {
+      await (await this.epStore.getPodcast(podcast)).addEpisodes(
+        episodes.map(({ url, published, ...rest }: any) => ({
           file: url,
           published: published * 1000,
-          podcast: msg.podcast,
+          podcast,
           ...rest,
         })),
         true
@@ -67,7 +66,7 @@ export default class Store {
         ({ node }) => convert.episode(node as any, id)!
       ) ?? []
     resolve!(episodes)
-    if (!episodes.length) ws.send({ type: 'SUB_EPISODES', podcast: id })
+    if (!episodes.length) wsApi.notify('subscribeEpisodes', id)
     if (!remote) return null
 
     const podcast = convert.podcast(remote)
