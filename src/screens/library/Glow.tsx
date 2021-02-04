@@ -1,39 +1,58 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { useCanvas } from 'utils/hooks'
+import { useCanvas, useComputed } from 'utils/hooks'
 import debounce from 'lodash/debounce'
+import { desktopPts, cardPadd } from './grid'
+
+const sidebarWidth = 15 * 16
 
 export default function Glow() {
   const [ref, setRef] = useState<HTMLCanvasElement | null>(null)
   const [boxes, setBoxes] = useState<Box[]>([])
   const [ctx, width, height] = useCanvas(ref)
   const moving = useMouseMoving()
+  const [columns, _width] = useComputed(width, (v): [number, number] => {
+    const vw = v / devicePixelRatio + sidebarWidth
+    for (let i = 0; i < desktopPts.length; i++)
+      if (desktopPts[i][0] > vw) return [desktopPts[Math.max(i - 1, 0)][1], v]
+    return [desktopPts.slice(-1)[0][1], _width]
+  })
 
   useEffect(() => {
-    if (!ref) return
+    if (!ref || !_width) return
     const grid = ref.previousElementSibling!
 
     const update = () => {
-      setBoxes(
-        (Array.from(grid.children).filter(
-          node => node.nodeName === 'A'
-        ) as any).map((v: HTMLElement) => {
-          const el: HTMLElement = v.firstElementChild as any
-          const x = el.offsetLeft * devicePixelRatio
-          const y = el.offsetTop * devicePixelRatio
-          let { width, height } = el.getBoundingClientRect()
-          width *= devicePixelRatio
-          height *= devicePixelRatio
-          return [x, y, width, height]
-        })
-      )
+      const boxes = (Array.from(grid.children).filter(
+        node => node.nodeName === 'A'
+      ) as any).map((v: HTMLElement) => {
+        const el: HTMLElement = v.firstElementChild as any
+        const x = el.offsetLeft * devicePixelRatio
+        const y = el.offsetTop * devicePixelRatio
+        let { width, height } = el.getBoundingClientRect()
+        width *= devicePixelRatio
+        height *= devicePixelRatio
+        return [x, y, width, height]
+      })
+      if (!boxes.length) {
+        const padd = cardPadd * devicePixelRatio
+        const cw = (_width - padd) / columns
+        const rows = Math.ceil((window.innerHeight / cw) * devicePixelRatio)
+        for (let x = 0; x < columns; x++) {
+          for (let y = 0; y < rows; y++) {
+            const box = [x * cw + padd, y * cw + padd, cw - padd, cw - padd]
+            boxes.push(box)
+          }
+        }
+      }
+      setBoxes(boxes)
     }
     update()
 
     const observer = new MutationObserver(update)
     observer.observe(grid, { childList: true })
     return () => observer.disconnect()
-  }, [ref, width])
+  }, [ref, _width, columns])
 
   useEffect(() => {
     if (!ctx || !boxes.length || !moving) return
@@ -107,11 +126,11 @@ function render(
   // eslint-disable-next-line
   canvas.width = canvas.width
   ctx.fillStyle = '#fff'
-  ctx.lineWidth = devicePixelRatio * 2
+  ctx.lineWidth = devicePixelRatio
 
   const cx = x * devicePixelRatio
   const cy = y * devicePixelRatio
-  const rm = devicePixelRatio * 100
+  const rm = devicePixelRatio * 75
 
   const inSight: Box[] = []
   for (const box of boxes) {
@@ -124,14 +143,7 @@ function render(
   }
   if (inSight.length === 0) return
 
-  const gradient = ctx.createRadialGradient(
-    cx,
-    cy,
-    devicePixelRatio * 20,
-    cx,
-    cy,
-    rm
-  )
+  const gradient = ctx.createRadialGradient(cx, cy, rm / 5, cx, cy, rm)
 
   gradient.addColorStop(0, '#ffff')
   gradient.addColorStop(0.3, '#fff8')

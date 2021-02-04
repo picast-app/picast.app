@@ -8,6 +8,7 @@ import { useSubscriptions, useMatchMedia, useTheme } from 'utils/hooks'
 import { desktop } from 'styles/responsive'
 import { snack } from 'utils/notification'
 import { main } from 'workers'
+import { cardPadd, mobileQueries, desktopQueries } from './library/grid'
 
 export default function Library() {
   const [subs] = useSubscriptions()
@@ -52,43 +53,6 @@ export default function Library() {
   )
 }
 
-const cardPadd = 1.5 * 16
-const sideBarWidth = 15 * 16
-
-const maxWidth = (
-  columns: number,
-  maxCardSize: number,
-  padding: number,
-  sidePadd: number
-) => columns * maxCardSize + (columns - 1) * padding + 2 * padding + sidePadd
-
-const DESKTOP_MIN_WIDTH = 901
-
-const desktopBreakPoints = Array(10)
-  .fill(3)
-  .map((v, i) => v + i)
-  .map(
-    columns =>
-      `@media (min-width: ${Math.max(
-        maxWidth(columns - 1, 256, cardPadd, sideBarWidth),
-        DESKTOP_MIN_WIDTH
-      )}px) { --columns: ${columns}; }`
-  )
-
-const mobilePts = Array(4)
-  .fill(3)
-  .map((v, i) => v + i)
-  .map(columns => maxWidth(columns - 1, 180, 0, 0))
-
-const mobileBreakPoints = mobilePts
-  .filter(v => v < DESKTOP_MIN_WIDTH)
-  .map(
-    (v, i, { length }) =>
-      `@media (min-width: ${v}px)${
-        i < length - 1 ? '' : ` and (max-width: ${DESKTOP_MIN_WIDTH - 1}px)`
-      } { --columns: ${3 + i} }`
-  )
-
 const S = {
   Grid: styled.div`
     --columns: 2;
@@ -101,8 +65,8 @@ const S = {
       height: 100%;
     }
 
-    ${mobileBreakPoints.join('\n')}
-    ${desktopBreakPoints.join('\n')}
+    ${mobileQueries.join('\n')}
+    ${desktopQueries.join('\n')}
 
     @media ${desktop} {
       grid-gap: ${cardPadd}px;
