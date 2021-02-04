@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { useCanvas, useComputed } from 'utils/hooks'
 import debounce from 'lodash/debounce'
+import { useCanvas, useComputed, useTheme } from 'utils/hooks'
 import { desktopPts, cardPadd } from './grid'
 
 const sidebarWidth = 15 * 16
@@ -9,7 +9,7 @@ const sidebarWidth = 15 * 16
 export default function Glow() {
   const [ref, setRef] = useState<HTMLCanvasElement | null>(null)
   const [boxes, setBoxes] = useState<Box[]>([])
-  const [ctx, width, height] = useCanvas(ref)
+  const [ctx, width, height] = useCanvas(ref, { desynchronized: true })
   const moving = useMouseMoving()
   const [columns, _width] = useComputed(width, (v): [number, number] => {
     const vw = v / devicePixelRatio + sidebarWidth
@@ -17,6 +17,7 @@ export default function Glow() {
       if (desktopPts[i][0] > vw) return [desktopPts[Math.max(i - 1, 0)][1], v]
     return [desktopPts.slice(-1)[0][1], _width]
   })
+  const theme = useTheme()
 
   useEffect(() => {
     if (!ref || !_width) return
@@ -61,14 +62,22 @@ export default function Glow() {
     let rfId: number
 
     const renderFrame = () => {
-      if (cursor) render(ref!, ctx, boxes, cursor[0] - x, cursor[1] - y)
+      if (cursor)
+        render(
+          ref!,
+          ctx,
+          boxes,
+          theme === 'light' ? '#000' : '#fff',
+          cursor[0] - x,
+          cursor[1] - y
+        )
       if (moving) rfId = requestAnimationFrame(renderFrame)
     }
 
     renderFrame()
 
     return () => cancelAnimationFrame(rfId)
-  }, [boxes, ctx, width, height, moving, ref])
+  }, [boxes, ctx, width, height, moving, ref, theme])
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
@@ -78,7 +87,7 @@ export default function Glow() {
     return () => window.removeEventListener('mousemove', onMove)
   })
 
-  return <S.Canvas ref={setRef}></S.Canvas>
+  return <S.Canvas ref={setRef} />
 }
 
 function useMouseMoving() {
@@ -120,12 +129,12 @@ function render(
   canvas: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
   boxes: Box[],
+  color: string,
   x: number,
   y: number
 ) {
   // eslint-disable-next-line
   canvas.width = canvas.width
-  ctx.fillStyle = '#fff'
   ctx.lineWidth = devicePixelRatio
 
   const cx = x * devicePixelRatio
@@ -145,9 +154,9 @@ function render(
 
   const gradient = ctx.createRadialGradient(cx, cy, rm / 5, cx, cy, rm)
 
-  gradient.addColorStop(0, '#ffff')
-  gradient.addColorStop(0.3, '#fff8')
-  gradient.addColorStop(1, '#fff0')
+  gradient.addColorStop(0, color + 'f')
+  gradient.addColorStop(0.3, color + '8')
+  gradient.addColorStop(1, color + '0')
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 

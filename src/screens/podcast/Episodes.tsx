@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import ReactDOMServer from 'react-dom/server'
 import styled from 'styled-components'
 import Episode from './EpisodeStrip'
 import { desktop } from 'styles/responsive'
 import { useFeed, useComputed, useScrollPos } from 'utils/hooks'
-import ReactDOMServer from 'react-dom/server'
+import { main, proxy } from 'workers'
 import * as cl from 'utils/css/color'
 
 type Props = {
@@ -14,11 +15,12 @@ type Props = {
 
 const itemHeight = 3.8 * 16
 
-export default function Episodes({ id, total = 100, onLoading }: Props) {
+export default function Episodes({ id, total: _total, onLoading }: Props) {
   const [ref, setRef] = useState<HTMLOListElement | null>(null)
   const scrollTarget = useComputed(ref, el => el?.parentElement?.parentElement)
   const scrollPos = useScrollPos(scrollTarget)
   const feed = useFeed(id)
+  const [total, setTotal] = useState(_total ?? 100)
 
   const ep = useComputed(total, n =>
     Array(n)
@@ -30,6 +32,22 @@ export default function Episodes({ id, total = 100, onLoading }: Props) {
     scrollPos / itemHeight - window.innerHeight / itemHeight / 2,
     0
   )
+
+  useEffect(() => {
+    if (_total) return
+    let cancel: (() => void) | undefined = undefined
+    main
+      .onTotalChange(
+        id,
+        proxy(({ complete, total }) => {
+          setTotal(total)
+          if (complete) onLoading(false)
+        })
+      )
+      .then(v => (cancel = v))
+
+    return cancel
+  }, [_total, onLoading, id])
 
   if (!feed) return null
   return (

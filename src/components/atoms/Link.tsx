@@ -11,10 +11,16 @@ type Props = {
 
 export const Link = ({ children, to, append, wrap, nav, ...props }: Props) => {
   const isExternal = /^https?:\/\//.test(to)
+
   const link = (
     <SLink
       {...(isExternal
-        ? { to, target: '_blank', rel: 'noopener noreferrer' }
+        ? {
+            href: to,
+            as: 'a',
+            target: '_blank',
+            rel: 'noopener noreferrer',
+          }
         : {
             to: {
               pathname: append

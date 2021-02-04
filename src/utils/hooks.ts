@@ -203,7 +203,8 @@ document.addEventListener('visibilitychange', () => {
 export const useVisibility = () => useSubscription(visibility)[0]
 
 export function useCanvas(
-  canvas?: HTMLCanvasElement | null
+  canvas?: HTMLCanvasElement | null,
+  { desynchronized = false }: CanvasRenderingContext2DSettings = {}
 ): [
   context: CanvasRenderingContext2D | undefined,
   width: number,
@@ -244,12 +245,12 @@ export function useCanvas(
       return
     }
 
-    setCtx(canvas.getContext('2d') ?? undefined)
+    setCtx(canvas.getContext('2d', { desynchronized }) ?? undefined)
 
     observer.observe(canvas)
 
     return () => observer.disconnect()
-  }, [canvas, observer])
+  }, [canvas, observer, desynchronized])
 
   return [ctx, width, height]
 }

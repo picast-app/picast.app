@@ -17,14 +17,15 @@ export default function EpisodeStrip({ feed, index }: Props) {
   const episode = useEpisode(feed, index)
   const date = useComputed(episode?.published, format)
 
+  if (!episode) return null
   return (
     <S.Strip index={index}>
-      <S.Title>{episode?.title}</S.Title>
+      <S.Title>{episode.title}</S.Title>
       <S.Date>{date}</S.Date>
       <S.Actions>
         <PlayButton
-          file={episode?.file}
-          id={[episode?.podcast, episode?.id] as any}
+          file={episode.file}
+          id={[episode.podcast, episode.id] as any}
         />
       </S.Actions>
     </S.Strip>

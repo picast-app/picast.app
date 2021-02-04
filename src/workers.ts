@@ -5,6 +5,8 @@ import type { API } from 'main/main.worker'
 import { proxy, createEndpoint } from 'comlink'
 import { snack } from 'utils/notification'
 
+export { proxy }
+
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')
 
 const mainWorker: Worker = new (MainWorker as any)()

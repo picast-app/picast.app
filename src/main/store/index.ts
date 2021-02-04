@@ -8,12 +8,14 @@ import ws, { wsApi } from 'main/ws'
 export * from './types'
 
 type SubscriptionCB = (v: { added?: string[]; removed?: string[] }) => void
+type TotalCB = (v: { total: number; complete: boolean }) => void
 
 export default class Store {
   private readonly podcasts: Record<Podcast['id'], Podcast> = {}
   private subscriptions: Podcast['id'][] = []
   private subCB?: SubscriptionCB
   private feedSubs: Feed.Base[] = []
+  private totalListeners: Record<Podcast['id'], TotalCB[]> = {}
 
   constructor(
     private readonly db: PromiseType<typeof dbProm>,
@@ -24,14 +26,17 @@ export default class Store {
     for (const podcast of subs) this.podcasts[podcast.id] = podcast
 
     ws.on('episodeAdded', async ({ podcast, episodes }) => {
-      await (await this.epStore.getPodcast(podcast)).addEpisodes(
-        episodes.map(({ url, published, ...rest }: any) => ({
-          file: url,
-          published: published * 1000,
-          podcast,
-          ...rest,
-        })),
-        true
+      const formatted = episodes.map(({ url, published, ...rest }: any) => ({
+        file: url,
+        published: published * 1000,
+        podcast,
+        ...rest,
+      }))
+      const store = await this.epStore.getPodcast(podcast)
+      await store.addEpisodes(formatted, true)
+      const { total, hasFeedStart: complete } = store
+      this.totalListeners[podcast]?.forEach(listener =>
+        listener({ total, complete })
       )
     })
   }
@@ -67,12 +72,26 @@ export default class Store {
       ) ?? []
     resolve!(episodes)
     if (!episodes.length) wsApi.notify('subscribeEpisodes', id)
+
     if (!remote) return null
 
-    const podcast = convert.podcast(remote)
+    const podcast: Podcast = convert.podcast(remote)
     this.podcasts[id] = podcast
+    podcast.incomplete = episodes.length === 0
 
     return podcast
+  }
+
+  public async onTotalChange(
+    id: string,
+    handler: TotalCB
+  ): Promise<() => void> {
+    ;(this.totalListeners[id] ??= []).push(handler)
+    return proxy(() => {
+      this.totalListeners[id] = this.totalListeners[id]!.filter(
+        f => f !== handler
+      )
+    })
   }
 
   public async episode([podId, epId]: EpisodeId): Promise<EpisodeBase | null> {

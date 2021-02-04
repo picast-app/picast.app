@@ -6,7 +6,7 @@ type Key = [id: string, published: number]
 
 export class Podcast {
   private cache?: Record<string, EpisodeBase>
-  private hasFeedStart = false
+  public hasFeedStart = false
   private tasks: Promise<any>[] = []
   private listeners: ((...i: number[]) => void)[] = []
 
@@ -27,6 +27,10 @@ export class Podcast {
     const ids = await db.getAllKeysFromIndex('episodes', 'podcast', id)
     const keys = Podcast.keys(ids)
     return new Podcast(id, db, keys, subscribed)
+  }
+
+  get total() {
+    return this.keys.length
   }
 
   public async subscribe() {

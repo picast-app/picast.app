@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAPICall } from 'utils/hooks'
 import { Screen } from 'components/structure'
 import Appbar from 'components/Appbar'
@@ -10,10 +10,15 @@ export default function Podcast({
   match,
 }: RouteComponentProps<{ id: string }>) {
   const [podcast, _loading] = useAPICall('podcast', match.params.id)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(_loading)
+
+  useEffect(() => {
+    if (_loading) return setLoading(true)
+    setLoading(podcast?.incomplete ?? false)
+  }, [_loading, podcast?.incomplete])
 
   return (
-    <Screen loading={_loading || loading}>
+    <Screen loading={loading}>
       <Appbar title={podcast?.title} back="/" />
       <Info {...podcast} />
       <Feed

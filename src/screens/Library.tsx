@@ -48,7 +48,7 @@ export default function Library() {
           <ShowCard id={id} key={id} />
         ))}
       </S.Grid>
-      {isDesktop && theme !== 'light' && <Glow />}
+      {isDesktop && (theme !== 'light' || !subs?.length) && <Glow />}
     </Screen>
   )
 }
