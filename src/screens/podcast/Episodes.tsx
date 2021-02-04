@@ -20,7 +20,7 @@ export default function Episodes({ id, total: _total, onLoading }: Props) {
   const scrollTarget = useComputed(ref, el => el?.parentElement?.parentElement)
   const scrollPos = useScrollPos(scrollTarget)
   const feed = useFeed(id)
-  const [total, setTotal] = useState(_total ?? 100)
+  const [total, setTotal] = useState(Math.max(_total ?? 100, 100))
 
   const ep = useComputed(total, n =>
     Array(n)

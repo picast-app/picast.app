@@ -39,6 +39,14 @@ export default class Store {
         listener({ total, complete })
       )
     })
+
+    ws.on('hasAllEpisodes', async id => {
+      const store = await this.epStore.getPodcast(id)
+      store.hasFeedStart = true
+      this.totalListeners[id]?.forEach(listener =>
+        listener({ total: store.total, complete: true })
+      )
+    })
   }
 
   public getSubscriptions(): string[] {
