@@ -9,6 +9,10 @@ export default function Debug() {
   if (loading) return null
   return (
     <Section>
+      <span>dppx</span>
+      <span>{devicePixelRatio}</span>
+      <span>Concurrency</span>
+      <span>{navigator.hardwareConcurrency}</span>
       <span>Print logs</span>
       <Switch checked={print ?? false} onChange={setPrint} />
     </Section>

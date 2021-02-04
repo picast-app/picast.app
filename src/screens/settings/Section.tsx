@@ -50,8 +50,13 @@ const S = {
     align-items: center;
 
     & > *:nth-child(2n) {
-      text-align: right;
       user-select: text;
+      justify-self: right;
+    }
+
+    & > span:nth-child(2n) {
+      width: 100%;
+      text-align: right;
     }
 
     & > label,
