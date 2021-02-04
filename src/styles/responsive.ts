@@ -1,2 +1,2 @@
-export const desktop = '(min-width: 901px)'
-export const mobile = `not all and ${desktop}`
+export const mobile = `(max-width: 900px)`
+export const desktop = `not all and ${mobile}`

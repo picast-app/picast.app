@@ -53,6 +53,10 @@ export default function Library() {
   )
 }
 
+const queries = [...mobileQueries, ...desktopQueries].map(
+  ([q, c]) => `${q} { --columns: ${c}; }`
+)
+
 const S = {
   Grid: styled.div`
     --columns: 2;
@@ -65,8 +69,7 @@ const S = {
       height: 100%;
     }
 
-    ${mobileQueries.join('\n')}
-    ${desktopQueries.join('\n')}
+    ${queries.join('\n')}
 
     @media ${desktop} {
       grid-gap: ${cardPadd}px;

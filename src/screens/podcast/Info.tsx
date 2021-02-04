@@ -44,7 +44,12 @@ export default function Info(podcast: Partial<T.PodcastPage_podcast>) {
           <span>{podcast.author}</span>
           {isDesktop && <S.Description>{podcast.description}</S.Description>}
         </div>
-        <Artwork src={podcast.artwork} onClick={() => setShowcaseArt(true)} />
+        <Artwork
+          src={podcast.artwork}
+          covers={podcast.covers}
+          onClick={() => setShowcaseArt(true)}
+          sizes={[[mobile, mobileCoverSize], desktopCoverSize]}
+        />
       </S.Head>
       {!isDesktop && (
         <>
@@ -62,12 +67,15 @@ export default function Info(podcast: Partial<T.PodcastPage_podcast>) {
   )
 }
 
+const mobileCoverSize = 7 * 16
+const desktopCoverSize = 12 * 16
+
 const S = {
   Info: styled.div`
     border-bottom: 1px solid var(--cl-text-disabled);
 
     --padding: 1rem;
-    --height: 7rem;
+    --height: ${mobileCoverSize}px;
     --action-height: 2rem;
 
     padding: var(--padding);
@@ -76,7 +84,7 @@ const S = {
 
     @media ${desktop} {
       border-bottom: none;
-      --height: 12rem;
+      --height: ${desktopCoverSize}px;
     }
 
     @media ${mobile} {

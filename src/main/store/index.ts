@@ -194,7 +194,7 @@ export default class Store {
   }
 
   private async storeSubscription(id: string) {
-    const podcast = this.podcasts[id]
+    const { incomplete, ...podcast } = this.podcasts[id]
     await this.db.put('subscriptions', podcast)
   }
 

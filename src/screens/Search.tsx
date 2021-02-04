@@ -49,7 +49,12 @@ export default function Search() {
           </S.PodHeader>
           <ExpandoGrid list={!isDesktop} expanded={showAll}>
             {results?.map(v => (
-              <ShowCard key={v.id} podcast={v} title strip={!isDesktop} />
+              <ShowCard
+                key={v.id}
+                podcast={v as any}
+                title
+                strip={!isDesktop}
+              />
             ))}
           </ExpandoGrid>
         </S.Podcasts>

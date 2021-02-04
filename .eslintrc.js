@@ -27,5 +27,6 @@ module.exports = {
     'semi-style': ['error', 'first'],
     'no-async-promise-executor': 'off',
     'no-sequences': 'off',
+    '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
   },
 }

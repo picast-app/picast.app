@@ -21,20 +21,24 @@ export const desktopPts = Array(10)
     columns,
   ])
 
-export const desktopQueries = desktopPts.map(
-  ([size, columns]) =>
-    `@media (min-width: ${size}px) { --columns: ${columns}; }`
-)
-
 const mobileBreaks = Array(4)
   .fill(3)
   .map((v, i) => v + i)
   .map(columns => maxWidth(columns - 1, 180, 0, 0))
-  .filter(v => v < DESKTOP_MIN_WIDTH)
+  .filter(v => v < DESKTOP_MIN_WIDTH - 1)
 
-export const mobileQueries = mobileBreaks.map(
-  (v, i, { length }) =>
-    `@media (min-width: ${v}px)${
-      i < length - 1 ? '' : ` and (max-width: ${DESKTOP_MIN_WIDTH - 1}px)`
-    } { --columns: ${3 + i} }`
-)
+type Query = [query: string, columns: number, size?: string]
+
+export const mobileQueries: Query[] = mobileBreaks.map((v, i, { length }) => [
+  `@media (min-width: ${v}px)` +
+    (i < length - 1 ? '' : ` and (max-width: ${DESKTOP_MIN_WIDTH - 1}px)`),
+  3 + i,
+])
+
+export const desktopQueries: Query[] = desktopPts.map(([size, columns]) => [
+  `@media (min-width: ${size}px)`,
+  columns,
+  `calc((100vw - ${sideBarWidth}px - ${
+    columns + 1
+  } * ${cardPadd}px) / ${columns})`,
+])

@@ -12,6 +12,7 @@ export default interface Schema extends DBSchema {
       title: string
       author?: string
       artwork?: string
+      covers: string[]
       description?: string
       subscriptionDate?: Date
       check?: string

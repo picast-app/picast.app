@@ -3,16 +3,10 @@ import styled from 'styled-components'
 import { Artwork, Link } from 'components/atoms'
 import { lineClamp } from 'styles/mixin'
 import { useAPICall } from 'utils/hooks'
-
-type Podcast = {
-  id: string
-  title: string
-  author: string | null
-  artwork: string | null
-}
+import type { Podcast } from 'main/store/types'
 
 type Props = {
-  podcast?: Podcast
+  podcast?: Partial<Podcast>
   id?: string
   card?: boolean
   strip?: boolean
@@ -35,7 +29,11 @@ export function ShowCard({
   if (!podcast) style.push('loading')
   const container = (
     <S.Container data-style={style.join(' ')}>
-      <Artwork src={podcast?.artwork} title={podcast?.title} />
+      <Artwork
+        src={podcast?.artwork}
+        title={podcast?.title}
+        covers={podcast?.covers}
+      />
       {podcast && (
         <>
           {(title || author) && (

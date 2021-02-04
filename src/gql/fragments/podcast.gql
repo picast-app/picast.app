@@ -6,6 +6,7 @@ fragment PodcastPageInfo on Podcast {
   author
   description
   artwork
+  covers
   feed
   check
   episodes(last: 50) {
