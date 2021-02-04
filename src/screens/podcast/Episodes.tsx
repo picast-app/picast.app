@@ -22,6 +22,11 @@ export default function Episodes({ id, total: _total, onLoading }: Props) {
   const feed = useFeed(id)
   const [total, setTotal] = useState(Math.max(_total ?? 100, 100))
 
+  useEffect(() => {
+    if (!_total || _total < 0) return
+    setTotal(_total)
+  }, [_total])
+
   const ep = useComputed(total, n =>
     Array(n)
       .fill(0)
