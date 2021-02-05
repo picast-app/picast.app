@@ -18,25 +18,30 @@ export default function Library() {
 
   async function sync() {
     setLoading(true)
-    const { added, removed } = await main.syncSubscriptions()
-    const msg =
-      added.length + removed.length === 0
-        ? 'no changes to subscriptions found'
-        : [
-            added.length &&
-              'added ' +
-                (added.length > 1
-                  ? `${added.length} podcasts`
-                  : `"${added[0]}"`),
-            removed.length &&
-              'removed ' +
-                (removed.length > 1
-                  ? `${removed.length} podcasts`
-                  : `"${removed[0]}"`),
-          ]
-            .filter(Boolean)
-            .join(' and ')
-    snack({ text: msg[0].toUpperCase() + msg.slice(1) + '.' })
+    const subs = await main.pullSubscriptions()
+    if (!subs) {
+      snack({ text: 'not logged in' })
+    } else {
+      const { added, removed } = subs
+      const msg =
+        added.length + removed.length === 0
+          ? 'no changes to subscriptions found'
+          : [
+              added.length &&
+                'added ' +
+                  (added.length > 1
+                    ? `${added.length} podcasts`
+                    : `"${added[0]}"`),
+              removed.length &&
+                'removed ' +
+                  (removed.length > 1
+                    ? `${removed.length} podcasts`
+                    : `"${removed[0]}"`),
+            ]
+              .filter(Boolean)
+              .join(' and ')
+      snack({ text: msg[0].toUpperCase() + msg.slice(1) + '.' })
+    }
     setLoading(false)
   }
 

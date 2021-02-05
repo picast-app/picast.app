@@ -1,7 +1,7 @@
 import { useSubscription } from 'utils/hooks'
 import createSub from 'utils/subscription'
 import { main } from 'workers'
-import type { Podcast } from 'main/store'
+import type { Podcast } from 'main/store/types'
 
 const audio = document.querySelector('#player') as HTMLAudioElement
 audio.volume = 0.4
