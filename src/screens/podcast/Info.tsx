@@ -60,6 +60,7 @@ export default function Info(podcast: Partial<T.PodcastPage_podcast>) {
       {showcaseArt && (
         <ArtworkShowcase
           src={podcast.artwork!}
+          covers={podcast.covers ?? undefined}
           onClose={() => setShowcaseArt(false)}
         />
       )}

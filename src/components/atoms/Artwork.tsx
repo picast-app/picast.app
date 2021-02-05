@@ -47,7 +47,7 @@ export function Artwork({
       const next = dict[type]!.findIndex(([n]) => n < size)
       dict[type]!.splice(next === -1 ? dict[type]!.length : next, 0, [
         size,
-        `https://img.picast.app/${name}`,
+        `${process.env.IMG_HOST}/${name}`,
       ])
     }
     return dict

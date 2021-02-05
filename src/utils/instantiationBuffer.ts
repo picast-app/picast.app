@@ -44,7 +44,6 @@ export default <T extends new (...args: any) => any>(
   ) as any
 
   instanceProm.then(inst => {
-    logger.info('idb instance ready')
     instance = inst
     for (const [method, invs] of Object.entries(invocations)) {
       for (const { args, callback } of invs) {

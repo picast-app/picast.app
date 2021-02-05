@@ -21,6 +21,7 @@ const mainWorker: Promise<Remote<MainAPI>> = new Promise(res => {
 })
 
 self.addEventListener('message', ({ data: { type, ...data } }) => {
+  logger.info('sw msg', type, data)
   if (type === 'MAIN_WORKER_PORT') {
     const main = wrap<MainAPI>(data.port)
     setMainWorker(main)
@@ -109,10 +110,12 @@ async function getStatic() {
 }
 
 async function checkForUpdate() {
+  logger.info('check for update')
   const main = await mainWorker
   const updateStatus = await main.idbGet('meta', 'updateStatus')
 
   if (updateStatus === 'UP_TO_DATE') {
+    logger.info('up to date')
     const cache = await caches.open(STATIC_CACHE)
     const cached = await cache.match('/index.html')
     if (!cached) return
@@ -126,6 +129,7 @@ async function checkForUpdate() {
       )
     }
   } else if (updateStatus === 'EVICT_PENDING') {
+    logger.info('fetch update')
     const staticFiles = await getStatic()
     const cache = await caches.open(STATIC_CACHE)
     const keys = await cache.keys()
