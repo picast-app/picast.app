@@ -1,10 +1,13 @@
 import * as api from './api'
 import store from './store'
+import dbProm from './store/idb'
+import stateProm from './appState'
 import type * as T from 'types/gql'
 
 export async function signIn(creds: SignInCreds) {
-  const { subscriptions } = await api.signInGoogle(creds.accessToken)
-  await pullSubscriptions(subscriptions)
+  const me = await api.signInGoogle(creds.accessToken)
+  storeSignIn(me)
+  await pullSubscriptions(me.subscriptions)
 }
 
 export async function pullSubscriptions(
@@ -20,6 +23,7 @@ export async function pullSubscriptions(
   if (!subs) {
     const subscriptions = await store.getSubscriptions()
     const me = await api.me(subscriptions)
+    storeSignIn(me)
     if (!me) return logger.info('no logged in')
     subs = me.subscriptions
   }
@@ -27,6 +31,19 @@ export async function pullSubscriptions(
     add: subs.added,
     remove: subs.removed,
   })
+}
+
+async function storeSignIn(me: T.Me_me | null) {
+  const db = await dbProm
+  const { state } = await stateProm
+  if (!me) {
+    await db.delete('meta', 'signin')
+    state.signOut()
+  } else {
+    const info = { provider: me.authProvider }
+    await db.put('meta', info, 'signin')
+    state.signIn(info)
+  }
 }
 
 pullSubscriptions()

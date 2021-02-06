@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react'
 import styled from 'styled-components'
+import { Redirect } from 'react-router-dom'
 import { Screen } from 'components/structure'
 import { main } from 'workers'
-import { useHistory } from 'utils/hooks'
+import { useHistory, useAppState } from 'utils/hooks'
 
 const url = new URL(process.env.GOOGLE_OAUTH_ENDPOINT as string)
 
@@ -18,6 +19,7 @@ url.searchParams.set('scope', scopes.join(' '))
 
 export default function SignIn() {
   const history = useHistory()
+  const [signedIn, loading] = useAppState<boolean>('signedIn')
 
   const { access_token: accessToken } = Object.fromEntries(
     location.hash
@@ -32,6 +34,7 @@ export default function SignIn() {
     history.replace(location.pathname)
   }, [accessToken, history])
 
+  if (!loading && signedIn) return <Redirect to="/" />
   return (
     <Screen padd loading={!!location.hash}>
       <span>Sign In</span>

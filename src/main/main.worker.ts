@@ -6,7 +6,7 @@ import bufferInstance from 'utils/instantiationBuffer'
 import dbProm from './store/idb'
 import store from './store'
 import * as account from './account'
-import { subscribe } from './appState'
+import appState from './appState'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const self: DedicatedWorkerGlobalScope
@@ -16,7 +16,10 @@ const idbInterface = bufferInstance(IDBInterface, IDBInterface.create())
 
 dbProm.then(async idb => togglePrint(await idb.get('meta', 'print_logs')))
 
-const state: typeof subscribe = (...args) => proxy(subscribe(...args))
+const state = async <T = unknown>(p: string, f: (v: T) => void) => {
+  const { subscribe } = await appState
+  return proxy(subscribe(p, f))
+}
 
 const api = {
   ...apiCalls,
