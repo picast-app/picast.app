@@ -55,4 +55,38 @@ async function init(): Promise<{
     },
   }
 }
-export default init()
+// export default init()
+const appState = init()
+export default appState
+
+async function initSync() {
+  if (!('BroadcastChannel' in globalThis)) return
+
+  const channel = new BroadcastChannel('appstate')
+
+  channel.onmessage = async ({ data }) => {
+    const { state } = await appState
+    logger.info('received broadcast update')
+    cancel?.()
+    Object.assign(state, JSON.parse(data))
+    listen()
+  }
+
+  const { state } = await appState
+
+  const listen = () => {
+    let updated = false
+    cancel = autorun(() => {
+      const current = JSON.stringify(state)
+      const initial = !updated
+      updated = true
+      if (initial) return
+      logger.info('broadcast update')
+      channel.postMessage(current)
+    })
+  }
+  let cancel: (() => void) | undefined = undefined
+  listen()
+}
+
+initSync()

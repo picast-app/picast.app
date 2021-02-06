@@ -28,7 +28,6 @@ export const subscriptionSub = createSub<string[]>([])
 main
   .setSubscriptionCB(
     proxy(({ added, removed }) => {
-      logger.info('got called')
       if (removed?.length)
         subscriptionSub.setState(
           subscriptionSub.state.filter(id => !removed.includes(id))
