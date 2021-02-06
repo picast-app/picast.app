@@ -28,5 +28,6 @@ module.exports = {
     'no-async-promise-executor': 'off',
     'no-sequences': 'off',
     '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
+    '@typescript-eslint/no-empty-function': 'off',
   },
 }
