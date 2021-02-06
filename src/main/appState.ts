@@ -1,7 +1,9 @@
 import { observable, autorun } from 'mobx'
 import dbProm from './store/idb'
+import store from './store'
 
 type State = {
+  subscriptions: string[]
   user: {
     provider?: 'google'
   }
@@ -15,6 +17,7 @@ async function init(): Promise<{
   subscribe: <T = unknown>(path: string, handler: (v: T) => void) => () => void
 }> {
   const state = observable<State>({
+    subscriptions: [],
     user: { provider: undefined },
     get signedIn() {
       return this.user.provider !== undefined
@@ -27,8 +30,10 @@ async function init(): Promise<{
     },
   })
 
-  const signin = await (await dbProm).get('meta', 'signin')
+  const db = await dbProm
+  const signin = await db.get('meta', 'signin')
   if (signin) state.signIn(signin)
+  state.subscriptions = await db.getAllKeys('subscriptions')
 
   const resolvePath = <T = unknown>(
     path: string,
@@ -67,6 +72,7 @@ async function initSync() {
   channel.onmessage = async ({ data }) => {
     const { state } = await appState
     logger.info('received broadcast update')
+    await store.refresh()
     cancel?.()
     Object.assign(state, JSON.parse(data))
     listen()

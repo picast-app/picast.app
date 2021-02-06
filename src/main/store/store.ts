@@ -5,15 +5,14 @@ import { Podcast, Episode, EpisodeBase } from './types'
 import * as Feed from './feed'
 import EpisodeStore from './episodeStore'
 import ws, { wsApi } from 'main/ws'
+import appState from '../appState'
 import type * as T from 'types/gql'
 
-type SubscriptionCB = (v: { added?: string[]; removed?: string[] }) => void
 type TotalCB = (v: { total: number; complete: boolean }) => void
 
 export default class Store {
   private readonly podcasts: Record<Podcast['id'], Podcast> = {}
   private subscriptions: Podcast['id'][] = []
-  private subCB?: SubscriptionCB
   private feedSubs: Feed.Base[] = []
   private totalListeners: Record<Podcast['id'], TotalCB[]> = {}
 
@@ -49,10 +48,6 @@ export default class Store {
     })
   }
 
-  public getSubscriptions(): string[] {
-    return this.subscriptions
-  }
-
   public static async create(): Promise<Store> {
     const db = await dbProm
     const subs = await db.getAll('subscriptions')
@@ -61,6 +56,25 @@ export default class Store {
       subs.map(({ id }) => id)
     )
     return new Store(db, eps, subs)
+  }
+
+  public async refresh() {
+    logger.info('refresh idb')
+    const subs = await this.db.getAll('subscriptions')
+    for (const podcast of subs) {
+      if (this.subscriptions.includes(podcast.id)) continue
+      this.subscriptions.push(podcast.id)
+      this.podcasts[podcast.id] = podcast
+    }
+    await Promise.all(
+      this.subscriptions.map(id =>
+        this.epStore.getPodcast(id).then(pod => pod.refresh())
+      )
+    )
+  }
+
+  public getSubscriptions(): string[] {
+    return this.subscriptions
   }
 
   public async podcast(id: string): Promise<Podcast | null> {
@@ -147,7 +161,8 @@ export default class Store {
     if (this.subscriptions.includes(id)) return
     this.subscriptions.push(id)
     if (!(await this.podcast(id))) throw Error(`can't subscribe to ${id}`)
-    if (cb && this.subCB) this.subCB!({ added: [id] })
+    const { state } = await appState
+    state.subscriptions = this.subscriptions
     await this.storeSubscription(id)
     await this.epStore.subscribe(id)
     if (!existing) await api.subscribe(id)
@@ -157,7 +172,8 @@ export default class Store {
     logger.info('unsubscribe from', id)
     if (!this.subscriptions.includes(id)) return
     this.subscriptions = this.subscriptions.filter(v => v !== id)
-    if (cb && this.subCB) this.subCB({ removed: [id] })
+    const { state } = await appState
+    state.subscriptions = this.subscriptions
     await this.db.delete('subscriptions', id)
     await this.epStore.unsubscribe(id)
     if (!existing) await api.unsubscribe(id)
@@ -190,11 +206,6 @@ export default class Store {
       removed,
       added: add.map(({ title }) => title),
     }
-  }
-
-  public async setSubscriptionCB(cb: SubscriptionCB): Promise<string[]> {
-    this.subCB = cb
-    return this.subscriptions
   }
 
   private async storeSubscription(id: string) {

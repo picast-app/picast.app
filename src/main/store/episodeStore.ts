@@ -29,6 +29,15 @@ export class Podcast {
     return new Podcast(id, db, keys, subscribed)
   }
 
+  public async refresh() {
+    const ids = await this.db.getAllKeysFromIndex(
+      'episodes',
+      'podcast',
+      this.id
+    )
+    this.keys = Podcast.keys(ids)
+  }
+
   get total() {
     return this.keys.length
   }

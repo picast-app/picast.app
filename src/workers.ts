@@ -25,25 +25,13 @@ init()
 
 export const subscriptionSub = createSub<string[]>([])
 
-main
-  .setSubscriptionCB(
-    proxy(({ added, removed }) => {
-      if (removed?.length)
-        subscriptionSub.setState(
-          subscriptionSub.state.filter(id => !removed.includes(id))
-        )
-      if (
-        added?.length &&
-        added.some(id => !subscriptionSub.state.includes(id))
-      )
-        subscriptionSub.setState(
-          Array.from(new Set([...subscriptionSub.state, ...added]))
-        )
-    })
-  )
-  .then(subscriptions => {
-    subscriptionSub.setState(subscriptions)
+main.state(
+  'subscriptions',
+  // @ts-ignore
+  proxy((subs: string[]) => {
+    subscriptionSub.setState(subs)
   })
+)
 
 const interactions = ['mousewheel', 'keydown', 'pointerdown']
 
