@@ -10,9 +10,12 @@ export async function meta() {
   )) as Podcast[]
 
   const sums = podcasts
-    .filter(({ lastMetaCheck }) => Date.now() - (lastMetaCheck ?? 0) >= RATE)
+    .filter(
+      ({ lastMetaCheck, covers }) =>
+        Date.now() - (lastMetaCheck ?? 0) >= RATE || !covers
+    )
     .map(({ id, check = '' }) => ({ id, check }))
-  if (!sums.length) return
+  if (!sums.length) return logger.info('skip meta check')
 
   logger.info('meta check', sums.length)
   await store.metaChecked(...sums.map(({ id }) => id))

@@ -61,12 +61,26 @@ const staticHandler: FetchHandler = async e => {
   return await cache.match(isNav ? '/index.html' : e.request)
 }
 
+const coverHandler: FetchHandler = async e => {
+  if (!e.request.url.includes(process.env.IMG_HOST!)) return
+  const cache = await caches.open(PHOTO_CACHE)
+  return (
+    (await cache.match(e.request)) ??
+    fetch(e.request).then(
+      response => (
+        e.waitUntil(cache.put(e.request, response.clone())), response
+      )
+    )
+  )
+}
+
 const defaultHandler: FetchHandler<true> = async e => await fetch(e.request)
 
 // prettier-ignore
 const handleFetch = async (e: FetchEvent): Promise<Response> =>
   // @ts-ignore
   await staticHandler(e) ?? 
+  await coverHandler(e) ??
   await defaultHandler(e)
 
 self.addEventListener('fetch', event => {
