@@ -16,6 +16,8 @@
 :root[data-theme='dark'] {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
+  
   --cl-background: #1f2022;
   --cl-surface: #2c2e30;
   --cl-text: #fffd;

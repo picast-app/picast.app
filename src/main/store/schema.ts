@@ -16,6 +16,7 @@ export default interface Schema extends DBSchema {
       description?: string
       subscriptionDate?: Date
       check?: string
+      lastMetaCheck?: number
       episodeCount?: number
     }
   }

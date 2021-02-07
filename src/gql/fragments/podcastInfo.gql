@@ -1,0 +1,10 @@
+fragment PodcastInfo on Podcast {
+  id
+  title
+  author
+  description
+  artwork
+  covers
+  feed
+  check
+}

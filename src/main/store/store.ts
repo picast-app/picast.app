@@ -97,11 +97,28 @@ export default class Store {
 
     if (!remote) return null
 
-    const podcast: Podcast = convert.podcast(remote)
-    this.podcasts[id] = podcast
+    const podcast = await this.writePodcastMeta(remote)
     podcast.incomplete = episodes.length === 0
-
     return podcast
+  }
+
+  public async writePodcastMeta(meta: T.PodcastInfo): Promise<Podcast> {
+    const podcast = convert.podcast(meta)
+    this.podcasts[podcast.id] = podcast
+    if (this.subscriptions.includes(podcast.id))
+      await this.storeSubscription(podcast.id)
+    return podcast
+  }
+
+  public async metaChecked(...ids: string[]) {
+    ids = ids.filter(id => this.subscriptions.includes(id))
+
+    const tx = this.db.transaction('subscriptions', 'readwrite')
+    ids.forEach(id => {
+      this.podcasts[id].lastMetaCheck = Date.now()
+      tx.store.put(this.podcasts[id])
+    })
+    await tx.done
   }
 
   public async onTotalChange(
@@ -210,6 +227,7 @@ export default class Store {
 
   private async storeSubscription(id: string) {
     const { incomplete, ...podcast } = this.podcasts[id]
+    podcast.lastMetaCheck = Date.now()
     await this.db.put('subscriptions', podcast)
   }
 

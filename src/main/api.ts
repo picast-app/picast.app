@@ -9,6 +9,7 @@ import googleSigninMutation from 'gql/mutations/signInGoogle.gql'
 import meQuery from 'gql/queries/me.gql'
 import subscribeMutation from 'gql/mutations/subscribe.gql'
 import unsubscribeMutation from 'gql/mutations/unsubscribe.gql'
+import metaSyncQuery from 'gql/queries/metaSync.gql'
 
 export const client = new GraphQLClient(process.env.REACT_APP_API as string, {
   headers: {},
@@ -85,4 +86,12 @@ export async function unsubscribe(...ids: string[]) {
       ids,
     }
   )
+}
+
+export async function metaSync(sums: { id: string; check: string }[]) {
+  const { metaCheck } = await client.request<T.MetaSync, T.MetaSyncVariables>(
+    metaSyncQuery,
+    { sums }
+  )
+  return metaCheck
 }

@@ -33,7 +33,7 @@ const filterEmpty = <T>(obj: T): NoNull<T> =>
   ) as any
 
 const podcast = (
-  gql: GQL.PodcastPage_podcast
+  gql: PickOpt<GQL.PodcastPage_podcast, 'episodes'>
 ): Schema['subscriptions']['value'] =>
   filterEmpty({
     ...omit(gql, '__typename', 'episodes'),

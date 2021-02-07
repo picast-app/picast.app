@@ -2,6 +2,7 @@ import * as api from './api'
 import store from './store'
 import dbProm from './store/idb'
 import stateProm from './appState'
+import * as sync from './sync'
 import type * as T from 'types/gql'
 
 export async function signIn(creds: SignInCreds) {
@@ -43,6 +44,7 @@ async function storeSignIn(me: T.Me_me | null) {
     const info = { provider: me.authProvider }
     await db.put('meta', info, 'signin')
     state.signIn(info)
+    await sync.meta()
   }
 }
 

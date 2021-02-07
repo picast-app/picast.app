@@ -1,0 +1,7 @@
+#import "../fragments/podcastInfo.gql"
+
+query MetaSync($sums: [CheckSum!]!) {
+  metaCheck(podcasts: $sums) {
+    ...PodcastInfo
+  }
+}

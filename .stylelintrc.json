@@ -27,6 +27,7 @@
     "rule-empty-line-before": null,
     "declaration-empty-line-before": null,
     "comment-empty-line-before": null,
+    "no-eol-whitespace": null,
     "length-zero-no-unit": [
       true,
       {

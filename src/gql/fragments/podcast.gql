@@ -1,14 +1,8 @@
+#import "./podcastInfo.gql"
 #import "./episodeBase.gql"
 
 fragment PodcastPageInfo on Podcast {
-  id
-  title
-  author
-  description
-  artwork
-  covers
-  feed
-  check
+  ...PodcastInfo
   episodes(last: 50) {
     pageInfo {
       total
