@@ -218,6 +218,14 @@ const S = {
       background-color: #ffffff08;
     }
 
+    html[data-theme='light'] &[data-hover] {
+      background-color: #00000008;
+    }
+
+    &[aria-expanded='false'] {
+      cursor: ns-resize;
+    }
+
     &[aria-expanded='false']::marker {
       content: '▸ ';
     }

@@ -1,0 +1,3 @@
+mutation Parse($id: ID!) {
+  parse(id: $id)
+}

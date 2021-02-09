@@ -10,6 +10,7 @@ import meQuery from 'gql/queries/me.gql'
 import subscribeMutation from 'gql/mutations/subscribe.gql'
 import unsubscribeMutation from 'gql/mutations/unsubscribe.gql'
 import metaSyncQuery from 'gql/queries/metaSync.gql'
+import parseMutation from 'gql/mutations/parse.gql'
 
 export const client = new GraphQLClient(process.env.REACT_APP_API as string, {
   headers: {},
@@ -94,4 +95,8 @@ export async function metaSync(sums: { id: string; check: string }[]) {
     { sums }
   )
   return metaCheck
+}
+
+export async function parse(id: string) {
+  await client.request<T.Parse, T.ParseVariables>(parseMutation, { id })
 }

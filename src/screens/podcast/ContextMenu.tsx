@@ -3,12 +3,14 @@ import styled from 'styled-components'
 import { Icon, Link } from 'components/atoms'
 import { Dropdown } from 'components/composite'
 import { mobile } from 'styles/responsive'
+import { main } from 'workers'
 
 type Props = {
+  id: string
   feed?: string
 }
 
-export default function ContextMenu({ feed }: Props) {
+export default function ContextMenu({ id, feed }: Props) {
   const [expanded, setExpanded] = useState(false)
 
   return (
@@ -19,6 +21,7 @@ export default function ContextMenu({ feed }: Props) {
         label="context menu"
       />
       <Dropdown visible={expanded} onToggle={setExpanded}>
+        <button onClick={() => main.parse(id)}>Parse Feed</button>
         <Link to={`/feedview/${feed}`}>View Feed</Link>
       </Dropdown>
     </S.Wrap>

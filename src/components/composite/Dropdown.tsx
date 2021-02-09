@@ -56,6 +56,7 @@ const S = {
       color: inherit;
       padding: 0 1.5rem;
       text-decoration: none;
+      display: block;
     }
 
     button {
