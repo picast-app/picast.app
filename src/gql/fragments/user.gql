@@ -3,6 +3,7 @@
 fragment MeInitial on User {
   id
   authProvider
+  wsAuth
   subscriptions(known: $known) {
     added {
       ...PodcastPageInfo
