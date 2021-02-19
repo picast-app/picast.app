@@ -3,4 +3,5 @@ fragment EpisodeBase on Episode {
   title
   publishDate
   file
+  duration
 }

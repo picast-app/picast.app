@@ -22,7 +22,7 @@ export default function EpisodeStrip({ feed, index }: Props) {
     <S.Strip index={index}>
       <S.Title>{episode.title}</S.Title>
       <S.Date>{date}</S.Date>
-      <S.Duration>00m</S.Duration>
+      <Duration>{episode.duration}</Duration>
       <S.Actions>
         <PlayButton
           file={episode.file}
@@ -62,6 +62,19 @@ function PlayButton({ file, id }: { file?: string; id: EpisodeId }) {
       label={state === 'paused' ? 'play' : 'pause'}
     />
   )
+}
+
+function Duration({ children: dur }: { children: number }) {
+  const txt =
+    typeof dur !== 'number'
+      ? ''
+      : dur < 60
+      ? `${dur}s`
+      : dur < 60 ** 2
+      ? `${Math.round(dur / 60)}m`
+      : `${(dur / 60 ** 2) | 0}h ${((dur % 60 ** 2) / 60) | 0}m`
+
+  return <S.Duration>{txt}</S.Duration>
 }
 
 function toggle(episode: EpisodeId, state: 'playing' | 'paused') {

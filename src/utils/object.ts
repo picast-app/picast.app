@@ -30,5 +30,7 @@ export const omit = <T extends obj, K extends keyof T>(
   ...keys: K[]
 ): Omit<T, K> =>
   Object.fromEntries(
-    Object.entries(v).map(([k, v]) => (keys.includes(k as any) ? [] : [k, v]))
-  )
+    Object.entries(v).flatMap(([k, v]) =>
+      keys.includes(k as any) ? [] : [[k, v]]
+    )
+  ) as any

@@ -26,7 +26,7 @@ export async function pullSubscriptions(
     const subscriptions = await store.getSubscriptions()
     const me = await api.me(subscriptions)
     storeSignIn(me)
-    if (!me) return logger.info('no logged in')
+    if (!me) return logger.info('not logged in')
     subs = me.subscriptions
   }
   return await store.syncSubscriptions({
