@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react'
 import ReactDOMServer from 'react-dom/server'
 import styled from 'styled-components'
 import Episode from './EpisodeStrip'
-import { desktop } from 'styles/responsive'
-import { useFeed, useComputed, useScrollPos } from 'utils/hooks'
+import { desktop, mobile } from 'styles/responsive'
+import { useFeed, useComputed, useScrollPos, useMatchMedia } from 'utils/hooks'
 import { main, proxy } from 'workers'
 import * as cl from 'utils/css/color'
 
@@ -13,14 +13,20 @@ type Props = {
   onLoading(v: boolean): void
 }
 
-const itemHeight = 3.8 * 16
+const desktopItemHeight = 3.8 * 16
+const mobileItemHeight = 4.8 * 16
 
 export default function Episodes({ id, total: _total, onLoading }: Props) {
   const [ref, setRef] = useState<HTMLOListElement | null>(null)
-  const scrollTarget = useComputed(ref, el => el?.parentElement?.parentElement)
+  const scrollTarget = useComputed(
+    ref,
+    el => el?.parentElement?.parentElement?.parentElement
+  )
   const scrollPos = useScrollPos(scrollTarget)
   const feed = useFeed(id)
   const [total, setTotal] = useState(Math.max(_total ?? 100, 100))
+  const isMobile = useMatchMedia(mobile)
+  const itemHeight = isMobile ? mobileItemHeight : desktopItemHeight
 
   useEffect(() => {
     if (!_total || _total < 0) return
@@ -78,12 +84,16 @@ const S = {
   Feed: styled.ol<{ episodes: number }>`
     position: relative;
 
+    --item-height: ${desktopItemHeight}px;
+    height: calc(var(--item-height) * ${({ episodes }) => episodes});
+
     @media ${desktop} {
       margin: 1rem 1.5rem;
     }
 
-    --item-height: ${itemHeight}px;
-    height: calc(var(--item-height) * ${({ episodes }) => episodes});
+    @media ${mobile} {
+      --item-height: ${mobileItemHeight}px;
+    }
 
     background-image: url('data:image/svg+xml,${backSvg}');
     background-size: 100% var(--item-height);

@@ -18,7 +18,6 @@ export default function Info(podcast: Partial<T.PodcastPage_podcast>) {
 
   const actions = (
     <S.Actions>
-      <ContextMenu id={podcast.id} feed={podcast.feed} />
       {subscriptions?.includes(podcast.id) ? (
         <Button onClick={() => unsubscribe(podcast.id!)} text>
           subscribed
@@ -26,6 +25,7 @@ export default function Info(podcast: Partial<T.PodcastPage_podcast>) {
       ) : (
         <Button onClick={() => subscribe(podcast.id!)}>Subscribe</Button>
       )}
+      <ContextMenu id={podcast.id} feed={podcast.feed} />
       <Icon
         icon={`expand_${showDescription ? 'less' : 'more'}` as any}
         onClick={() => setShowDescription(!showDescription)}

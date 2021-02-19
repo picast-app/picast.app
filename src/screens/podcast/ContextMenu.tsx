@@ -30,7 +30,7 @@ export default function ContextMenu({ id, feed }: Props) {
 
 const S = {
   Wrap: styled.div`
-    margin-right: 1rem;
+    margin: 0 1rem;
     position: relative;
 
     @media ${mobile} {

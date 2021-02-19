@@ -22,6 +22,7 @@ export default function EpisodeStrip({ feed, index }: Props) {
     <S.Strip index={index}>
       <S.Title>{episode.title}</S.Title>
       <S.Date>{date}</S.Date>
+      <S.Duration>00m</S.Duration>
       <S.Actions>
         <PlayButton
           file={episode.file}
@@ -76,7 +77,7 @@ function toggle(episode: EpisodeId, state: 'playing' | 'paused') {
 
 const S = {
   Strip: styled.article.attrs<{ index: number }>(({ index }) => ({
-    style: { top: `calc(${index} * var(--height))` },
+    style: { top: `calc(${index} * var(--item-height))` },
   }))<{
     index: number
   }>`
@@ -86,9 +87,7 @@ const S = {
     justify-content: flex-end;
     align-items: center;
 
-    --height: 3.8rem;
-    --height: var(--item-height);
-    height: var(--height);
+    height: var(--item-height);
     padding: 0 1rem;
 
     @media (pointer: coarse) {
@@ -96,8 +95,9 @@ const S = {
     }
 
     @media ${mobile} {
-      flex-direction: column-reverse;
-      justify-content: space-around;
+      /* flex-direction: column-reverse;
+      justify-content: space-around; */
+      display: unset;
       padding-right: 3rem;
 
       & > *:not(div) {
@@ -105,6 +105,10 @@ const S = {
         width: 100%;
         text-align: left;
         margin: 0;
+      }
+
+      span {
+        font-size: 0.8rem;
       }
     }
   `,
@@ -122,18 +126,36 @@ const S = {
       display: -webkit-box;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 2;
+
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      max-width: calc(100% - 4rem);
+      font-size: 0.95rem;
     }
   `,
 
   Date: styled.span`
     flex-shrink: 0;
-    margin-right: 3vw;
-    text-align: right;
-    min-width: 7rem;
     opacity: 0.9;
 
     @media ${mobile} {
-      font-size: 0.8rem;
+      position: absolute;
+      top: 0.5rem;
+    }
+  `,
+
+  Duration: styled.span`
+    flex-shrink: 0;
+    opacity: 0.9;
+    text-align: right;
+    min-width: 7rem;
+    margin-right: 3vw;
+
+    @media ${mobile} {
+      position: absolute;
+      bottom: 0.5rem;
+      left: 1rem;
     }
   `,
 
@@ -142,7 +164,9 @@ const S = {
 
     @media ${mobile} {
       position: absolute;
-      right: 0;
+      right: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
     }
   `,
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import styled from 'styled-components'
 import { useAPICall } from 'utils/hooks'
 import { Screen } from 'components/structure'
 import Appbar from 'components/Appbar'
@@ -20,12 +21,22 @@ export default function Podcast({
   return (
     <Screen loading={loading}>
       <Appbar title={podcast?.title} back="/" />
-      <Info {...podcast} />
-      <Feed
-        id={match.params.id}
-        total={podcast ? podcast.episodeCount : -1}
-        onLoading={setLoading}
-      />
+      <S.Inner>
+        <Info {...podcast} />
+        <Feed
+          id={match.params.id}
+          total={podcast ? podcast.episodeCount : -1}
+          onLoading={setLoading}
+        />
+      </S.Inner>
     </Screen>
   )
+}
+
+const S = {
+  Inner: styled.div`
+    --inner-width: 70rem;
+    max-width: var(--inner-width);
+    margin: auto;
+  `,
 }
