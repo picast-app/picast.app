@@ -1,3 +1,5 @@
+#import "../fragments/episodeBase.gql"
+
 query PodcastEpisodes($podcast: ID!, $last: Int!, $cursor: ID) {
   podcast(id: $podcast) {
     id
@@ -9,10 +11,7 @@ query PodcastEpisodes($podcast: ID!, $last: Int!, $cursor: ID) {
       }
       edges {
         node {
-          id
-          title
-          publishDate
-          file
+          ...EpisodeBase
         }
         cursor
       }
