@@ -21,8 +21,9 @@ export default function ContextMenu({ id, feed }: Props) {
         label="context menu"
       />
       <Dropdown visible={expanded} onToggle={setExpanded}>
-        <button onClick={() => main.parse(id)}>Parse Feed</button>
         <Link to={`/feedview/${feed}`}>View Feed</Link>
+        <button onClick={() => main.parse(id)}>Parse Feed</button>
+        <button onClick={() => main.deletePodcast(id)}>Delete Podcast</button>
       </Dropdown>
     </S.Wrap>
   )

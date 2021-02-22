@@ -11,6 +11,7 @@ import subscribeMutation from 'gql/mutations/subscribe.gql'
 import unsubscribeMutation from 'gql/mutations/unsubscribe.gql'
 import metaSyncQuery from 'gql/queries/metaSync.gql'
 import parseMutation from 'gql/mutations/parse.gql'
+import deleteMutation from 'gql/mutations/delete.gql'
 
 export const client = new GraphQLClient(process.env.REACT_APP_API as string, {
   headers: {},
@@ -99,4 +100,8 @@ export async function metaSync(sums: { id: string; check: string }[]) {
 
 export async function parse(id: string) {
   await client.request<T.Parse, T.ParseVariables>(parseMutation, { id })
+}
+
+export async function deletePodcast(id: string) {
+  await client.request<T.Delete, T.DeleteVariables>(deleteMutation, { id })
 }

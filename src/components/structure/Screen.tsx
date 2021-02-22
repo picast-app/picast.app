@@ -68,24 +68,28 @@ function usePullEffect(node: HTMLElement | null, action?: () => void) {
     let lastOff = 0
     const actionOff = 200
 
+    let cancelled = false
+
+    const onTouchEnd = async () => {
+      await new Promise(res =>
+        requestAnimationFrame(() => requestAnimationFrame(res))
+      )
+      if (cancelled) return
+      if (lastOff > actionOff) action()
+      lastOff = 0
+      delete content.dataset.action
+      node.removeEventListener('touchmove', onDrag)
+      animateTo(
+        content,
+        { transform: 'translateY(0)' },
+        { easing: 'ease', duration: 200 }
+      )
+    }
+
     const onTouch = ({ touches: [{ screenY }] }: TouchEvent) => {
       startY = screenY
       node.addEventListener('touchmove', onDrag, { passive: true })
-      node.addEventListener(
-        'touchend',
-        () => {
-          if (lastOff > actionOff) action()
-          lastOff = 0
-          delete content.dataset.action
-          node.removeEventListener('touchmove', onDrag)
-          animateTo(
-            content,
-            { transform: 'translateY(0)' },
-            { easing: 'ease', duration: 200 }
-          )
-        },
-        { once: true }
-      )
+      node.addEventListener('touchend', onTouchEnd, { once: true })
     }
 
     const onDrag = ({ touches: [{ screenY }] }: TouchEvent) => {
@@ -100,7 +104,11 @@ function usePullEffect(node: HTMLElement | null, action?: () => void) {
 
     node.addEventListener('touchstart', onTouch)
 
-    return () => node.removeEventListener('touchstart', onTouch)
+    return () => {
+      cancelled = true
+      node.removeEventListener('touchend', onTouchEnd)
+      node.removeEventListener('touchstart', onTouch)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node])
 }

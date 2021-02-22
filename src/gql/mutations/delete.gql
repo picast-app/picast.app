@@ -1,0 +1,3 @@
+mutation Delete($id: ID!) {
+  deletePodcast(id: $id)
+}
