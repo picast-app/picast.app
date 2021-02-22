@@ -108,10 +108,9 @@ const S = {
     }
 
     @media ${mobile} {
-      /* flex-direction: column-reverse;
-      justify-content: space-around; */
       display: unset;
       padding-right: 3rem;
+      overflow-x: hidden;
 
       & > *:not(div) {
         flex-grow: unset;
