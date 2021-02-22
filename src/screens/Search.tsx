@@ -74,7 +74,6 @@ const padding = 1.5 * 16
 const S = {
   Page: styled.div`
     --padding: ${padding}px;
-    padding-top: var(--bar-height);
   `,
 
   PodHeader: styled.div`
@@ -92,6 +91,8 @@ const S = {
   `,
 
   Podcasts: styled.div`
+    margin-top: var(--bar-height);
+
     @media ${mobile} {
       & > *:not(${ExpandoSC}) {
         display: none;

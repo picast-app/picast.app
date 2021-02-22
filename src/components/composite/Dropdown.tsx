@@ -65,6 +65,7 @@ const S = {
       border: none;
       padding: 0;
       cursor: pointer;
+      text-align: left;
 
       &:focus {
         outline: none;
