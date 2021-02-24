@@ -3,7 +3,7 @@ let print = process.env.NODE_ENV === 'development'
 const devLog = <T extends keyof typeof console>(
   method: T,
   prefix: string = method,
-  fallback?: (...args: Parameters<typeof console[T]>) => any
+  fallback: (...args: Parameters<typeof console[T]>) => any = () => {}
 ) =>
   print
     ? (() =>
