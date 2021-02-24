@@ -7,7 +7,7 @@ import EpisodeStore from './episodeStore'
 import ws, { wsApi } from 'main/ws'
 import appState from '../appState'
 import type * as T from 'types/gql'
-import { hashIds, encodeIds } from '@picast-app/db/lib/encoding/episodes'
+import { hashIds, encodeIds } from 'utils/encode'
 
 type TotalCB = (v: { total: number; complete: boolean }) => void
 

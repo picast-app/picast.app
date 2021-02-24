@@ -18,8 +18,8 @@
     "types": "npm run gql:types && npm run ws:types"
   },
   "dependencies": {
-    "@picast-app/db": "^2.1.1",
     "comlink": "^4.3.0",
+    "crc": "^3.8.0",
     "graphql-request": "^3.3.0",
     "idb": "^5.0.7",
     "lodash": "^4.17.20",
@@ -42,6 +42,7 @@
     "@graphql-codegen/typescript": "^1.17.11",
     "@graphql-codegen/typescript-resolvers": "^1.17.10",
     "@svgr/webpack": "5.4.0",
+    "@types/crc": "^3.4.0",
     "@types/css-font-loading-module": "0.0.4",
     "@types/jest": "^26.0.3",
     "@types/lodash": "^4.14.157",
