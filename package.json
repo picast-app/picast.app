@@ -18,6 +18,7 @@
     "types": "npm run gql:types && npm run ws:types"
   },
   "dependencies": {
+    "@picast-app/db": "^2.1.1",
     "comlink": "^4.3.0",
     "graphql-request": "^3.3.0",
     "idb": "^5.0.7",

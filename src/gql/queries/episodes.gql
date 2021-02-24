@@ -1,0 +1,11 @@
+#import "../fragments/episodeBase.gql"
+
+query FetchEpisodeDiff($podcasts: [EpisodeEnc!]!) {
+  episodeDiff(podcasts: $podcasts) {
+    podcast
+    added {
+      ...EpisodeBase
+    }
+    removed
+  }
+}

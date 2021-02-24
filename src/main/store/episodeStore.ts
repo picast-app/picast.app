@@ -154,6 +154,10 @@ export class Podcast {
     this.keys.push(...newKeys)
     this.keys.sort(([, a], [, b]) => b - a)
   }
+
+  public get episodeIds(): string[] {
+    return this.keys.map(([id]) => id)
+  }
 }
 
 export default class EpisodeStore {

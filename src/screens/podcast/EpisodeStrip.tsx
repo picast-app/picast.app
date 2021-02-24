@@ -173,6 +173,7 @@ const S = {
 
   Actions: styled.div`
     width: 2rem;
+    flex-shrink: 0;
 
     @media ${mobile} {
       position: absolute;

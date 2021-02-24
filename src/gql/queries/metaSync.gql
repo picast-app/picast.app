@@ -2,6 +2,10 @@
 
 query MetaSync($sums: [CheckSum!]!) {
   metaCheck(podcasts: $sums) {
-    ...PodcastInfo
+    id
+    podcast {
+      ...PodcastInfo
+    }
+    episodesMatch
   }
 }

@@ -12,6 +12,7 @@ import unsubscribeMutation from 'gql/mutations/unsubscribe.gql'
 import metaSyncQuery from 'gql/queries/metaSync.gql'
 import parseMutation from 'gql/mutations/parse.gql'
 import deleteMutation from 'gql/mutations/delete.gql'
+import diffEpisodesQuery from 'gql/queries/episodes.gql'
 
 export const client = new GraphQLClient(process.env.REACT_APP_API as string, {
   headers: {},
@@ -90,7 +91,9 @@ export async function unsubscribe(...ids: string[]) {
   )
 }
 
-export async function metaSync(sums: { id: string; check: string }[]) {
+export async function metaSync(
+  sums: { id: string; meta?: string; episodes?: string }[]
+) {
   const { metaCheck } = await client.request<T.MetaSync, T.MetaSyncVariables>(
     metaSyncQuery,
     { sums }
@@ -104,4 +107,14 @@ export async function parse(id: string) {
 
 export async function deletePodcast(id: string) {
   await client.request<T.Delete, T.DeleteVariables>(deleteMutation, { id })
+}
+
+export async function diffEpisodes(...podcasts: [id: string, known: string][]) {
+  const { episodeDiff } = await client.request<
+    T.FetchEpisodeDiff,
+    T.FetchEpisodeDiffVariables
+  >(diffEpisodesQuery, {
+    podcasts: podcasts.map(([id, known]) => ({ id, known })),
+  })
+  return episodeDiff
 }

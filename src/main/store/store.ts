@@ -7,6 +7,7 @@ import EpisodeStore from './episodeStore'
 import ws, { wsApi } from 'main/ws'
 import appState from '../appState'
 import type * as T from 'types/gql'
+import { hashIds, encodeIds } from '@picast-app/db/lib/encoding/episodes'
 
 type TotalCB = (v: { total: number; complete: boolean }) => void
 
@@ -112,13 +113,53 @@ export default class Store {
 
   public async metaChecked(...ids: string[]) {
     ids = ids.filter(id => this.subscriptions.includes(id))
-
     const tx = this.db.transaction('subscriptions', 'readwrite')
     ids.forEach(id => {
       this.podcasts[id].lastMetaCheck = Date.now()
       tx.store.put(this.podcasts[id])
     })
     await tx.done
+  }
+
+  public async episodeChecked(...ids: string[]) {
+    ids = ids.filter(id => this.subscriptions.includes(id))
+    const tx = this.db.transaction('subscriptions', 'readwrite')
+    ids.forEach(id => {
+      this.podcasts[id].lastEpisodeCheck = Date.now()
+      tx.store.put(this.podcasts[id])
+    })
+    await tx.done
+  }
+
+  public async fetchEpisodes(...ids: string[]) {
+    logger.info('fetch episodes', ...ids)
+
+    const podcasts = Object.fromEntries(
+      await Promise.all(
+        ids.map(id => this.epStore.getPodcast(id).then(pod => [id, pod]))
+      )
+    )
+
+    const results = await api.diffEpisodes(
+      ...ids.map(
+        id => [id, encodeIds(podcasts[id].episodeIds)] as [string, string]
+      )
+    )
+
+    for (const { podcast, added, removed } of results) {
+      if (removed?.length) {
+        logger.info(`removed from ${podcast} ${removed.join(', ')}`)
+      }
+      if (added?.length) {
+        logger.info(
+          `added to ${podcast} ${added.map(({ id }) => id).join(', ')}`
+        )
+        await podcasts[podcast].addEpisodes(
+          added.map(v => convert.episode(v as any, podcast)),
+          true
+        )
+      }
+    }
   }
 
   public async onTotalChange(
@@ -248,6 +289,11 @@ export default class Store {
     if (typeof progress === 'number')
       await this.db.put('meta', progress, 'progress')
     else await this.db.delete('meta', 'progress')
+  }
+
+  public async episodesCrc(podcast: string) {
+    const { episodeIds } = await this.epStore.getPodcast(podcast)
+    return hashIds(episodeIds)
   }
 
   private getFeedSub(id: string): Feed.Base | undefined {

@@ -6,3 +6,5 @@
 _fragmentTypes.json
 docs
 src/types
+tmp
+.npmrc
