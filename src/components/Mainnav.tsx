@@ -5,13 +5,38 @@ import { Surface } from 'components/structure'
 import { PlayerSC } from 'components/composite'
 import { bar } from 'styles/mixin'
 import { desktop, mobile } from 'styles/responsive'
-import { useMatchMedia, useTheme, useNavbarWidget } from 'utils/hooks'
+import {
+  useMatchMedia,
+  useTheme,
+  useNavbarWidget,
+  useLocation,
+} from 'utils/hooks'
 import Search from './PodcastSearch'
+
+const routes: {
+  path: string
+  label: string
+  icon: ReactProps<typeof Icon>['icon']
+  match?: RegExp
+  desktop?: true
+}[] = [
+  { path: '/', label: 'Library', icon: 'library', match: /^\/show/i },
+  { path: '/feed', label: 'Feed', icon: 'subscriptions' },
+  { path: '/discover', label: 'Discover', icon: 'search', match: /^\/search/i },
+  {
+    path: '/profile',
+    label: 'Profile',
+    icon: 'person',
+    match: /^\/(signin|settings)/i,
+  },
+  { path: '/settings', label: 'Settings', icon: 'gear', desktop: true },
+]
 
 export default function Mainnav() {
   const isDesktop = useMatchMedia(desktop)
   const theme = useTheme()
   const widgets = useNavbarWidget()
+  useLocation()
 
   return (
     <Surface
@@ -24,26 +49,44 @@ export default function Mainnav() {
         <Search visual />
       </S.SearchWrap>
       <ul>
-        <Item path="/" label="Library" icon="library" />
-        <Item path="/feed" label="Feed" icon="subscriptions" />
-        <Item path="/discover" label="Discover" icon="search" />
-        <Item path="/profile" label="Profile" icon="person" />
-        {isDesktop && <Item path="/settings" label="Settings" icon="gear" />}
+        {routes
+          .map(
+            ({ path, label, icon, desktop, match }) =>
+              (!desktop || isDesktop) && (
+                <Item
+                  key={path}
+                  {...{ path, label, icon }}
+                  active={
+                    (match && matchLocaction(match)) || matchLocaction(path)
+                  }
+                />
+              )
+          )
+          .filter(Boolean)}
       </ul>
       {isDesktop && <S.WidgetTray>{widgets}</S.WidgetTray>}
     </Surface>
   )
 }
 
+const matchLocaction = (match: RegExp | string) =>
+  typeof match === 'string'
+    ? match.toLowerCase() === location.pathname
+    : match.test(location.pathname)
+
 type ItemProps = ReactProps<typeof Icon> & {
   path: string
   label: string
+  active?: boolean
 }
 
-const Item = ({ path, label, ...props }: ItemProps) => (
-  <S.Item data-label={label.toLowerCase()}>
+const Item = ({ path, label, icon, active }: ItemProps) => (
+  <S.Item
+    data-label={label.toLowerCase()}
+    {...(active && { ['aria-active']: 'page' })}
+  >
     <Link to={path}>
-      <Icon {...props} />
+      <Icon icon={icon} />
       <span>{label}</span>
     </Link>
   </S.Item>
@@ -92,6 +135,10 @@ const S = {
       ${PlayerSC} ~ & {
         box-shadow: unset;
       }
+
+      svg {
+        transform: scale(1.1);
+      }
     }
   `,
 
@@ -117,6 +164,12 @@ const S = {
 
       span {
         display: initial;
+      }
+    }
+
+    @media ${mobile} {
+      &[aria-active] svg {
+        fill: var(--cl-primary);
       }
     }
 

@@ -4,10 +4,11 @@
   color: var(--cl-text);
   background-color: var(--cl-background);
 
-  --bar-height: 3.5rem;
+  --appbar-height: 3.5rem;
+  --bar-height: 4rem;
+  --player-height: 4rem;
   --sidebar-width: 15rem;
   --progress-height: 0.2rem;
-  --player-height: 3.5rem;
 }
 
 body {

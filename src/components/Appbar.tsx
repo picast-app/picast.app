@@ -81,7 +81,7 @@ const ScrollWrap: React.FC = ({ children }) => {
     else
       ref.current.style.setProperty(
         '--height',
-        `calc(${wrap.scrollTop}px + var(--bar-height) + ${
+        `calc(${wrap.scrollTop}px + var(--appbar-height) + ${
           bar.getBoundingClientRect().y
         }px)`
       )
@@ -92,6 +92,7 @@ const ScrollWrap: React.FC = ({ children }) => {
 
 const SAppBar = styled.div`
   ${bar}
+  height: var(--appbar-height);
   top: 0;
   display: flex;
   align-items: center;
@@ -130,22 +131,22 @@ const S = {
   `,
 
   ScrollWrap: styled.div`
-    --height: var(--bar-height);
+    --height: var(--appbar-height);
 
     position: relative;
     top: calc(var(--padd) * -1);
     left: calc(var(--padd) * -1);
     width: calc(100% + 2 * var(--padd));
     height: var(--height);
-    margin-top: calc(var(--bar-height) * -1);
-    margin-bottom: calc(var(--height) * -1 + var(--bar-height));
+    margin-top: calc(var(--appbar-height) * -1);
+    margin-bottom: calc(var(--height) * -1 + var(--appbar-height));
     display: flex;
     flex-direction: column;
     pointer-events: none;
 
     ${SAppBar} {
       position: sticky;
-      top: calc(var(--bar-height) * -1 - var(--padd));
+      top: calc(var(--appbar-height) * -1 - var(--padd));
       pointer-events: initial;
     }
   `,

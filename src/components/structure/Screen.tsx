@@ -40,7 +40,7 @@ export const Screen: React.FC<Props> = ({
 
   return (
     <S.Screen
-      offsetTop={appbar !== React.Fragment ? 'var(--bar-height)' : '0px'}
+      offsetTop={appbar !== React.Fragment ? 'var(--appbar-height)' : '0px'}
       as={style}
       padd={padd}
       ref={setEl}

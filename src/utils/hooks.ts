@@ -13,8 +13,7 @@ import throttle from 'lodash/throttle'
 import { main, subscriptionSub, proxy } from 'workers'
 import type { API } from 'main/main.worker'
 
-export { useHistory } from 'react-router-dom'
-
+export { useHistory, useLocation } from 'react-router-dom'
 export const useTheme = () => useContext(Theme)
 
 export function useMatchMedia(query: string) {

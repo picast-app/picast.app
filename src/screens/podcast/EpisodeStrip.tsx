@@ -228,13 +228,15 @@ const S = {
     border-radius: 50%;
     transition: ${transition('0.15s ease', 'background-color', 'transform')};
 
-    &:hover {
-      background-color: var(--cl-primary);
-      transform: scale(1.1);
+    @media (hover: hover) {
+      &:hover {
+        background-color: var(--cl-primary);
+        transform: scale(1.1);
 
-      button > svg {
-        fill: var(--cl-surface);
-        transform: scale(1.2);
+        button > svg {
+          fill: var(--cl-surface);
+          transform: scale(1.2);
+        }
       }
     }
 
