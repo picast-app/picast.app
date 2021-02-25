@@ -131,6 +131,8 @@ const S = {
     text-overflow: ellipsis;
     overflow: hidden;
     color: var(--cl-text-strong);
+    min-height: 1.15em;
+    line-height: 1.15em;
 
     @media ${mobile} {
       white-space: unset;

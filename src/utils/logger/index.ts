@@ -1,5 +1,4 @@
-import * as logger from './methods'
-export * from './methods'
-export default logger
+import logger from './methods'
+export { togglePrint } from './methods'
 
 globalThis.logger = logger
