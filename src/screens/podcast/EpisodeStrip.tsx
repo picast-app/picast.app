@@ -7,6 +7,7 @@ import { proxy } from 'comlink'
 import { useTrackState } from 'utils/player'
 import { useComputed } from 'utils/hooks'
 import { mobile } from 'styles/responsive'
+import { center } from 'styles/mixin'
 
 type Props = {
   feed: string
@@ -56,10 +57,45 @@ function useEpisode(feed: string, index: number) {
 function PlayButton({ file, id }: { file?: string; id: EpisodeId }) {
   const state = useTrackState(file) ?? 'paused'
   return (
-    <Icon
-      icon={state === 'paused' ? 'play' : 'pause'}
-      onClick={() => file && toggle(id, state)}
-      label={state === 'paused' ? 'play' : 'pause'}
+    <S.Play>
+      <EpisodeProgress progress={0} />
+      <Icon
+        icon={state === 'paused' ? 'play' : 'pause'}
+        onClick={() => file && toggle(id, state)}
+        label={state === 'paused' ? 'play' : 'pause'}
+      />
+    </S.Play>
+  )
+}
+
+const width = 8
+const rad = 50 - width / 2
+
+function EpisodeProgress({ progress }: { progress: number }) {
+  return (
+    <S.Progress viewBox="0 0 100 100">
+      <circle
+        cx={50}
+        cy={50}
+        r={rad}
+        data-style={progress > 0 ? 'empty' : 'full'}
+      />
+      <ProgressArc progress={progress} />
+    </S.Progress>
+  )
+}
+
+function ProgressArc({ progress }: { progress: number }) {
+  if (progress === 0 || progress === 1) return null
+
+  const x = 50 + Math.sin(progress * Math.PI * 2) * rad
+  const y = 50 + -Math.cos(progress * Math.PI * 2) * rad
+
+  return (
+    <path
+      d={`M ${x} ${y} A ${rad} ${rad} 0 ${progress <= 0.5 ? 1 : 0} 1 50 ${
+        width / 2
+      }`}
     />
   )
 }
@@ -163,7 +199,8 @@ const S = {
     flex-shrink: 0;
     opacity: 0.9;
     text-align: right;
-    min-width: 7rem;
+    min-width: 3rem;
+    width: 5vw;
     margin-right: 3vw;
 
     @media ${mobile} {
@@ -182,6 +219,37 @@ const S = {
       right: 0.5rem;
       top: 50%;
       transform: translateY(-50%);
+    }
+  `,
+
+  Play: styled.div`
+    position: relative;
+    width: 2rem;
+    height: 2rem;
+
+    & > *,
+    & > *[data-style] {
+      ${center}
+    }
+
+    svg {
+      fill: var(--cl-primary);
+    }
+  `,
+
+  Progress: styled.svg`
+    width: 100%;
+    height: 100%;
+
+    circle,
+    path {
+      fill: none;
+      stroke-width: 8;
+      stroke: var(--cl-primary);
+    }
+
+    circle[data-style='empty'] {
+      opacity: 0.3;
     }
   `,
 }
