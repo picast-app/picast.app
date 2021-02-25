@@ -135,6 +135,17 @@ const S = {
 
     @media ${desktop} {
       bottom: 0;
+
+      &::before {
+        content: '';
+        display: block;
+        background-color: inherit;
+        position: absolute;
+        left: -0.5rem;
+        top: 0;
+        width: 0.5rem;
+        height: 100%;
+      }
     }
 
     @media ${mobile} {

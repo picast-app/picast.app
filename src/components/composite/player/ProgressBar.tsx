@@ -24,7 +24,7 @@ export default function ProgressBar({ barOnly = false }: Props) {
   const padd = barOnly ? 0 : (16 * devicePixelRatio) / 2
 
   useEffect(() => {
-    if (!visible) return
+    if (!visible || manualProg) return
     let lastT = audio.currentTime
 
     const onUpdate = ({ target }: Event) => {
@@ -45,7 +45,7 @@ export default function ProgressBar({ barOnly = false }: Props) {
       audio.removeEventListener('timeupdate', onUpdate)
       audio.removeEventListener('durationchange', onDuration)
     }
-  }, [visible])
+  }, [visible, manualProg])
 
   function jumpTo(location: number) {
     audio.addEventListener('seeked', setSeekKey, { once: true })

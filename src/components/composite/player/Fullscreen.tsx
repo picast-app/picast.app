@@ -4,6 +4,8 @@ import { Icon, Artwork } from 'components/atoms'
 import Controls, { ControlsSC } from './Controls'
 import Progress from './ProgressBar'
 import { usePlaying } from 'utils/player'
+import { useMatchMedia } from 'utils/hooks'
+import { desktop } from 'styles/responsive'
 
 interface Props {
   onHide(): void
@@ -11,7 +13,9 @@ interface Props {
 
 export default function Fullscreen({ onHide }: Props) {
   const [podcast, episode] = usePlaying()
+  const isDesktop = useMatchMedia(desktop)
 
+  if (isDesktop) return null
   return (
     <S.Fullscreen>
       <S.Main id="fullscreen-player">
