@@ -110,6 +110,7 @@ export function Artwork({
         alt={title}
         src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
         loading={lazy ? 'lazy' : 'eager'}
+        {...(!IS_LOCAL && { crossOrigin: 'use-credentials' })}
         onError={() => {
           if (
             !covers?.length &&
@@ -121,6 +122,8 @@ export function Artwork({
     </S.Artwork>
   )
 }
+
+const IS_LOCAL = ['localhost', '127.0.0.1'].includes(self.location.hostname)
 
 const S = {
   Artwork: styled.picture`

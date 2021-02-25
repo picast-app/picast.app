@@ -10,20 +10,29 @@ import { useMatchMedia } from 'utils/hooks'
 import About from './settings/About'
 import Appearance from './settings/Appearance'
 import Debug from './settings/Debug'
+import Storage from './settings/Storage'
 
 type SettingsRoute = {
   name: string
   path?: string
   icon: ReactProps<typeof Icon>['icon']
   component?: any
+  cond?: boolean
 }
-const routes: SettingsRoute[] = [
+let routes: SettingsRoute[] = [
   { name: 'General', icon: 'gear' },
   { name: 'Appearance', icon: 'palette', component: Appearance },
   { name: 'Notifications', icon: 'bell' },
+  {
+    name: 'Storage',
+    icon: 'storage',
+    component: Storage,
+    cond: 'storage' in navigator,
+  },
   { name: 'Debug', icon: 'bug', component: Debug },
   { name: 'About', icon: 'info', component: About },
 ]
+routes = routes.filter(({ cond }) => cond !== false)
 
 const switchComp = (
   <Switch>

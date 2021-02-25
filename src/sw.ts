@@ -66,7 +66,7 @@ const coverHandler: FetchHandler = async e => {
   const cache = await caches.open(PHOTO_CACHE)
   return (
     (await cache.match(e.request)) ??
-    fetch(e.request).then(
+    fetch(e.request, !IS_LOCAL ? { mode: 'cors' } : undefined).then(
       response => (
         e.waitUntil(cache.put(e.request, response.clone())), response
       )
