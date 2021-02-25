@@ -28,6 +28,7 @@
     "declaration-empty-line-before": null,
     "comment-empty-line-before": null,
     "no-eol-whitespace": null,
+    "media-feature-name-no-unknown": null,
     "length-zero-no-unit": [
       true,
       {
