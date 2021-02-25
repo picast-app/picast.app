@@ -44,9 +44,9 @@ type ChartProps = {
 
 function Chart({ total, ...props }: ChartProps) {
   let items: [name: string, size: number, key: string][] = [
-    ['Cache', props.caches, 'caches'],
-    ['IndexedDB', props.idb, 'idb'],
-    ['Service Worker', props.sw, 'sw'],
+    ['Cache', props.caches ?? 0, 'caches'],
+    ['IndexedDB', props.idb ?? 0, 'idb'],
+    ['Service Worker', props.sw ?? 0, 'sw'],
   ]
   items = items.sort(([, a], [, b]) => b - a)
 
@@ -96,7 +96,7 @@ function Chart({ total, ...props }: ChartProps) {
       <S.ChartList>
         {items.map(([name, size, key]) => (
           <li key={key}>
-            <span>{format(size)}</span>
+            <span>{format(size, 1)}</span>
             <S.ColorSquare style={{ backgroundColor: `var(--cl-${key})` }} />
             <span>{name}</span>
           </li>

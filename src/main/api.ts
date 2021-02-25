@@ -13,6 +13,7 @@ import metaSyncQuery from 'gql/queries/metaSync.gql'
 import parseMutation from 'gql/mutations/parse.gql'
 import deleteMutation from 'gql/mutations/delete.gql'
 import diffEpisodesQuery from 'gql/queries/episodes.gql'
+import signOutMutation from 'gql/mutations/signOut.gql'
 
 export const client = new GraphQLClient(process.env.REACT_APP_API as string, {
   headers: {},
@@ -69,6 +70,10 @@ export async function signInGoogle(accessToken: string) {
     T.SignInGoogleVariables
   >(googleSigninMutation, { accessToken })
   return me
+}
+
+export async function signOut() {
+  await client.request(signOutMutation)
 }
 
 export async function me(known?: string[]) {

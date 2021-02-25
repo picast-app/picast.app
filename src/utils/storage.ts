@@ -1,4 +1,4 @@
-export const format = (bytes?: number) =>
+export const format = (bytes?: number, mbS = 0) =>
   typeof bytes !== 'number'
     ? ''
     : bytes < 1000
@@ -6,7 +6,7 @@ export const format = (bytes?: number) =>
     : bytes < 1e6
     ? `${Math.round(bytes / 1000)} kB`
     : bytes < 1e9
-    ? `${Math.round(bytes / 1e6)} MB`
+    ? `${Math.round((bytes / 1e6) * 10 ** mbS) / 10 ** mbS} MB`
     : `${Math.round(bytes / 1e8) / 10} GB`
 
 export async function getCacheSizes(): Promise<Record<string, number>> {

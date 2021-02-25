@@ -12,6 +12,26 @@ export async function signIn(creds: SignInCreds) {
   await pullSubscriptions(me.subscriptions)
 }
 
+export async function signOut() {
+  const { state } = await stateProm
+  state.user.provider = undefined
+  state.subscriptions = []
+
+  const db = await dbProm
+  await db.clear('subscriptions')
+  await db.clear('episodes')
+  await db.delete('meta', 'signin')
+
+  const cacheKeys = await caches.keys()
+  logger.info(cacheKeys)
+  const cache = await caches.open(cacheKeys.find(k => /\.photo$/.test(k))!)
+  const keys = await cache.keys()
+  logger.info(`evict ${keys.length} images`)
+  await Promise.all(keys.map(k => cache.delete(k)))
+
+  await api.signOut()
+}
+
 export async function pullSubscriptions(
   subs?: T.Me_me_subscriptions
 ): Promise<
