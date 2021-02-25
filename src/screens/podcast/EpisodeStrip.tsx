@@ -4,7 +4,7 @@ import { Icon } from 'components/atoms'
 import { main } from 'workers'
 import type { EpisodeBase } from 'main/store/types'
 import { proxy } from 'comlink'
-import { useTrackState } from 'utils/player'
+import { useTrackState, useEpisodeProgress } from 'utils/player'
 import { useComputed } from 'utils/hooks'
 import { mobile } from 'styles/responsive'
 import { center, transition } from 'styles/mixin'
@@ -58,7 +58,7 @@ function PlayButton({ file, id }: { file?: string; id: EpisodeId }) {
   const state = useTrackState(file) ?? 'paused'
   return (
     <S.Play>
-      <EpisodeProgress progress={0} />
+      {file && <EpisodeProgress episode={file} />}
       <Icon
         icon={state === 'paused' ? 'play' : 'pause'}
         onClick={() => file && toggle(id, state)}
@@ -70,33 +70,32 @@ function PlayButton({ file, id }: { file?: string; id: EpisodeId }) {
 
 const width = 8
 const rad = 50 - width / 2
+const circ = 2 * Math.PI * rad
 
-function EpisodeProgress({ progress }: { progress: number }) {
+function EpisodeProgress({ episode }: { episode: string }) {
+  const [progress, playing, duration] = useEpisodeProgress(episode)
   return (
-    <S.Progress viewBox="0 0 100 100">
+    <S.Progress
+      viewBox="0 0 100 100"
+      progress={progress}
+      remaining={duration * (1 - progress)}
+    >
       <circle
         cx={50}
         cy={50}
         r={rad}
-        data-style={progress > 0 ? 'empty' : 'full'}
+        data-style={progress > 0 || playing ? 'empty' : 'full'}
       />
-      <ProgressArc progress={progress} />
+      {progress < 1 && (
+        <circle
+          cx={50}
+          cy={50}
+          r={rad}
+          strokeDasharray={`${circ} ${circ}`}
+          data-state={playing ? 'playing' : 'paused'}
+        />
+      )}
     </S.Progress>
-  )
-}
-
-function ProgressArc({ progress }: { progress: number }) {
-  if (progress === 0 || progress === 1) return null
-
-  const x = 50 + Math.sin(progress * Math.PI * 2) * rad
-  const y = 50 + -Math.cos(progress * Math.PI * 2) * rad
-
-  return (
-    <path
-      d={`M ${x} ${y} A ${rad} ${rad} 0 ${progress <= 0.5 ? 1 : 0} 1 50 ${
-        width / 2
-      }`}
-    />
   )
 }
 
@@ -250,12 +249,11 @@ const S = {
     }
   `,
 
-  Progress: styled.svg`
+  Progress: styled.svg<{ progress: number; remaining: number }>`
     width: 100%;
     height: 100%;
 
-    circle,
-    path {
+    circle {
       fill: none;
       stroke-width: 8;
       stroke: var(--cl-primary);
@@ -263,6 +261,23 @@ const S = {
 
     circle[data-style='empty'] {
       opacity: 0.3;
+    }
+
+    circle:last-of-type {
+      transform-origin: 50% 50%;
+      transform: scaleX(-1) rotate(-90deg);
+      stroke-dashoffset: ${({ progress }) => progress * circ};
+      animation-fill-mode: forwards;
+
+      &[data-state='playing'] {
+        animation: ${({ remaining }) => remaining}s linear progress;
+      }
+    }
+
+    @keyframes progress {
+      to {
+        stroke-dashoffset: ${circ};
+      }
     }
   `,
 }

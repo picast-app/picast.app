@@ -1,11 +1,11 @@
 export default function createSubscription<T>(
-  setup?: ((...args: any[]) => ((...args: any[]) => any) | void) | T
+  setup?: ((...args: any[]) => (() => void) | void) | T
 ): Subscription<T> {
   let subscribers: ((v: T) => void)[] = []
-  let cleanup: ((...args: any[]) => any) | void
+  let cleanup: () => void
   const unsubscribe = (callback: (v: T) => void) => {
     subscribers = subscribers.filter(f => f !== callback)
-    if (subscribers.length === 0 && cleanup) cleanup()
+    if (subscribers.length === 0) cleanup?.()
   }
   let _state: T
   if (typeof setup !== 'function') _state = setup as T

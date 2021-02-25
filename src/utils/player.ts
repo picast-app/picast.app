@@ -1,17 +1,18 @@
+import { useState, useEffect } from 'react'
 import { useSubscription } from 'utils/hooks'
-import createSub from 'utils/subscription'
+import subscription from 'utils/subscription'
 import { main } from 'workers'
 import type { Podcast } from 'main/store/types'
 
 const audio = document.querySelector('#player') as HTMLAudioElement
 audio.volume = 0.4
 
-export const trackSub = createSub<string | null>()
+export const trackSub = subscription<string | null>()
 export const useTrack = () => useSubscription(trackSub)[0]
 
 type PlayState = 'playing' | 'paused'
 
-export const playState = createSub<PlayState>()
+export const playState = subscription<PlayState>()
 export const usePlayState = () => useSubscription(playState)[0]
 
 export function useTrackState(episode?: string): PlayState {
@@ -20,7 +21,38 @@ export function useTrackState(episode?: string): PlayState {
   return track === episode ? state : 'paused'
 }
 
-const playing = createSub<[Podcast, EpisodeMin]>()
+const durSub = subscription<number>(() => {
+  const onChange = () => {
+    durSub.setState(audio.duration)
+  }
+  audio.addEventListener('durationchange', onChange)
+  return () => audio.removeEventListener('durationchange', onChange)
+})
+
+export function useEpisodeProgress(
+  episode: string
+): [progress: number, playing: boolean, duration: number] {
+  const state = useTrackState(episode)
+  const [progress, setProgress] = useState(0)
+  const [duration] = useSubscription(durSub)
+
+  useEffect(() => {
+    if (state !== 'playing' || isNaN(duration)) return
+
+    const set = () => setProgress(audio.currentTime / duration)
+    set()
+
+    audio.addEventListener('seeked', set)
+    return () => {
+      audio.removeEventListener('seeked', set)
+      set()
+    }
+  }, [state, duration])
+
+  return [progress, state === 'playing', duration]
+}
+
+const playing = subscription<[Podcast, EpisodeMin]>()
 export const usePlaying = () => useSubscription(playing)[0]
 
 async function setEpisode(epId: EpisodeId) {
