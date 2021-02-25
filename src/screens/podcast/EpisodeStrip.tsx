@@ -7,7 +7,7 @@ import { proxy } from 'comlink'
 import { useTrackState } from 'utils/player'
 import { useComputed } from 'utils/hooks'
 import { mobile } from 'styles/responsive'
-import { center } from 'styles/mixin'
+import { center, transition } from 'styles/mixin'
 
 type Props = {
   feed: string
@@ -226,14 +226,27 @@ const S = {
     position: relative;
     width: 2rem;
     height: 2rem;
+    border-radius: 50%;
+    transition: ${transition('0.15s ease', 'background-color', 'transform')};
+
+    &:hover {
+      background-color: var(--cl-primary);
+      transform: scale(1.1);
+
+      button > svg {
+        fill: var(--cl-surface);
+        transform: scale(1.2);
+      }
+    }
 
     & > *,
     & > *[data-style] {
       ${center}
     }
 
-    svg {
+    button > svg {
       fill: var(--cl-primary);
+      transition: fill 0.15s ease, transform 0.3s ease;
     }
   `,
 

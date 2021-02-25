@@ -26,3 +26,6 @@ export const lineClamp = (lines: number) => `
   -webkit-box-orient: vertical;
   -webkit-line-clamp: ${lines};
 `
+
+export const transition = (opts: string, ...props: string[]) =>
+  props.map(prop => `${prop} ${opts}`).join(', ')
