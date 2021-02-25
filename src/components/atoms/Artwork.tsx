@@ -110,7 +110,7 @@ export function Artwork({
         alt={title}
         src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
         loading={lazy ? 'lazy' : 'eager'}
-        {...(!IS_LOCAL && { crossOrigin: 'use-credentials' })}
+        {...(!IS_LOCAL && covers?.length && { crossOrigin: 'use-credentials' })}
         onError={() => {
           if (
             !covers?.length &&

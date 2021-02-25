@@ -61,11 +61,6 @@ const staticHandler: FetchHandler = async e => {
   return await cache.match(isNav ? '/index.html' : e.request)
 }
 
-const photonHandler: FetchHandler = async e => {
-  if (!e.request.url.includes('photon.picast.app')) return
-  return await fetch(e.request, !IS_LOCAL ? { mode: 'cors' } : undefined)
-}
-
 const coverHandler: FetchHandler = async e => {
   if (!e.request.url.includes(process.env.IMG_HOST!)) return
   const cache = await caches.open(PHOTO_CACHE)
@@ -85,7 +80,6 @@ const defaultHandler: FetchHandler<true> = async e => await fetch(e.request)
 const handleFetch = async (e: FetchEvent): Promise<Response> =>
   // @ts-ignore
   await staticHandler(e) ?? 
-  await photonHandler(e) ??
   await coverHandler(e) ??
   await defaultHandler(e)
 
