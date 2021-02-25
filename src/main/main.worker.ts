@@ -7,12 +7,23 @@ import dbProm from './store/idb'
 import store from './store'
 import * as account from './account'
 import appState from './appState'
+import { deleteDB } from 'idb'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const self: DedicatedWorkerGlobalScope
 export default null
 
 const idbInterface = bufferInstance(IDBInterface, IDBInterface.create())
+
+async function deleteIDB() {
+  const db = await dbProm
+  db.close()
+  await deleteDB(self.location.hostname, {
+    blocked() {
+      logger.error('idb delete blocked')
+    },
+  })
+}
 
 dbProm.then(async idb => togglePrint(await idb.get('meta', 'print_logs')))
 
@@ -27,6 +38,7 @@ const api = {
   ...store,
   ...account,
   state,
+  deleteIDB,
 } as const
 
 export type API = typeof api

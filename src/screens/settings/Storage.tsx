@@ -4,6 +4,7 @@ import Section from './Section'
 import { format } from 'utils/storage'
 import { Button } from 'components/atoms'
 import { mobile, desktop } from 'styles/responsive'
+import { main } from 'workers'
 
 export default function Storage() {
   const [usage, setUsage] = useState<number>()
@@ -30,9 +31,19 @@ export default function Storage() {
         <span>{format(available)}</span>
       </Section>
       {chartData && <Chart total={usage!} {...chartData} />}
-      <Button>clear all data</Button>
+      <Button onClick={clearData}>clear all data</Button>
     </S.Page>
   )
+}
+
+async function clearData() {
+  await main.signOut()
+  const cacheNames = await caches.keys()
+  await Promise.all(cacheNames.map(name => caches.delete(name)))
+  await main.deleteIDB()
+  const sws = await navigator.serviceWorker.getRegistrations()
+  for (const sw of sws) await sw.unregister()
+  location.reload()
 }
 
 type ChartProps = {
