@@ -29,6 +29,7 @@ export default interface Schema extends DBSchema {
       file: string
       published: number
       duration: number
+      currentTime: number
     }
     indexes: { published: string; podcast: string }
   }

@@ -83,7 +83,7 @@ type ItemProps = ReactProps<typeof Icon> & {
 const Item = ({ path, label, icon, active }: ItemProps) => (
   <S.Item
     data-label={label.toLowerCase()}
-    {...(active && { ['aria-active']: 'page' })}
+    {...(active && { ['aria-current']: 'page' })}
   >
     <Link to={path}>
       <Icon icon={icon} />
@@ -168,7 +168,7 @@ const S = {
     }
 
     @media ${mobile} {
-      &[aria-active] svg {
+      &[aria-current] svg {
         fill: var(--cl-primary);
       }
     }

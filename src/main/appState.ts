@@ -1,6 +1,7 @@
 import { observable, autorun } from 'mobx'
 import dbProm from './store/idb'
 import store from './store'
+import { Podcast } from './store/types'
 
 type State = {
   subscriptions: string[]
@@ -11,6 +12,12 @@ type State = {
   signedIn: boolean
   signOut(): void
   signIn(v: { provider: 'google' }): void
+  playing: {
+    id?: EpisodeId
+    episode: EpisodeMin | null
+    podcast: Podcast | null
+    set(v: { podcast: Podcast; episode: EpisodeMin } | null): void
+  }
 }
 
 async function init(): Promise<{
@@ -29,12 +36,34 @@ async function init(): Promise<{
     signIn(data) {
       Object.assign(this.user, data)
     },
+    playing: {
+      episode: null,
+      podcast: null,
+      set(v) {
+        if (!v) {
+          this.id = undefined
+          this.podcast = null
+          this.episode = null
+        } else {
+          this.id = [v.podcast.id, v.episode.id]
+          this.podcast = v.podcast
+          this.episode = v.episode
+        }
+      },
+    },
   })
 
   const db = await dbProm
   const signin = await db.get('meta', 'signin')
   if (signin) state.signIn(signin)
   state.subscriptions = await db.getAllKeys('subscriptions')
+
+  const playing = await db.get('meta', 'playing')
+  if (playing) {
+    state.playing.id = playing
+    state.playing.podcast = await store.podcast(playing[0])
+    state.playing.episode = await store.episode(playing)
+  }
 
   const resolvePath = <T = unknown>(
     path: string,

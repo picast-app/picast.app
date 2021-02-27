@@ -19,15 +19,15 @@ export default function Fullscreen({ onHide }: Props) {
   return (
     <S.Fullscreen>
       <S.Main id="fullscreen-player">
-        <S.Background background={podcast.artwork ?? undefined} />
+        <S.Background background={podcast?.artwork ?? undefined} />
         <S.Navigation>
           <Icon icon="arrow_down" onClick={onHide} label="minimize player" />
         </S.Navigation>
         <S.Content>
           <S.Info>
-            <Artwork src={podcast.artwork} />
-            <span>{episode.title}</span>
-            <span>{podcast.title}</span>
+            <Artwork src={podcast?.artwork} />
+            <span>{episode?.title}</span>
+            <span>{podcast?.title}</span>
           </S.Info>
           <Progress />
           <Controls />

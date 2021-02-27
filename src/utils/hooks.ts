@@ -398,5 +398,5 @@ export function useAppState<T = unknown>(path: string) {
     }
   }, [path])
 
-  return [state, loading]
+  return [state, loading] as const
 }

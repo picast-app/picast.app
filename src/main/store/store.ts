@@ -272,23 +272,15 @@ export default class Store {
     await this.db.put('subscriptions', podcast)
   }
 
-  public async getPlaying(): Promise<EpisodeId | null> {
-    return (await this.db.get('meta', 'playing')) ?? null
-  }
-
   public async setPlaying(id: EpisodeId | null) {
     if (id) await this.db.put('meta', id, 'playing')
     else await this.db.delete('meta', 'playing')
   }
 
-  public async getProgress(): Promise<number | null> {
-    return (await this.db.get('meta', 'progress')) ?? null
-  }
-
-  public async setProgress(progress: number | null) {
-    if (typeof progress === 'number')
-      await this.db.put('meta', progress, 'progress')
-    else await this.db.delete('meta', 'progress')
+  public async setEpisodeProgress(id: string, progress: number) {
+    const episode = await this.db.get('episodes', id)
+    if (!episode) throw Error(`can't update unknown episode ${id}`)
+    await this.db.put('episodes', { ...episode, currentTime: progress })
   }
 
   public async episodesCrc(podcast: string) {

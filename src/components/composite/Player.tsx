@@ -171,6 +171,9 @@ const S = {
   Central: styled.div`
     width: calc(100% - 2rem);
     display: flex;
+    overflow: hidden;
+    padding: 0 0.5rem;
+    margin: 0 -0.5rem;
 
     @media ${mobile} {
       position: absolute;
@@ -190,6 +193,10 @@ const S = {
   Title: styled.span`
     font-size: 1.1rem;
     color: var(--cl-text-strong);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 100%;
   `,
 
   Right: styled.div`

@@ -8,7 +8,7 @@ import store from './store'
 import * as account from './account'
 import appState from './appState'
 import { deleteDB } from 'idb'
-import * as sync from './sync'
+import * as playback from './playback'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const self: DedicatedWorkerGlobalScope
@@ -33,13 +33,23 @@ const state = async <T = unknown>(p: string, f: (v: T) => void) => {
   return proxy(subscribe(p, f))
 }
 
+const readState = async <T = any>(path: string): Promise<T> => {
+  return await new Promise<T>(async res => {
+    const sp = state<T>(path, state => {
+      res(state)
+      sp.then(unsub => unsub())
+    })
+  })
+}
+
 const api = {
   ...apiCalls,
   ...idbInterface,
   ...store,
-  ...sync,
+  ...playback,
   ...account,
   state,
+  readState,
   deleteIDB,
 } as const
 

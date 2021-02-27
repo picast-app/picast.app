@@ -1,19 +1,35 @@
 import { useState, useEffect } from 'react'
-import { useSubscription } from 'utils/hooks'
+import { useSubscription, useAppState } from 'utils/hooks'
 import subscription from 'utils/subscription'
 import { main } from 'workers'
+import { proxy } from 'comlink'
 import type { Podcast } from 'main/store/types'
 
 const audio = document.querySelector('#player') as HTMLAudioElement
 audio.volume = 0.4
 
-export const trackSub = subscription<string | null>()
+const trackSub = subscription<string | undefined>()
 export const useTrack = () => useSubscription(trackSub)[0]
+main.state(
+  'playing.episode',
+  proxy(v => {
+    const episode = v as EpisodeMin | undefined
+    trackSub.setState(episode?.file)
+    if (!episode?.file) return
+    audio.src = episode?.file
+    audio.currentTime = episode.currentTime ?? 0
+  })
+)
 
 type PlayState = 'playing' | 'paused'
 
-export const playState = subscription<PlayState>()
+export const playState = subscription<PlayState>('paused')
 export const usePlayState = () => useSubscription(playState)[0]
+
+export const usePlaying = (): [podcast?: Podcast, episode?: EpisodeMin] => {
+  const [{ podcast, episode } = {} as any] = useAppState<any>('playing')
+  return episode ? [podcast, episode] : []
+}
 
 export function useTrackState(episode?: string): PlayState {
   const state = usePlayState()
@@ -52,25 +68,8 @@ export function useEpisodeProgress(
   return [progress, state === 'playing', duration]
 }
 
-const playing = subscription<[Podcast, EpisodeMin]>()
-export const usePlaying = () => useSubscription(playing)[0] ?? []
-
-async function setEpisode(epId: EpisodeId, implicit = false) {
-  logger.info('play', epId)
-  const [podcast, episode] = await Promise.all([
-    main.podcast(epId[0]),
-    main.episode(epId),
-  ])
-  if (!episode) throw Error("couldn't find episode " + epId.join(', '))
-  logger.info(episode)
-  playing.setState([podcast!, episode])
-  trackSub.setState(episode.file)
-  audio.src = episode.file
-  if (!implicit) main.setPlaying(epId)
-}
-
 export async function play(epId?: EpisodeId) {
-  if (epId) await setEpisode(epId)
+  if (epId) await main.setPlaying(epId)
   if (!audio.src) return
   if (playState.state !== 'playing') playState.setState('playing')
   await audio.play()
@@ -78,7 +77,7 @@ export async function play(epId?: EpisodeId) {
   const mediaSession = navigator.mediaSession
   if (!epId || !mediaSession) return
 
-  const [podcast, episode] = playing.state
+  const { podcast, episode } = ((await main.readState('playing')) as any) ?? {}
 
   const meta = {
     title: episode.title,
@@ -136,7 +135,6 @@ audio.addEventListener('pause', () => {
 
 audio.addEventListener('ended', () => {
   playState.setState('paused')
-  trackSub.setState(null)
   main.setPlaying(null)
 })
 
@@ -167,13 +165,4 @@ self.addEventListener(
     main.setProgress(audio.currentTime)
   },
   { capture: true }
-)
-
-Promise.all([main.getPlaying(), main.getProgress()]).then(
-  async ([episode, progress]) => {
-    if (trackSub.state || !episode) return
-    playState.setState('paused')
-    await setEpisode(episode, true)
-    if (progress) audio.currentTime = progress
-  }
 )
