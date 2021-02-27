@@ -7,8 +7,14 @@ const endpoint = new Endpoint({
   hasAllEpisodes: { params: String },
 })
 
-export const wsApi = browserWS(process.env.REACT_APP_WS!).connect<WSAPI>(
-  endpoint
-)
+const connect = () =>
+  browserWS(process.env.REACT_APP_WS!).connect<WSAPI>(endpoint)
+
+export const wsApi: Pick<
+  ReturnType<typeof connect>,
+  'call' | 'notify'
+> = process.env.DISABLE_WS
+  ? { async notify() {}, call: () => Promise.resolve() as any }
+  : connect()
 
 export default endpoint
