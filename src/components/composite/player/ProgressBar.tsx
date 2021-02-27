@@ -247,6 +247,7 @@ const S = {
   Wrap: styled.div`
     width: 100%;
     position: relative;
+    margin-bottom: 1.3rem;
   `,
 
   Bar: styled.canvas<{ padd: number }>`

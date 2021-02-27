@@ -53,15 +53,16 @@ export function useEpisodeProgress(
 }
 
 const playing = subscription<[Podcast, EpisodeMin]>()
-export const usePlaying = () => useSubscription(playing)[0]
+export const usePlaying = () => useSubscription(playing)[0] ?? []
 
 async function setEpisode(epId: EpisodeId, implicit = false) {
-  logger.info(epId)
+  logger.info('play', epId)
   const [podcast, episode] = await Promise.all([
     main.podcast(epId[0]),
     main.episode(epId),
   ])
   if (!episode) throw Error("couldn't find episode " + epId.join(', '))
+  logger.info(episode)
   playing.setState([podcast!, episode])
   trackSub.setState(episode.file)
   audio.src = episode.file

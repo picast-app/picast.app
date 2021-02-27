@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
+import { Artwork, Link } from 'components/atoms'
 import { Surface } from 'components/structure'
 import { bar } from 'styles/mixin'
 import { desktop, mobile } from 'styles/responsive'
-import { useTrack } from 'utils/player'
+import { useTrack, usePlaying } from 'utils/player'
 import { useTheme, useMatchMedia, useHistory } from 'utils/hooks'
 import ProgressBar from './player/ProgressBar'
 import Fullscreen from './player/Fullscreen'
@@ -20,6 +21,7 @@ export function Player() {
     new URLSearchParams(location.search).get('view') === 'player'
   )
   const fullscreen = !isDesktop && _fullscreen
+  const [podcast, episode] = usePlaying()
 
   // encode fullscreen state in url
   useEffect(() => {
@@ -70,9 +72,22 @@ export function Player() {
       id="player-container"
     >
       <Controls />
-      <S.Main>
+      <S.Central>
+        {isDesktop && <S.Title>{episode?.title}</S.Title>}
         <ProgressBar barOnly={!isDesktop} />
-      </S.Main>
+      </S.Central>
+      {isDesktop && (
+        <S.Right>
+          <S.Thumbnail to={`/show/${podcast?.id}`}>
+            <Artwork
+              src={podcast?.artwork}
+              title={podcast?.title}
+              covers={podcast?.covers}
+              sizes={[80]}
+            />
+          </S.Thumbnail>
+        </S.Right>
+      )}
       <Fullscreen
         onHide={() => {
           setFullscreen(false)
@@ -153,7 +168,7 @@ const S = {
     }
   `,
 
-  Main: styled.div`
+  Central: styled.div`
     width: calc(100% - 2rem);
     display: flex;
 
@@ -161,6 +176,42 @@ const S = {
       position: absolute;
       bottom: -3px;
       width: 100%;
+    }
+
+    @media ${desktop} {
+      flex-direction: column;
+      justify-content: space-around;
+      align-items: center;
+      height: 100%;
+      padding-top: 0.5rem;
+    }
+  `,
+
+  Title: styled.span`
+    font-size: 1.1rem;
+    color: var(--cl-text-strong);
+  `,
+
+  Right: styled.div`
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+    height: 100%;
+    padding-right: 1.25rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  `,
+
+  Thumbnail: styled(Link)`
+    --size: calc(var(--player-height) - 2.5rem);
+    width: var(--size);
+    height: var(--size);
+    border-radius: 0.25rem;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: scale(1.05);
     }
   `,
 }

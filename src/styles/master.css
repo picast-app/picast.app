@@ -23,7 +23,7 @@ html, body, #root {
 
 @media (min-width: 901px) {
   :root {
-    --player-height: 5.5rem;
+    --player-height: 7rem;
   }
 }
 
