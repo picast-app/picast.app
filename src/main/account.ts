@@ -69,6 +69,9 @@ async function storeSignIn(me: T.Me_me | null) {
     if (!me.wsAuth) return
     state.user.wsAuth = me.wsAuth
     await wsApi.notify('identify', me.wsAuth)
+    if (!me.currentEpisode?.id) return
+    const { podcast, episode } = me.currentEpisode.id
+    state.playing.set([podcast, episode])
   }
 }
 

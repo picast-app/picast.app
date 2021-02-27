@@ -16,7 +16,7 @@ type State = {
     id?: EpisodeId
     episode: EpisodeMin | null
     podcast: Podcast | null
-    set(v: { podcast: Podcast; episode: EpisodeMin } | null): void
+    set(id: EpisodeId | null): void
   }
 }
 
@@ -39,15 +39,20 @@ async function init(): Promise<{
     playing: {
       episode: null,
       podcast: null,
-      set(v) {
-        if (!v) {
+      async set(id) {
+        if (!id) {
           this.id = undefined
           this.podcast = null
           this.episode = null
         } else {
-          this.id = [v.podcast.id, v.episode.id]
-          this.podcast = v.podcast
-          this.episode = v.episode
+          if (this.id?.[0] === id[0] && this.id?.[1] === id[1]) return
+          const [podcast, episode] = await Promise.all([
+            store.podcast(id[0]),
+            store.episode(id),
+          ])
+          this.id = id
+          this.podcast = podcast
+          this.episode = episode
         }
       },
     },

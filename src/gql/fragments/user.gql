@@ -10,4 +10,10 @@ fragment MeInitial on User {
     }
     removed
   }
+  currentEpisode {
+    id {
+      podcast
+      episode
+    }
+  }
 }

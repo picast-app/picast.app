@@ -6,14 +6,7 @@ export async function setPlaying(id: EpisodeId | null) {
   const { state } = await stateProm
   if (state.playing.id?.[1] === id?.[1]) return
   await store.setPlaying(id)
-  state.playing.set(
-    id
-      ? {
-          podcast: (await store.podcast(id[0]))!,
-          episode: (await store.episode(id))!,
-        }
-      : null
-  )
+  state.playing.set(id)
   if (!id || !state.user?.wsAuth) return
   await wsApi.notify('setCurrent', id[0], id[1], 0, state.user.wsAuth)
 }
