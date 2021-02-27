@@ -69,14 +69,28 @@ export function useEpisodeProgress(
   return [progress, state === 'playing', duration]
 }
 
-export async function play(epId?: EpisodeId) {
-  if (epId) await main.setPlaying(epId)
-  if (!audio.src) return
-  if (playState.state !== 'playing') playState.setState('playing')
-  await audio.play()
+async function waitForTrack(src: string) {
+  if (audio.src === src) return
+  await new Promise<void>(res => {
+    const handler = () => {
+      if (audio.src !== src) return
+      audio.removeEventListener('canplay', handler)
+      res()
+    }
+    audio.addEventListener('canplay', handler)
+  })
+}
 
-  const mediaSession = navigator.mediaSession
-  if (!epId || !mediaSession) return
+export async function play(epId?: EpisodeId) {
+  if (playState.state !== 'playing') playState.setState('playing')
+  const track = epId && (await main.setPlaying(epId))
+  if (track) await waitForTrack(track)
+  await audio.play()
+  if (track) await setMediaInfo()
+}
+
+async function setMediaInfo() {
+  if (!navigator.mediaSession) return
 
   const { podcast, episode } = ((await main.readState('playing')) as any) ?? {}
 
@@ -86,13 +100,13 @@ export async function play(epId?: EpisodeId) {
     album: podcast.title,
     artwork: [{ src: podcast.artwork as string }],
   }
-  logger.info(meta)
+  logger.info({ meta })
 
-  mediaSession.metadata = new MediaMetadata(meta)
-  mediaSession.setActionHandler('seekbackward', () => {
+  navigator.mediaSession.metadata = new MediaMetadata(meta)
+  navigator.mediaSession.setActionHandler('seekbackward', () => {
     skip(-15)
   })
-  mediaSession.setActionHandler('seekforward', () => {
+  navigator.mediaSession.setActionHandler('seekforward', () => {
     skip(30)
   })
 }

@@ -13,10 +13,10 @@ type State = {
   signOut(): void
   signIn(v: { provider: 'google' }): void
   playing: {
-    id?: EpisodeId
+    id: EpisodeId | null
     episode: EpisodeMin | null
     podcast: Podcast | null
-    set(id: EpisodeId | null): void
+    set(id: EpisodeId | null): Promise<EpisodeMin | undefined>
   }
 }
 
@@ -37,22 +37,24 @@ async function init(): Promise<{
       Object.assign(this.user, data)
     },
     playing: {
+      id: null,
       episode: null,
       podcast: null,
       async set(id) {
         if (!id) {
-          this.id = undefined
+          this.id = null
           this.podcast = null
           this.episode = null
         } else {
           if (this.id?.[0] === id[0] && this.id?.[1] === id[1]) return
           const [podcast, episode] = await Promise.all([
             store.podcast(id[0]),
-            store.episode(id),
+            store.episode(id as any),
           ])
           this.id = id
           this.podcast = podcast
           this.episode = episode
+          return episode as EpisodeMin
         }
       },
     },
