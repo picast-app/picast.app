@@ -1,5 +1,7 @@
 import store from './store'
 import * as api from './api'
+import { wsApi } from './ws'
+import stateProm from './appState'
 import type { Podcast } from './store/types'
 
 const hour = (n: number) => n * 60 ** 2 * 1000
@@ -53,4 +55,11 @@ export async function meta() {
     .filter((v: any) => !v.episodesMatch)
     .map(({ id }) => id)
   await store.fetchEpisodes(...episodeChanges)
+}
+
+export async function setPlaying(id: EpisodeId | null) {
+  await store.setPlaying(id)
+  const { state } = await stateProm
+  if (!id || !state.user?.wsAuth) return
+  await wsApi.notify('setCurrent', id[0], id[1], 0, state.user.wsAuth)
 }

@@ -55,7 +55,7 @@ export function useEpisodeProgress(
 const playing = subscription<[Podcast, EpisodeMin]>()
 export const usePlaying = () => useSubscription(playing)[0]
 
-async function setEpisode(epId: EpisodeId) {
+async function setEpisode(epId: EpisodeId, implicit = false) {
   logger.info(epId)
   const [podcast, episode] = await Promise.all([
     main.podcast(epId[0]),
@@ -65,7 +65,7 @@ async function setEpisode(epId: EpisodeId) {
   playing.setState([podcast!, episode])
   trackSub.setState(episode.file)
   audio.src = episode.file
-  main.setPlaying(epId)
+  if (!implicit) main.setPlaying(epId)
 }
 
 export async function play(epId?: EpisodeId) {
@@ -172,7 +172,7 @@ Promise.all([main.getPlaying(), main.getProgress()]).then(
   async ([episode, progress]) => {
     if (trackSub.state || !episode) return
     playState.setState('paused')
-    await setEpisode(episode)
+    await setEpisode(episode, true)
     if (progress) audio.currentTime = progress
   }
 )

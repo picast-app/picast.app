@@ -6,6 +6,7 @@ type State = {
   subscriptions: string[]
   user: {
     provider?: 'google'
+    wsAuth?: string
   }
   signedIn: boolean
   signOut(): void
@@ -18,7 +19,7 @@ async function init(): Promise<{
 }> {
   const state = observable<State>({
     subscriptions: [],
-    user: { provider: undefined },
+    user: {},
     get signedIn() {
       return this.user.provider !== undefined
     },
@@ -60,7 +61,6 @@ async function init(): Promise<{
     },
   }
 }
-// export default init()
 const appState = init()
 export default appState
 

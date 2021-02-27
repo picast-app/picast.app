@@ -8,6 +8,7 @@ import store from './store'
 import * as account from './account'
 import appState from './appState'
 import { deleteDB } from 'idb'
+import * as sync from './sync'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const self: DedicatedWorkerGlobalScope
@@ -36,6 +37,7 @@ const api = {
   ...apiCalls,
   ...idbInterface,
   ...store,
+  ...sync,
   ...account,
   state,
   deleteIDB,

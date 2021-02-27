@@ -210,6 +210,9 @@ const shared = (cst, { emitManifest = true } = {}) => webpackEnv => {
               // https://github.com/terser-js/terser/issues/120
               inline: 2,
             },
+            format: {
+              comments: false,
+            },
             mangle: {
               safari10: true,
             },
@@ -224,6 +227,7 @@ const shared = (cst, { emitManifest = true } = {}) => webpackEnv => {
               ascii_only: true,
             },
           },
+          extractComments: false,
           sourceMap: shouldUseSourceMap,
         }),
         // This is only used in production mode

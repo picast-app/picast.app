@@ -66,7 +66,9 @@ async function storeSignIn(me: T.Me_me | null) {
     await db.put('meta', info, 'signin')
     state.signIn(info)
     await sync.meta()
-    if (me.wsAuth) await wsApi.notify('identify', me.wsAuth)
+    if (!me.wsAuth) return
+    state.user.wsAuth = me.wsAuth
+    await wsApi.notify('identify', me.wsAuth)
   }
 }
 
