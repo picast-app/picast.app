@@ -280,7 +280,11 @@ export default class Store {
   public async setEpisodeProgress(id: string, progress: number) {
     const episode = await this.db.get('episodes', id)
     if (!episode) throw Error(`can't update unknown episode ${id}`)
-    await this.db.put('episodes', { ...episode, currentTime: progress })
+    await this.db.put('episodes', {
+      ...episode,
+      currentTime: progress,
+      relProg: progress / episode.duration,
+    })
   }
 
   public async episodesCrc(podcast: string) {

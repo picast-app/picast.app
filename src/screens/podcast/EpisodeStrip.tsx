@@ -28,6 +28,7 @@ export default function EpisodeStrip({ feed, index }: Props) {
         <PlayButton
           file={episode.file}
           id={[episode.podcast, episode.id] as any}
+          progress={episode.relProg}
         />
       </S.Actions>
     </S.Strip>
@@ -54,11 +55,19 @@ function useEpisode(feed: string, index: number) {
   return episode
 }
 
-function PlayButton({ file, id }: { file?: string; id: EpisodeId }) {
+function PlayButton({
+  file,
+  id,
+  progress,
+}: {
+  file?: string
+  id: EpisodeId
+  progress: number
+}) {
   const state = useTrackState(file) ?? 'paused'
   return (
     <S.Play>
-      {file && <EpisodeProgress episode={file} />}
+      {file && <EpisodeProgress episode={file} initial={progress} />}
       <Icon
         icon={state === 'paused' ? 'play' : 'pause'}
         onClick={() => file && toggle(id, state)}
@@ -72,8 +81,14 @@ const width = 8
 const rad = 50 - width / 2
 const circ = 2 * Math.PI * rad
 
-function EpisodeProgress({ episode }: { episode: string }) {
-  const [progress, playing, duration] = useEpisodeProgress(episode)
+function EpisodeProgress({
+  episode,
+  initial,
+}: {
+  episode: string
+  initial: number
+}) {
+  const [progress, playing, duration] = useEpisodeProgress(episode, initial)
   return (
     <S.Progress
       viewBox="0 0 100 100"

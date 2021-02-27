@@ -197,6 +197,7 @@ const S = {
     white-space: nowrap;
     overflow: hidden;
     width: 100%;
+    text-align: center;
   `,
 
   Right: styled.div`

@@ -27,6 +27,7 @@ type EpisodeMin = {
   file: string
   published: number
   currentTime?: number
+  relProg?: number
 }
 
 // eslint-disable-next-line no-var

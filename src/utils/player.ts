@@ -46,10 +46,11 @@ const durSub = subscription<number>(() => {
 })
 
 export function useEpisodeProgress(
-  episode: string
+  episode: string,
+  initial = 0
 ): [progress: number, playing: boolean, duration: number] {
   const state = useTrackState(episode)
-  const [progress, setProgress] = useState(0)
+  const [progress, setProgress] = useState(initial)
   const [duration] = useSubscription(durSub)
 
   useEffect(() => {

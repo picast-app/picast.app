@@ -51,6 +51,7 @@ const episode = <T extends GQL.EpisodeFull | null>(
     podcast,
     published: new Date(gql.publishDate!).getTime(),
     currentTime: 0,
+    relProg: 0,
   } as any
 }
 
