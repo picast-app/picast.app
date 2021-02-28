@@ -1,0 +1,16 @@
+<style>
+  :host {
+    position: fixed;
+    z-index: 9000;
+    left: 0;
+    bottom: 0;
+    width: 100vw;
+    height: var(--player-height);
+    display: block;
+    background-color: #f005;
+
+    @media (max-width: 900px) {
+      bottom: var(--bar-height);
+    }
+  }
+</style>
