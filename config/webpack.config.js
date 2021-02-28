@@ -354,6 +354,12 @@ const shared = (cst, { emitManifest = true } = {}) => webpackEnv => {
               loader: 'graphql-tag/loader',
             },
 
+            {
+              test: /\.(html)$/i,
+              exclude: /node_modules/,
+              loader: 'html-loader',
+            },
+
             // "url" loader works like "file" loader except that it embeds assets
             // smaller than specified limit in bytes as data URLs to avoid requests.
             // A missing `test` is equivalent to a match.
@@ -491,6 +497,7 @@ const shared = (cst, { emitManifest = true } = {}) => webpackEnv => {
                 'sass-loader'
               ),
             },
+
             // "file" loader makes sure those assets get served by WebpackDevServer.
             // When you `import` an asset, you get its (virtual) filename.
             // In production, they would get copied to the `build` folder.
