@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import Routes from 'Routes'
 import Mainnav from 'components/Mainnav'
-// import { Player } from 'components/composite'
-import Player from 'components/player'
 import { SnackTray } from 'components/structure'
 import { Theme } from 'styles'
 import { desktop } from 'styles/responsive'
@@ -33,7 +31,7 @@ export default function App() {
           <Helmet>
             <title>Picast</title>
           </Helmet>
-          <Player />
+          <picast-player />
           <Routes />
           <SnackTray />
           <Mainnav />

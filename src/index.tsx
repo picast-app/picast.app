@@ -1,3 +1,5 @@
+import 'styles'
+import 'components/webcomponents'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import reportWebVitals from './reportWebVitals'
@@ -6,7 +8,6 @@ import history from 'utils/history'
 import { togglePrint } from 'utils/logger'
 import App from './App'
 import { main } from './workers'
-import 'styles'
 
 main.idbGet('meta', 'print_logs').then(togglePrint)
 

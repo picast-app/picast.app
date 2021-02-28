@@ -1,0 +1,67 @@
+<style>
+  :host {
+    position: fixed;
+    z-index: 9000;
+    left: 0;
+    bottom: 0;
+    width: 100vw;
+    height: var(--player-height);
+    display: block;
+    background-color: var(--cl-surface-alt);
+    box-shadow: #0003 0px 2px 4px -1px, #00000024 0px 4px 5px 0px,
+      #0000001f 0px 1px 10px 0px;
+    color: #fff;
+  }
+
+  :host-context([data-theme='dark']) {
+    background-color: #242628ff;
+  }
+
+  /* phones */
+  @media (max-width: 900px) {
+    :host {
+      bottom: var(--bar-height);
+    }
+
+    :host-context([data-theme='light']) {
+      background-color: inherit;
+      color: #000;
+    }
+
+    player-progress {
+      position: absolute;
+      bottom: 0;
+    }
+
+    .central {
+      display: contents;
+    }
+
+    .central > *:not(player-progress) {
+      display: none;
+    }
+  }
+
+  /* desktop */
+  @media (min-width: 901px) {
+    :host {
+      display: grid;
+      grid-template-columns: [left] var(--sidebar-width) [center] auto [right] var(
+          --sidebar-width
+        );
+    }
+
+    .central {
+      display: flex;
+      flex-direction: column;
+      grid-column: center;
+      justify-content: space-around;
+    }
+  }
+</style>
+
+<div class="central">
+  <span class="title"></span>
+  <player-progress></player-progress>
+</div>
+<audio />
