@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import styled from 'styled-components'
 import { formatDuration, durAttr } from 'utils/time'
 import { useVisibility, useCanvas } from 'utils/hooks'
-import { usePlayState } from 'utils/player'
+// import { usePlayState } from 'utils/player'
 
 const audio = document.querySelector('#player') as HTMLAudioElement
 
@@ -17,7 +17,8 @@ export default function ProgressBar({ barOnly = false }: Props) {
   const [ctx, width, height] = useCanvas(canvasRef.current)
   const visibility = useVisibility()
   const visible = visibility === 'visible'
-  const playState = usePlayState()
+  // const playState = usePlayState()
+  const playState = 'paused' as string
   const playing = playState === 'playing'
   const [seekKey, setSeekKey] = useState<any>()
   const [manualProg, setManualProg] = useState(false)

@@ -4,7 +4,7 @@ import { Icon } from 'components/atoms'
 import { main } from 'workers'
 import type { EpisodeBase } from 'main/store/types'
 import { proxy } from 'comlink'
-import { useTrackState, useEpisodeProgress } from 'utils/player'
+import { playerSub, useEpisodePlaying } from 'utils/player'
 import { useComputed } from 'utils/hooks'
 import { mobile } from 'styles/responsive'
 import { center, transition } from 'styles/mixin'
@@ -26,7 +26,6 @@ export default function EpisodeStrip({ feed, index }: Props) {
       <Duration>{episode.duration}</Duration>
       <S.Actions>
         <PlayButton
-          file={episode.file}
           id={[episode.podcast, episode.id] as any}
           progress={episode.relProg}
         />
@@ -55,23 +54,27 @@ function useEpisode(feed: string, index: number) {
   return episode
 }
 
-function PlayButton({
-  file,
-  id,
-  progress,
-}: {
-  file?: string
-  id: EpisodeId
-  progress: number
-}) {
-  const state = useTrackState(file) ?? 'paused'
+const toggle = ([pod, ep]: EpisodeId) => async () => {
+  const player = playerSub.state
+  if (!player) return
+
+  if (pod !== player.podcast?.id || ep !== player.episode?.id) {
+    await player.play([pod, ep])
+  } else {
+    if (player.playing) player.pause()
+    else await player.play()
+  }
+}
+
+function PlayButton({ id, progress }: { id: EpisodeId; progress: number }) {
+  const playing = useEpisodePlaying(id)
   return (
     <S.Play>
-      {file && <EpisodeProgress episode={file} initial={progress} />}
+      <EpisodeProgress episode={id} initial={progress} />
       <Icon
-        icon={state === 'paused' ? 'play' : 'pause'}
-        onClick={() => file && toggle(id, state)}
-        label={state === 'paused' ? 'play' : 'pause'}
+        icon={playing ? 'pause' : 'play'}
+        label={playing ? 'pause' : 'play'}
+        onClick={toggle(id)}
       />
     </S.Play>
   )
@@ -85,10 +88,13 @@ function EpisodeProgress({
   episode,
   initial,
 }: {
-  episode: string
+  episode: EpisodeId
   initial: number
 }) {
-  const [progress, playing, duration] = useEpisodeProgress(episode, initial)
+  // const [progress, playing, duration] = useEpisodeProgress(episode, initial)
+  const progress = 0
+  const playing = false
+  const duration = 600
   return (
     <S.Progress
       viewBox="0 0 100 100"
@@ -125,17 +131,6 @@ function Duration({ children: dur }: { children: number }) {
       : `${(dur / 60 ** 2) | 0}h ${((dur % 60 ** 2) / 60) | 0}m`
 
   return <S.Duration>{txt}</S.Duration>
-}
-
-function toggle(episode: EpisodeId, state: 'playing' | 'paused') {
-  if (!episode) return
-  if (state === 'playing') window.dispatchEvent(new CustomEvent('echo_pause'))
-  else
-    window.dispatchEvent(
-      new CustomEvent<EchoPlayEvent['detail']>('echo_play', {
-        detail: { episode },
-      })
-    )
 }
 
 const S = {

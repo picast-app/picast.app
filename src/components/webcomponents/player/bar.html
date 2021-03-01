@@ -46,7 +46,7 @@
   @media (min-width: 901px) {
     :host {
       display: grid;
-      grid-template-columns: [left] var(--sidebar-width) [center] auto [right] var(
+      grid-template-columns: [ctrl] var(--sidebar-width) [center] auto [right] var(
           --sidebar-width
         );
     }
@@ -58,8 +58,13 @@
       justify-content: space-around;
     }
   }
+
+  ::slotted(*) {
+    grid-column: ctrl;
+  }
 </style>
 
+<slot name="controls"></slot>
 <div class="central">
   <span class="title"></span>
   <player-progress></player-progress>

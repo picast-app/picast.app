@@ -1,5 +1,6 @@
 import html from './bar.html'
 import { main, proxy } from 'workers'
+import { playerSub } from 'utils/player'
 import type { Podcast } from 'main/store/types'
 
 const tmpl = document.createElement('template')
@@ -7,8 +8,8 @@ tmpl.innerHTML = html
 
 export default class Player extends HTMLElement {
   private readonly audio: HTMLAudioElement
-  private podcast?: Podcast
-  private episode?: EpisodeMin
+  public podcast?: Podcast
+  public episode?: EpisodeMin
 
   constructor() {
     super()
@@ -20,6 +21,13 @@ export default class Player extends HTMLElement {
     this.audio.addEventListener('durationchange', () => {
       this.setProgressAttr('duration', this.audio.duration)
     })
+    this.audio.volume = 0.4
+
+    playerSub.setState(this)
+  }
+
+  public get playing(): boolean {
+    return !this.audio.paused
   }
 
   private async onStateChange({
@@ -39,18 +47,35 @@ export default class Player extends HTMLElement {
     this.setProgressAttr('current', episode.currentTime ?? 0)
     this.audio.src = episode.file
     await this.waitForTrack(episode.file)
+    this.dispatchEvent(
+      new CustomEvent('episodeChange', { detail: [podcast.id, episode.id] })
+    )
   }
 
-  async waitForTrack(track: string) {
-    if (this.audio.currentSrc === track) return
+  async waitForTrack(track?: string) {
+    const isTrack = () =>
+      track ? this.audio.currentSrc === track : !!this.audio.currentSrc
+
+    if (isTrack()) return
 
     await new Promise<void>(res => {
       const handler = () => {
-        if (this.audio.currentSrc !== track) return
+        if (!isTrack) return
         this.audio.removeEventListener('canplay', handler)
         res()
       }
       this.audio.addEventListener('canplay', handler)
+    })
+  }
+
+  async waitForEpisode([pod, ep]: EpisodeId) {
+    await new Promise<void>(res => {
+      const listener = ({ detail }: CustomEvent<EpisodeId>) => {
+        if (detail[0] !== pod || detail[1] !== ep) return
+        this.removeEventListener('episodeChange', listener as any)
+        res()
+      }
+      this.addEventListener('episodeChange', listener as any)
     })
   }
 
@@ -64,6 +89,27 @@ export default class Player extends HTMLElement {
     this.shadowRoot!.querySelectorAll('player-progress').forEach(el => {
       el.setAttribute(name, value.toString())
     })
+  }
+
+  public async play(id?: EpisodeId) {
+    this.dispatchEvent(new Event('play'))
+
+    if (id) {
+      if (id[0] !== this.podcast?.id || id[1] !== this.episode?.id) {
+        this.dispatchEvent(new CustomEvent('episodeChange', { detail: id }))
+        const changed = this.waitForEpisode(id)
+        main.setPlaying(id)
+        await changed
+        logger.info('changed', this.episode?.title)
+      }
+    }
+
+    await this.audio.play()
+  }
+
+  public pause() {
+    this.dispatchEvent(new Event('pause'))
+    this.audio.pause()
   }
 }
 

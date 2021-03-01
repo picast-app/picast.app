@@ -10,6 +10,8 @@ type Props = {
   linkTo?: string
   onClick?(e: React.MouseEvent<HTMLElement, MouseEvent>): void
   label?: string
+  autoFocus?: boolean
+  tabIndex?: number
 }
 
 export const Icon: React.FC<Props> = ({
@@ -18,6 +20,8 @@ export const Icon: React.FC<Props> = ({
   linkTo,
   onClick,
   label,
+  autoFocus,
+  tabIndex,
   ...props
 }) => {
   const theme = useTheme()
@@ -35,7 +39,7 @@ export const Icon: React.FC<Props> = ({
     )
   if (onClick)
     return (
-      <Button iconWrap={label} onClick={onClick}>
+      <Button iconWrap={label} onClick={onClick} {...{ autoFocus, tabIndex }}>
         {svg}
       </Button>
     )
