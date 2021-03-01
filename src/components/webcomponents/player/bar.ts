@@ -31,6 +31,22 @@ export default class Player extends HTMLElement {
     this.audio.addEventListener('seek', this.syncProgress)
     this.audio.addEventListener('ended', this.pause)
 
+    this.audio.addEventListener('play', () => {
+      this.setProgressAttr('current', this.audio.currentTime)
+      this.setProgressAttr('playing', true)
+    })
+    this.audio.addEventListener('pause', () => {
+      this.setProgressAttr('current', this.audio.currentTime)
+      this.setProgressAttr('playing', false)
+    })
+
+    this.shadowRoot!.querySelector('player-progress')!.addEventListener(
+      'jump',
+      (e: any) => {
+        this.jump((e as CustomEvent<number>).detail)
+      }
+    )
+
     playerSub.setState(this)
   }
 
@@ -122,6 +138,11 @@ export default class Player extends HTMLElement {
     this.audio.pause()
     await this.syncProgress()
     this.dispatchEvent(new Event('pause'))
+  }
+
+  public async jump(pos: number, relative = false) {
+    if (relative) pos = this.audio.currentTime + pos
+    this.audio.currentTime = pos
   }
 
   private syncId?: number
