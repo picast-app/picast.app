@@ -105,6 +105,12 @@ export default class Progress extends HTMLElement {
     this.scheduleFrame()
   }
 
+  public jump(pos: number) {
+    this.current = pos
+    if (this.playing) this.playStart = performance.now()
+    this.scheduleFrame()
+  }
+
   private resize([{ contentRect: box }]: readonly ResizeObserverEntry[]) {
     this.canvas.width = box.width * devicePixelRatio
     this.canvas.height = box.height * devicePixelRatio
@@ -231,11 +237,7 @@ export default class Progress extends HTMLElement {
   private onDragStop() {
     const progress = this.dragProgress * this.duration
     this.onDragCancel()
-
-    logger.info('jump to', progress | 0)
     this.dispatchEvent(new CustomEvent('jump', { detail: progress }))
-    this.current = progress
-    this.playStart = performance.now()
   }
 
   private onDragCancel(e?: KeyboardEvent) {

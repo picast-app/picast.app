@@ -46,13 +46,17 @@
     .central > *:not(player-progress) {
       display: none;
     }
+
+    .info {
+      display: none;
+    }
   }
 
   /* desktop */
   @media (min-width: 901px) {
     :host {
       display: grid;
-      grid-template-columns: [ctrl] var(--sidebar-width) [center] auto [right] var(
+      grid-template-columns: [ctrl] var(--sidebar-width) [center] auto [info] var(
           --sidebar-width
         );
       --canvas-height: 1rem;
@@ -66,9 +70,13 @@
       overflow: hidden;
     }
 
-    ::slotted(*) {
+    .ctrl {
       grid-column: ctrl;
       place-self: center;
+    }
+
+    .info {
+      grid-column: info;
     }
   }
 
@@ -84,9 +92,10 @@
   }
 </style>
 
-<slot name="controls"></slot>
+<slot name="controls" class="ctrl"></slot>
 <div class="central">
   <span class="title"></span>
   <player-progress inline></player-progress>
 </div>
+<slot name="info" class="info"></slot>
 <audio />

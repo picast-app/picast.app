@@ -2,6 +2,7 @@ import html from './bar.html'
 import { main, proxy } from 'workers'
 import { playerSub } from 'utils/player'
 import type { Podcast } from 'main/store/types'
+import type Progress from './progress'
 
 const tmpl = document.createElement('template')
 tmpl.innerHTML = html
@@ -146,6 +147,11 @@ export default class Player extends HTMLElement {
   public async jump(pos: number, relative = false) {
     if (relative) pos = this.audio.currentTime + pos
     this.audio.currentTime = pos
+    this.shadowRoot!.querySelectorAll<Progress>('player-progress').forEach(
+      el => {
+        el.jump(pos)
+      }
+    )
   }
 
   private syncId?: number
