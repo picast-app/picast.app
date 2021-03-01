@@ -1,11 +1,12 @@
 // import { useState, useEffect } from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useReducer } from 'react'
 import { useAppState, useSubscription } from 'utils/hooks'
 import subscription from 'utils/subscription'
 // import { main } from 'workers'
 // import { proxy } from 'comlink'
 import type { Podcast } from 'main/store/types'
 import type Player from 'components/webcomponents/player/bar'
+import { main } from 'workers'
 
 // const audio = document.querySelector('#player') as HTMLAudioElement
 // audio.volume = 0.4
@@ -50,17 +51,12 @@ playerSub.subscribe(player => {
 })
 export const useIsPlaying = () => useSubscription(isPlayingSub)[0]
 
-export function useEpisodePlaying([pod, ep]: EpisodeId) {
-  const playing = useIsPlaying()
+export function useIsCurrent([pod, ep]: EpisodeId) {
   const player = usePlayer()
+
   const [isCurrent, setIsCurrent] = useState(
     player?.podcast?.id === pod && player?.episode?.id === ep
   )
-  const [epPlaying, setEpPlaying] = useState(isCurrent && playing)
-
-  useEffect(() => {
-    setEpPlaying(isCurrent && playing)
-  }, [playing, isCurrent])
 
   useEffect(() => {
     if (!player) return
@@ -70,7 +66,67 @@ export function useEpisodePlaying([pod, ep]: EpisodeId) {
     return () => player.removeEventListener('episodeChange', onChange as any)
   }, [player, pod, ep])
 
+  return isCurrent
+}
+
+export function useEpisodePlaying(id: EpisodeId) {
+  const playing = useIsPlaying()
+  const isCurrent = useIsCurrent(id)
+  const [epPlaying, setEpPlaying] = useState(isCurrent && playing)
+
+  useEffect(() => {
+    setEpPlaying(isCurrent && playing)
+  }, [playing, isCurrent])
+
   return epPlaying
+}
+
+export function useEpisodeProgress(id: EpisodeId, initialProgress = 0) {
+  type State = { progress: number; duration: number; playing: boolean }
+  const [state, update] = useReducer(
+    (state: State, update: Partial<State>): State => ({ ...state, ...update }),
+    { progress: initialProgress, duration: 30, playing: false }
+  )
+
+  const isPlaying = useIsPlaying()
+  const isActive = useIsCurrent(id)
+
+  const epId = id[1]
+
+  useEffect(() => {
+    if (!isActive) return update({ playing: false })
+
+    const audio = playerSub.state.audio
+
+    const playUpdate = () => ({
+      duration: audio.duration,
+      progress: audio.currentTime / audio.duration,
+    })
+
+    const onChange = () => {
+      update(playUpdate())
+    }
+    audio.addEventListener('seeked', onChange)
+
+    if (!isPlaying) {
+      main
+        .getEpisodeProgress(epId)
+        .then(progress => update({ playing: false, progress }))
+      return () => {
+        audio.removeEventListener('seeked', onChange)
+      }
+    }
+
+    update({ playing: true, ...playUpdate() })
+
+    audio.addEventListener('durationchange', onChange)
+    return () => {
+      audio.removeEventListener('durationchange', onChange)
+      audio.removeEventListener('seeked', onChange)
+    }
+  }, [isActive, isPlaying, epId])
+
+  return state
 }
 
 // export function useTrackState(episode?: string): PlayState {

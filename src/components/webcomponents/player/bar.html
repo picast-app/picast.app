@@ -56,11 +56,23 @@
       flex-direction: column;
       grid-column: center;
       justify-content: space-around;
+      overflow: hidden;
     }
   }
 
   ::slotted(*) {
     grid-column: ctrl;
+  }
+
+  .title {
+    font-size: 1.1rem;
+    width: 100%;
+    height: 1.5rem;
+    line-height: 1.5rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: center;
   }
 </style>
 

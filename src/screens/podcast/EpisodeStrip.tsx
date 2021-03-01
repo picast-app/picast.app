@@ -4,7 +4,7 @@ import { Icon } from 'components/atoms'
 import { main } from 'workers'
 import type { EpisodeBase } from 'main/store/types'
 import { proxy } from 'comlink'
-import { playerSub, useEpisodePlaying } from 'utils/player'
+import { playerSub, useEpisodePlaying, useEpisodeProgress } from 'utils/player'
 import { useComputed } from 'utils/hooks'
 import { mobile } from 'styles/responsive'
 import { center, transition } from 'styles/mixin'
@@ -91,10 +91,7 @@ function EpisodeProgress({
   episode: EpisodeId
   initial: number
 }) {
-  // const [progress, playing, duration] = useEpisodeProgress(episode, initial)
-  const progress = 0
-  const playing = false
-  const duration = 600
+  const { progress, playing, duration } = useEpisodeProgress(episode, initial)
   return (
     <S.Progress
       viewBox="0 0 100 100"

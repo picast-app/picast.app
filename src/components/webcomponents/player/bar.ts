@@ -7,7 +7,7 @@ const tmpl = document.createElement('template')
 tmpl.innerHTML = html
 
 export default class Player extends HTMLElement {
-  private readonly audio: HTMLAudioElement
+  public readonly audio: HTMLAudioElement
   public podcast?: Podcast
   public episode?: EpisodeMin
 
@@ -15,13 +15,21 @@ export default class Player extends HTMLElement {
     super()
     const shadow = this.attachShadow({ mode: 'open' })
     shadow.appendChild(tmpl.content.cloneNode(true))
-    this.audio = this.shadowRoot!.querySelector('audio')!
 
-    main.state('playing', proxy(this.onStateChange.bind(this) as any))
+    this.syncProgress = this.syncProgress.bind(this)
+    this.onStateChange = this.onStateChange.bind(this)
+    this.play = this.play.bind(this)
+    this.pause = this.pause.bind(this)
+
+    this.audio = this.shadowRoot!.querySelector('audio')!
+    this.audio.volume = 0.4
+
+    main.state('playing', proxy(this.onStateChange as any))
     this.audio.addEventListener('durationchange', () => {
       this.setProgressAttr('duration', this.audio.duration)
     })
-    this.audio.volume = 0.4
+    this.audio.addEventListener('seek', this.syncProgress)
+    this.audio.addEventListener('ended', this.pause)
 
     playerSub.setState(this)
   }
@@ -44,8 +52,11 @@ export default class Player extends HTMLElement {
 
     if (!episode) return
 
-    this.setProgressAttr('current', episode.currentTime ?? 0)
+    const current = (episode.relProg ?? 0) >= 1 ? 0 : episode.currentTime ?? 0
+
+    this.setProgressAttr('current', current)
     this.audio.src = episode.file
+    this.audio.currentTime = current
     await this.waitForTrack(episode.file)
     this.dispatchEvent(
       new CustomEvent('episodeChange', { detail: [podcast.id, episode.id] })
@@ -100,16 +111,32 @@ export default class Player extends HTMLElement {
         const changed = this.waitForEpisode(id)
         main.setPlaying(id)
         await changed
-        logger.info('changed', this.episode?.title)
       }
     }
 
     await this.audio.play()
+    this.syncProgress()
   }
 
-  public pause() {
-    this.dispatchEvent(new Event('pause'))
+  public async pause() {
     this.audio.pause()
+    await this.syncProgress()
+    this.dispatchEvent(new Event('pause'))
+  }
+
+  private syncId?: number
+
+  private async syncProgress() {
+    if (this.syncId) {
+      clearTimeout(this.syncId)
+      delete this.syncId
+    }
+
+    if (this.episode?.file !== this.audio.currentSrc)
+      throw Error('episode mismatch')
+    await main.setProgress(this.audio.currentTime)
+
+    if (this.playing) this.syncId = setTimeout(this.syncProgress, 5000)
   }
 }
 
