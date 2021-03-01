@@ -8,20 +8,29 @@ tmpl.innerHTML = html
 export default class Progress extends HTMLElement {
   private readonly canvas: HTMLCanvasElement
   private readonly ctx: CanvasRenderingContext2D
-  private duration?: number
+  private readonly tsCurrent: HTMLTimeElement
+  private readonly tsRemains: HTMLTimeElement
   private current?: number
   private playing = false
   private playStart?: number
   private dragX?: number
   private bcr?: DOMRect
+  private _duration?: number
+
+  private get duration() {
+    return this._duration ?? 600
+  }
+  private set duration(n) {
+    this._duration = n
+  }
 
   private static BAR_HEIGHT = 1 / 3
 
   private get progress(): number {
-    return (this.current ?? 0) / (this.duration ?? 600)
+    return (this.current ?? 0) / this.duration
   }
   private get remaining(): number {
-    return (this.duration ?? 600) - (this.current ?? 0)
+    return this.duration - (this.current ?? 0)
   }
 
   private readonly resizeObserver = new ResizeObserver(
@@ -40,6 +49,9 @@ export default class Progress extends HTMLElement {
     this.onDragStop = this.onDragStop.bind(this)
     this.onDrag = this.onDrag.bind(this)
     this.onDragCancel = this.onDragCancel.bind(this)
+
+    this.tsCurrent = this.shadowRoot!.getElementById('current') as any
+    this.tsRemains = this.shadowRoot!.getElementById('remaining') as any
   }
 
   connectedCallback() {
@@ -60,23 +72,24 @@ export default class Progress extends HTMLElement {
   }
 
   attributeChangedCallback(name: string, old: string, current: string) {
-    if (name === 'current' || name === 'duration') {
-      this[name] = parseFloat(current)
-      logger.info(name, this[name])
-      const node = this.shadowRoot!.getElementById(
-        name === 'current' ? name : 'remaining'
-      )!
-      const time = name === 'current' ? this.progress : this.remaining
-      node.textContent = formatDuration(time)
-      node.setAttribute('datetime', durAttr(time))
-      this.scheduleFrame()
-    } else if (name === 'playing') {
-      this.playing = current === 'true'
-      if (this.playing) {
-        this.playStart = performance.now()
-        this.scheduleFrame()
-      }
+    switch (name) {
+      case 'current':
+        this.current = parseFloat(current)
+        this.labelProg = this.current
+        break
+      case 'duration':
+        this.duration = parseFloat(current)
+        this.labelRemains = this.remaining
+        break
+      case 'playing':
+        this.playing = current === 'true'
+        if (this.playing) {
+          this.playStart = performance.now()
+          this.scheduleFrame()
+        }
+        break
     }
+    this.scheduleFrame()
   }
 
   private resize([{ contentRect: box }]: readonly ResizeObserverEntry[]) {
@@ -101,25 +114,19 @@ export default class Progress extends HTMLElement {
     const padd = (this.canvas.height - height) / 2
     const width = this.canvas.width - padd * 2 - height
 
-    let knobX: number
-
-    if (this.dragX === undefined) {
-      const currentProg = !this.playing
+    const progress =
+      this.dragX !== undefined
+        ? this.dragProgress
+        : !this.playing
         ? this.progress
         : (this.progress * this.duration! +
             (performance.now() - this.playStart!) / 1000) /
           this.duration!
 
-      knobX = padd + height / 2 + width * currentProg
-    } else {
-      knobX = Math.min(
-        Math.max(
-          (this.dragX - this.bcr!.left) * devicePixelRatio,
-          padd + height / 2
-        ),
-        this.canvas.width - padd - height / 2
-      )
-    }
+    this.labelProg = progress * this.duration
+    this.labelRemains = this.duration * (1 - progress)
+
+    const knobX = padd + height / 2 + width * progress
 
     this.drawBar(padd, this.canvas.width - padd, height)
     this.ctx.fillStyle = '#ff08'
@@ -180,15 +187,9 @@ export default class Progress extends HTMLElement {
     this.dragX = e.screenX
   }
 
-  private onDragStop({ screenX: x }: MouseEvent) {
+  private onDragStop() {
+    const progress = this.dragProgress * this.duration
     this.onDragCancel()
-
-    const padd = this.canvas.height / 2 / devicePixelRatio
-    const width = this.canvas.width / devicePixelRatio - padd * 2
-    const normalX =
-      (Math.min(Math.max(x - this.bcr!.left, padd), width + padd) - padd) /
-      width
-    const progress = normalX * (this.duration ?? 600)
 
     logger.info('jump to', progress | 0)
     this.dispatchEvent(new CustomEvent('jump', { detail: progress }))
@@ -205,6 +206,37 @@ export default class Progress extends HTMLElement {
     window.removeEventListener('mouseup', this.onDragStop)
     window.removeEventListener('keydown', this.onDragCancel)
     delete this.dragX
+  }
+
+  get dragProgress(): number {
+    const padd = this.canvas.height / 2 / devicePixelRatio
+    const width = this.canvas.width / devicePixelRatio - padd * 2
+    return (
+      (Math.min(
+        Math.max((this.dragX ?? 0) - this.bcr!.left, padd),
+        width + padd
+      ) -
+        padd) /
+      width
+    )
+  }
+
+  private _labelProg?: number
+  private set labelProg(n: number) {
+    n |= 0
+    if (n === this._labelProg) return
+    this._labelProg = n
+    this.tsCurrent.textContent = formatDuration(n)
+    this.tsCurrent.setAttribute('datetime', durAttr(n))
+  }
+
+  private _labelRemains?: number
+  private set labelRemains(n: number) {
+    n |= 0
+    if (n === this._labelRemains) return
+    this._labelRemains = n
+    this.tsRemains.textContent = formatDuration(n)
+    this.tsRemains.setAttribute('datetime', durAttr(n))
   }
 }
 
