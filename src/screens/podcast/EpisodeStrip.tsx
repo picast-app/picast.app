@@ -56,10 +56,16 @@ function useEpisode(feed: string, index: number) {
 
 const toggle = ([pod, ep]: EpisodeId) => async () => {
   const player = playerSub.state
-  if (!player) return
 
-  if (pod !== player.podcast?.id || ep !== player.episode?.id) {
-    await player.play([pod, ep])
+  if (pod !== player?.podcast?.id || ep !== player?.episode?.id) {
+    if (player) await player.play([pod, ep])
+    else {
+      const unsub = playerSub.subscribe(player => {
+        player.play()
+        unsub()
+      })
+      await main.setPlaying([pod, ep])
+    }
   } else {
     if (player.playing) player.pause()
     else await player.play()

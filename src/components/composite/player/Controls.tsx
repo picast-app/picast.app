@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Icon } from 'components/atoms'
-import { desktop } from 'styles/responsive'
+import { mobile } from 'styles/responsive'
 import Skip from './SkipControl'
 import { usePlayer, useIsPlaying } from 'utils/player'
 
@@ -11,7 +11,7 @@ export default function PlayControls(props: { slot?: string }) {
 
   return (
     <SC {...props}>
-      <Skip ms={-15000} />
+      <Skip ms={-15000} onJump={n => player.jump(n, true)} />
       <Icon
         icon={playing ? 'pause' : 'play'}
         label={playing ? 'pause' : 'play'}
@@ -19,7 +19,7 @@ export default function PlayControls(props: { slot?: string }) {
         tabIndex={0}
         autoFocus
       />
-      <Skip ms={30000} />
+      <Skip ms={30000} onJump={n => player.jump(n, true)} />
     </SC>
   )
 }
@@ -29,7 +29,7 @@ const SC = styled.div`
   align-items: center;
   justify-content: center;
 
-  --pb-size: 2.5rem;
+  --pb-size: 4.5rem;
 
   & > button[data-style~='icon-wrap'] {
     width: var(--pb-size);
@@ -41,8 +41,10 @@ const SC = styled.div`
     }
   }
 
-  @media ${desktop} {
-    --pb-size: 4rem;
+  @media ${mobile} {
+    & > * {
+      transform: scale(0.8);
+    }
   }
 `
 

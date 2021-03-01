@@ -29,7 +29,10 @@ export default class Player extends HTMLElement {
       this.setProgressAttr('duration', this.audio.duration)
     })
     this.audio.addEventListener('seek', this.syncProgress)
-    this.audio.addEventListener('ended', this.pause)
+    this.audio.addEventListener('ended', () => {
+      this.pause()
+      main.setPlaying(null)
+    })
 
     this.audio.addEventListener('play', () => {
       this.setProgressAttr('current', this.audio.currentTime)
