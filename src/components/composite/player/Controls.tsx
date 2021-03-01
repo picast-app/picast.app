@@ -25,9 +25,9 @@ export default function PlayControls(props: { slot?: string }) {
 }
 
 const SC = styled.div`
-  place-self: center;
   display: flex;
   align-items: center;
+  justify-content: center;
 
   --pb-size: 2.5rem;
 

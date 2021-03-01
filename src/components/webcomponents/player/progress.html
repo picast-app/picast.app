@@ -1,18 +1,24 @@
 <style>
   :host {
     width: 100%;
-    height: 1rem;
     display: block;
     position: relative;
+    height: var(--canvas-height);
   }
 
   canvas {
-    height: 1rem;
     width: 100%;
     cursor: pointer;
+    height: var(--canvas-height);
+    position: absolute;
+    top: 0;
   }
 
   @media (max-width: 900px) {
+    canvas {
+      pointer-events: none;
+    }
+
     time {
       display: none;
     }

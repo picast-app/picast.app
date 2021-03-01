@@ -12,6 +12,7 @@
       #0000001f 0px 1px 10px 0px;
     color: #fff;
     --cl-icon: #fff;
+    --canvas-height: 0.3rem;
   }
 
   :host-context([data-theme='dark']) {
@@ -22,6 +23,10 @@
   @media (max-width: 900px) {
     :host {
       bottom: var(--bar-height);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding-bottom: var(--canvas-height);
     }
 
     :host-context([data-theme='light']) {
@@ -50,6 +55,7 @@
       grid-template-columns: [ctrl] var(--sidebar-width) [center] auto [right] var(
           --sidebar-width
         );
+      --canvas-height: 1rem;
     }
 
     .central {
@@ -59,10 +65,11 @@
       justify-content: space-around;
       overflow: hidden;
     }
-  }
 
-  ::slotted(*) {
-    grid-column: ctrl;
+    ::slotted(*) {
+      grid-column: ctrl;
+      place-self: center;
+    }
   }
 
   .title {
@@ -80,6 +87,6 @@
 <slot name="controls"></slot>
 <div class="central">
   <span class="title"></span>
-  <player-progress></player-progress>
+  <player-progress inline></player-progress>
 </div>
 <audio />

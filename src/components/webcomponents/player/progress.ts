@@ -1,6 +1,7 @@
 import html from './progress.html'
 import debounce from 'lodash/debounce'
 import { durAttr, formatDuration } from 'utils/time'
+import { desktop } from 'styles/responsive'
 
 const tmpl = document.createElement('template')
 tmpl.innerHTML = html
@@ -10,6 +11,8 @@ export default class Progress extends HTMLElement {
   private readonly ctx: CanvasRenderingContext2D
   private readonly tsCurrent: HTMLTimeElement
   private readonly tsRemains: HTMLTimeElement
+  private isInline: boolean
+  private isDesktop: boolean
   private current?: number
   private playing = false
   private playStart?: number
@@ -22,6 +25,9 @@ export default class Progress extends HTMLElement {
   }
   private set duration(n) {
     this._duration = n
+  }
+  private get inline() {
+    return this.isInline && !this.isDesktop
   }
 
   private static BAR_HEIGHT = 1 / 3
@@ -52,16 +58,23 @@ export default class Progress extends HTMLElement {
 
     this.tsCurrent = this.shadowRoot!.getElementById('current') as any
     this.tsRemains = this.shadowRoot!.getElementById('remaining') as any
+
+    const q = window.matchMedia(desktop)
+    this.isDesktop = q.matches
+    q.onchange = v => {
+      this.isDesktop = v.matches
+    }
+    this.isInline = this.hasAttribute('inline')
   }
 
   connectedCallback() {
     this.resizeObserver.observe(this.canvas)
-    this.addEventListener('mousedown', this.onDragStart)
+    this.canvas.addEventListener('mousedown', this.onDragStart)
   }
 
   disconnectedCallback() {
     this.resizeObserver.disconnect()
-    this.removeEventListener('mousedown', this.onDragStart)
+    this.canvas.removeEventListener('mousedown', this.onDragStart)
     window.removeEventListener('mousemove', this.onDrag)
     window.removeEventListener('mouseup', this.onDragStop)
     window.removeEventListener('keydown', this.onDragCancel)
@@ -106,13 +119,7 @@ export default class Progress extends HTMLElement {
 
   private render() {
     delete this.afId
-
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    this.ctx.fillStyle = '#888'
-
-    const height = this.canvas.height * Progress.BAR_HEIGHT
-    const padd = (this.canvas.height - height) / 2
-    const width = this.canvas.width - padd * 2 - height
 
     const progress =
       this.dragX !== undefined
@@ -126,42 +133,76 @@ export default class Progress extends HTMLElement {
     this.labelProg = progress * this.duration
     this.labelRemains = this.duration * (1 - progress)
 
+    if (this.inline) this.renderInline(progress)
+    else this.renderFull(progress)
+
+    if (!this.playing && this.dragX === undefined) return
+    this.afId = requestAnimationFrame(this.render)
+  }
+
+  private renderFull(progress: number) {
+    this.ctx.fillStyle = '#888'
+
+    const height = this.canvas.height * Progress.BAR_HEIGHT
+    const padd = (this.canvas.height - height) / 2
+    const width = this.canvas.width - padd * 2 - height
+
     const knobX = padd + height / 2 + width * progress
 
     this.drawBar(padd, this.canvas.width - padd, height)
     this.ctx.fillStyle = '#ff08'
     this.drawBar(padd, knobX, height)
     this.drawKnob(knobX)
-
-    if (!this.playing && this.dragX === undefined) return
-    this.afId = requestAnimationFrame(this.render)
   }
 
-  private drawBar(start: number, end: number, height: number) {
-    this.ctx.beginPath()
-    this.ctx.arc(
-      start + height / 2,
-      this.canvas.height / 2,
-      height / 2,
-      Math.PI * 0.5,
-      Math.PI * 1.5
-    )
-    this.ctx.fill()
+  private renderInline(progress: number) {
+    const height = this.canvas.height
+    this.ctx.fillStyle = '#888'
+    this.drawBar(0, this.canvas.width, height, false, false)
+    this.ctx.fillStyle = '#ff08'
+    this.drawBar(0, progress * this.canvas.width, height, false, true)
+  }
+
+  private drawBar(
+    start: number,
+    end: number,
+    height: number,
+    roundLeft = true,
+    roundRight = true
+  ) {
+    if (roundLeft) {
+      this.ctx.beginPath()
+      this.ctx.arc(
+        start + height / 2,
+        this.canvas.height / 2,
+        height / 2,
+        Math.PI * 0.5,
+        Math.PI * 1.5
+      )
+      this.ctx.fill()
+    }
+
+    let left = start
+    let right = end
+    if (roundLeft) left += height / 2
+    if (roundRight) right -= height / 2
     this.ctx.fillRect(
-      start + height / 2,
+      left,
       this.canvas.height / 2 - height / 2,
-      end - start - height,
+      right - left,
       height
     )
-    this.ctx.beginPath()
-    this.ctx.arc(
-      end - height / 2,
-      this.canvas.height / 2,
-      height / 2,
-      Math.PI * 1.5,
-      Math.PI * 0.5
-    )
-    this.ctx.fill()
+    if (roundRight) {
+      this.ctx.beginPath()
+      this.ctx.arc(
+        end - height / 2,
+        this.canvas.height / 2,
+        height / 2,
+        Math.PI * 1.5,
+        Math.PI * 0.5
+      )
+      this.ctx.fill()
+    }
   }
 
   private drawKnob(x: number, rad = this.canvas.height / 2) {
@@ -209,7 +250,7 @@ export default class Progress extends HTMLElement {
   }
 
   get dragProgress(): number {
-    const padd = this.canvas.height / 2 / devicePixelRatio
+    const padd = this.inline ? 0 : this.canvas.height / 2 / devicePixelRatio
     const width = this.canvas.width / devicePixelRatio - padd * 2
     return (
       (Math.min(
