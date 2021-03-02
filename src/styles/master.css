@@ -3,6 +3,7 @@
   font-size: 16px;
   color: var(--cl-text);
   background-color: var(--cl-background);
+  touch-action: none;
 
   --appbar-height: 3.5rem;
   --bar-height: 4rem;

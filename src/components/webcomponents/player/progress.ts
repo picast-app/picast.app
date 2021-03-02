@@ -69,14 +69,14 @@ export default class Progress extends HTMLElement {
 
   connectedCallback() {
     this.resizeObserver.observe(this.canvas)
-    this.canvas.addEventListener('mousedown', this.onDragStart)
+    this.canvas.addEventListener('pointerdown', this.onDragStart)
   }
 
   disconnectedCallback() {
     this.resizeObserver.disconnect()
-    this.canvas.removeEventListener('mousedown', this.onDragStart)
-    window.removeEventListener('mousemove', this.onDrag)
-    window.removeEventListener('mouseup', this.onDragStop)
+    this.canvas.removeEventListener('pointerdown', this.onDragStart)
+    window.removeEventListener('pointermove', this.onDrag)
+    window.removeEventListener('pointerup', this.onDragStop)
     window.removeEventListener('keydown', this.onDragCancel)
   }
 
@@ -222,16 +222,16 @@ export default class Progress extends HTMLElement {
     document.documentElement.style.userSelect = 'none'
     document.documentElement.style.cursor = 'grabbing'
     this.canvas.style.cursor = 'inherit'
-    window.addEventListener('mousemove', this.onDrag)
-    window.addEventListener('mouseup', this.onDragStop)
+    window.addEventListener('pointermove', this.onDrag)
+    window.addEventListener('pointerup', this.onDragStop)
     window.addEventListener('keydown', this.onDragCancel)
     this.bcr = this.getBoundingClientRect()
-    this.dragX = e.screenX
+    this.dragX = e.pageX
     this.scheduleFrame()
   }
 
   private onDrag(e: MouseEvent) {
-    this.dragX = e.screenX
+    this.dragX = e.pageX
   }
 
   private onDragStop() {
@@ -245,8 +245,8 @@ export default class Progress extends HTMLElement {
     document.documentElement.style.userSelect = ''
     document.documentElement.style.cursor = ''
     this.canvas.style.cursor = ''
-    window.removeEventListener('mousemove', this.onDrag)
-    window.removeEventListener('mouseup', this.onDragStop)
+    window.removeEventListener('pointermove', this.onDrag)
+    window.removeEventListener('pointerup', this.onDragStop)
     window.removeEventListener('keydown', this.onDragCancel)
     delete this.dragX
   }

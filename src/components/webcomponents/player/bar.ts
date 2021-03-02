@@ -3,6 +3,7 @@ import { main, proxy } from 'workers'
 import { playerSub } from 'utils/player'
 import type { Podcast } from 'main/store/types'
 import type Progress from './progress'
+import 'interaction/gestures'
 
 const tmpl = document.createElement('template')
 tmpl.innerHTML = html
@@ -52,6 +53,14 @@ export default class Player extends HTMLElement {
     )
 
     playerSub.setState(this)
+  }
+
+  connectedCallback() {
+    logger.info('player connected')
+  }
+
+  disconnectedCallback() {
+    logger.info('player disconnected')
   }
 
   public get playing(): boolean {

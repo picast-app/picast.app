@@ -1,12 +1,19 @@
-export default null
+abstract class Gesture {}
 
-const DEBUG = true
+class VerticalSwipe extends Gesture {
+  constructor(public readonly anchor: number) {
+    super()
+  }
+}
 
-class GestureController {
+class GestureController<T extends Gesture> {
   private observer?: ResizeObserver
   private startBox?: DOMRect
 
-  constructor(private readonly startNode: HTMLElement) {
+  constructor(
+    private readonly gesture: new (...args: any[]) => T,
+    private readonly startNode: HTMLElement
+  ) {
     Object.assign(
       startNode.style,
       DEBUG
@@ -38,7 +45,11 @@ class GestureController {
     if (!this.startBox) return
     const { left, right, top, bottom } = this.startBox
     if (x < left || x > right || y < top || y > bottom) return
-    logger.info('gesture start')
+    // logger.info('gesture start')
+
+    window.addEventListener('touchmove', e => {
+      // console.log(e.touches)
+    })
   }
 }
 
@@ -50,5 +61,10 @@ Object.assign(area.style, {
   height: 'calc(var(--bar-height) + var(--player-height)) ',
 })
 
-const controller = new GestureController(area)
+const controller = new GestureController(VerticalSwipe, area)
 controller.start()
+
+if (DEBUG) {
+  debug.createCanvas()
+  debug.draw()
+}
