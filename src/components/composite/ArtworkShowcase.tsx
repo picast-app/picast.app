@@ -25,7 +25,7 @@ export function ArtworkShowcase({ src, covers, onClose }: Props) {
     animateTo(ref.current, { opacity: 1 }, opts)
     ref.current
       .querySelectorAll('img')
-      .forEach(img => animateTo(img, { transform: 'scale(1' }, opts))
+      .forEach(img => animateTo(img, { transform: 'scale(1)' }, opts))
   }, [preview])
 
   function close() {

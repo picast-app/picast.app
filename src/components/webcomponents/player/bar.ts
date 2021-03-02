@@ -3,15 +3,20 @@ import { main, proxy } from 'workers'
 import { playerSub } from 'utils/player'
 import type { Podcast } from 'main/store/types'
 import type Progress from './progress'
-import 'interaction/gesture/registry'
+import { GestureController, VerticalSwipe } from 'interaction/gesture/gestures'
+import { animateTo } from 'utils/animate'
 
 const tmpl = document.createElement('template')
 tmpl.innerHTML = html
 
 export default class Player extends HTMLElement {
   public readonly audio: HTMLAudioElement
+  private readonly fullscreen: HTMLElement
+  private readonly mainnav = document.getElementById('mainnav')!
   public podcast?: Podcast
   public episode?: EpisodeMin
+
+  private gesture: GestureController<VerticalSwipe>
 
   constructor() {
     super()
@@ -22,7 +27,12 @@ export default class Player extends HTMLElement {
     this.onStateChange = this.onStateChange.bind(this)
     this.play = this.play.bind(this)
     this.pause = this.pause.bind(this)
+    this.transition = this.transition.bind(this)
+    this.onSwipe = this.onSwipe.bind(this)
 
+    this.fullscreen = this.shadowRoot!.querySelector<HTMLElement>(
+      '.fullscreen'
+    )!
     this.audio = this.shadowRoot!.querySelector('audio')!
     this.audio.volume = 0.4
 
@@ -53,14 +63,26 @@ export default class Player extends HTMLElement {
     )
 
     playerSub.setState(this)
+
+    this.gesture = new GestureController(
+      VerticalSwipe,
+      (this.shadowRoot!.getElementById('touchbox') as HTMLTemplateElement)
+        .content.firstChild as HTMLElement
+    )
   }
 
   connectedCallback() {
     logger.info('player connected')
+    this.addEventListener('click', this.transition)
+    this.gesture.start()
+    this.gesture.addEventListener('start', this.onSwipe)
   }
 
   disconnectedCallback() {
     logger.info('player disconnected')
+    this.gesture.removeEventListener('start', this.onSwipe)
+    this.gesture.stop()
+    this.removeEventListener('click', this.transition)
   }
 
   public get playing(): boolean {
@@ -177,6 +199,59 @@ export default class Player extends HTMLElement {
 
     if (this.playing) this.syncId = setTimeout(this.syncProgress, 5000)
   }
+
+  private transition() {
+    const opts: KeyframeAnimationOptions = {
+      duration: 1000,
+      easing: 'ease',
+    }
+
+    animateTo(
+      this.fullscreen,
+      { transform: 'translateY(calc(-1 * var(--player-height)))' },
+      opts
+    )
+
+    animateTo(
+      this,
+      {
+        transform:
+          'translateY(calc((100vh - var(--bar-height) - var(--player-height)) * -1))',
+      },
+      opts
+    )
+
+    animateTo(this.mainnav, { transform: 'translateY(100%)' }, opts)
+  }
+
+  private setTransitionPos(y: number) {
+    const height = window.innerHeight - PLAYER_HEIGHT
+    const n = Math.min(y / height, 1)
+    y = n * height
+
+    const player = `-${Math.round(y)}px + ${(n * 100) | 0}%`
+    const full = `${-n} * var(--player-height)`
+    const nav = `${(n * 100) | 0}%`
+
+    this.style.transform = `translateY(calc(${player}))`
+    this.fullscreen.style.transform = `translateY(calc(${full}))`
+    this.mainnav.style.transform = `translateY(${nav})`
+  }
+
+  private onSwipe(gesture: VerticalSwipe) {
+    this.gesture.removeEventListener('start', this.onSwipe)
+    gesture.addEventListener('end', () => {
+      this.gesture.addEventListener('start', this.onSwipe)
+    })
+
+    gesture.addEventListener('move', off => {
+      this.setTransitionPos(off)
+    })
+    logger.info('swipe start')
+  }
 }
 
 customElements.define('picast-player', Player)
+
+const PLAYER_HEIGHT = 4 * 16
+const BAR_HEIGHT = 4 * 16

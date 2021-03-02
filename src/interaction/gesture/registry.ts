@@ -26,13 +26,9 @@ export default class TouchRegistry extends EventManager<{
     }
     TouchRegistry.render?.(this)
 
-    const tn1 = Object.keys(this.active).length
-    if (tn0 === 0 && tn1 > 0) {
+    if (tn0 === 0 && Object.keys(this.active).length > 0) {
       window.addEventListener('touchmove', this.onTouchMove)
       window.addEventListener('touchend', this.onTouchEnd)
-    } else if (tn0 > 0 && tn1 === 0) {
-      window.removeEventListener('touchmove', this.onTouchMove)
-      window.removeEventListener('touchend', this.onTouchEnd)
     }
   }
 
@@ -45,19 +41,30 @@ export default class TouchRegistry extends EventManager<{
   }
 
   private onTouchEnd(e: TouchEvent) {
+    const tn0 = Object.keys(this.active).length
     const ids = Array.from(e.touches).map(v => v.identifier)
     for (const id of Object.keys(this.active)) {
-      if (!ids.includes(parseInt(id))) delete this.active[id as any]
+      if (!ids.includes(parseInt(id))) {
+        this.active[id as any].end()
+        delete this.active[id as any]
+      }
     }
     TouchRegistry.render?.(this)
+
+    if (tn0 > 0 && Object.keys(this.active).length === 0) {
+      window.removeEventListener('touchmove', this.onTouchMove)
+      window.removeEventListener('touchend', this.onTouchEnd)
+    }
   }
 
   public static render?: (registry: TouchRegistry) => void
 }
 
-export class TouchRegistryEvent extends EventManager<{
-  move: (e: TouchRegistryEvent) => void
-}> {
+export class TouchRegistryEvent extends EventManager<
+  {
+    [K in 'move' | 'end']: (e: TouchRegistryEvent) => void
+  }
+> {
   public claimed = false
   public readonly path: [x: number, y: number][] = []
 
@@ -86,6 +93,10 @@ export class TouchRegistryEvent extends EventManager<{
   public move(x: number, y: number) {
     this.path.push([x, y])
     this.call('move', this)
+  }
+
+  public end() {
+    this.call('end', this)
   }
 }
 

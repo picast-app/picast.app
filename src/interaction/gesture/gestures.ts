@@ -1,36 +1,47 @@
 import { main, proxy } from 'workers'
 import Registry, { TouchRegistryEvent } from './registry'
-
-let DEBUG = false
-
-main.state(
-  'debug.touch',
-  proxy(v => {
-    DEBUG = !!v
-    GestureController.active.forEach(v => v.style())
-  })
-)
+import EventManager, { EventDef } from 'utils/event'
 
 const registry = new Registry()
 
-abstract class Gesture {}
-
-export class VerticalSwipe extends Gesture {
-  constructor(public readonly anchor: number) {
+// @ts-ignore
+abstract class Gesture<T extends EventDef = {}> extends EventManager<
+  { end: () => void } & T
+> {
+  constructor(protected readonly touch: TouchRegistryEvent) {
     super()
+    // @ts-ignore
+    touch.addEventListener('end', () => this.call('end'))
   }
 }
 
-export class GestureController<T extends Gesture> {
+export class VerticalSwipe extends Gesture<{ move: (offY: number) => void }> {
+  private maxY: number
+
+  constructor(touch: TouchRegistryEvent) {
+    super(touch)
+    this.maxY = touch.path[0][1]
+
+    touch.addEventListener('move', () => {
+      const y = this.touch.path.slice(-1)[0][1]
+      if (y > this.maxY) this.maxY = y
+      this.call('move', this.maxY - y)
+    })
+  }
+}
+
+export class GestureController<T extends Gesture> extends EventManager<{
+  start: (gesture: T) => void
+}> {
   private observer?: ResizeObserver
   private startBox?: DOMRect
-  private touch?: TouchRegistryEvent
   static active: GestureController<any>[] = []
 
   constructor(
     private readonly gesture: new (...args: any[]) => T,
     private readonly startNode: HTMLElement
   ) {
+    super()
     this.onTouchStart = this.onTouchStart.bind(this)
   }
 
@@ -61,8 +72,7 @@ export class GestureController<T extends Gesture> {
     const { left, right, top, bottom } = this.startBox
     if (e.x < left || e.x > right || e.y < top || e.y > bottom) return
     e.claim()
-
-    e.addEventListener('move', ({ path }) => console.log(path.slice(-1)[0]))
+    this.call('start', new this.gesture(e))
   }
 
   public style() {
@@ -79,3 +89,12 @@ export class GestureController<T extends Gesture> {
     )
   }
 }
+
+let DEBUG = false
+main.state(
+  'debug.touch',
+  proxy(v => {
+    DEBUG = !!v
+    GestureController.active.forEach(v => v.style())
+  })
+)

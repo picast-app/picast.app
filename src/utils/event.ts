@@ -1,6 +1,6 @@
-export default abstract class EventManager<
-  T extends { [K: string]: (...args: any[]) => void }
-> {
+export type EventDef = { [K: string]: (...args: any[]) => void }
+
+export default abstract class EventManager<T extends EventDef> {
   protected listeners: { [K in keyof T]?: T[K][] } = {}
 
   public addEventListener<K extends keyof T>(event: K, handler: T[K]) {

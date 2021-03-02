@@ -11,6 +11,8 @@
     box-shadow: #0003 0px 2px 4px -1px, #00000024 0px 4px 5px 0px,
       #0000001f 0px 1px 10px 0px;
     color: #fff;
+    will-change: transform;
+
     --cl-icon: #fff;
     --canvas-height: 0.3rem;
   }
@@ -30,8 +32,9 @@
     }
 
     :host-context([data-theme='light']) {
-      background-color: inherit;
+      background-color: var(--cl-surface);
       color: #000;
+      --cl-icon: #000;
     }
 
     player-progress {
@@ -90,6 +93,15 @@
     text-overflow: ellipsis;
     text-align: center;
   }
+
+  .fullscreen {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #ee8;
+  }
 </style>
 
 <slot name="controls" class="ctrl"></slot>
@@ -98,4 +110,16 @@
   <player-progress inline></player-progress>
 </div>
 <slot name="info" class="info"></slot>
-<audio />
+<audio></audio>
+<div class="fullscreen">fullscreen</div>
+
+<template id="touchbox"
+  ><div
+    style="
+      position: fixed;
+      bottom: 0;
+      width: 100vw;
+      height: calc(var(--bar-height) + var(--player-height));
+    "
+  ></div
+></template>

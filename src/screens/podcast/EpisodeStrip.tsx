@@ -143,13 +143,14 @@ const S = {
     index: number
   }>`
     position: absolute;
-    width: 100%;
     display: flex;
     justify-content: flex-end;
     align-items: center;
 
+    width: 100%;
     height: var(--item-height);
     padding: 0 1rem;
+    overflow: hidden;
 
     @media (pointer: coarse) {
       user-select: none;
