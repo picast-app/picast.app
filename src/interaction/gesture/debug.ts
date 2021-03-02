@@ -1,19 +1,28 @@
-import type { TouchRegistry } from './registry'
+import type TouchRegistry from './registry'
 
+let canvas: HTMLCanvasElement | null = null
 let ctx: CanvasRenderingContext2D | null = null
 
 export function createCanvas() {
-  const canvas = document.createElement('canvas')
+  canvas = document.createElement('canvas')
   canvas.style.position = 'fixed'
   canvas.style.zIndex = '20000'
   canvas.style.top = '0'
   canvas.style.left = '0'
   canvas.style.width = '100vw'
   canvas.style.height = '100vh'
+  canvas.style.pointerEvents = 'none'
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
   ctx = canvas.getContext('2d', { desynchronized: true })
   document.documentElement.appendChild(canvas)
+}
+
+export function cleanup() {
+  if (!canvas) return
+  document.documentElement.removeChild(canvas)
+  ctx = null
+  canvas = null
 }
 
 const colors = ['#f00', '#0f0', '#00f', '#f0f', '#ff0', '#0ff']

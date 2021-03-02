@@ -3,7 +3,7 @@ import { main, proxy } from 'workers'
 import { playerSub } from 'utils/player'
 import type { Podcast } from 'main/store/types'
 import type Progress from './progress'
-import 'interaction/gestures'
+import 'interaction/gesture/registry'
 
 const tmpl = document.createElement('template')
 tmpl.innerHTML = html

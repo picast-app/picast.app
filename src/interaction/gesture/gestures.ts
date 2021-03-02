@@ -1,3 +1,7 @@
+export default null
+
+const DEBUG = true
+
 abstract class Gesture {}
 
 class VerticalSwipe extends Gesture {
@@ -63,8 +67,3 @@ Object.assign(area.style, {
 
 const controller = new GestureController(VerticalSwipe, area)
 controller.start()
-
-if (DEBUG) {
-  debug.createCanvas()
-  debug.draw()
-}

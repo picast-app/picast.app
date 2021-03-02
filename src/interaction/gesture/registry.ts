@@ -1,6 +1,18 @@
 import * as debug from './debug'
+import { main, proxy } from 'workers'
 
-const DEBUG = true
+main.state(
+  'debug.touch',
+  proxy(v => {
+    if (v) {
+      debug.createCanvas()
+      TouchRegistry.render = debug.render
+    } else {
+      debug.cleanup()
+      delete TouchRegistry.render
+    }
+  })
+)
 
 export default class TouchRegistry {
   constructor() {
@@ -10,9 +22,6 @@ export default class TouchRegistry {
     window.addEventListener('touchstart', this.onTouchStart)
     window.addEventListener('touchmove', this.onTouchMove)
     window.addEventListener('touchend', this.onTouchEnd)
-
-    if (DEBUG) debug.createCanvas()
-    this.render = DEBUG ? () => debug.render(this) : this.render.bind(this)
   }
 
   public readonly active: Record<
@@ -24,14 +33,14 @@ export default class TouchRegistry {
     for (const touch of e.touches) {
       this.active[touch.identifier] = { path: [[touch.pageX, touch.pageY]] }
     }
-    this.render()
+    TouchRegistry.render?.(this)
   }
 
   private onTouchMove(e: TouchEvent) {
     for (const touch of e.touches) {
       this.active[touch.identifier].path.push([touch.pageX, touch.pageY])
     }
-    this.render()
+    TouchRegistry.render?.(this)
   }
 
   private onTouchEnd(e: TouchEvent) {
@@ -39,9 +48,11 @@ export default class TouchRegistry {
     for (const id of Object.keys(this.active)) {
       if (!ids.includes(parseInt(id))) delete this.active[id as any]
     }
-    this.render()
+    TouchRegistry.render?.(this)
   }
 
-  private render() {}
+  public static render?: (registry: TouchRegistry) => void
+
+  // private render() {}
 }
 new TouchRegistry()
