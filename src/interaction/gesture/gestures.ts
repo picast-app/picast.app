@@ -1,33 +1,41 @@
-export default null
+import { main, proxy } from 'workers'
+import Registry, { TouchRegistryEvent } from './registry'
 
-const DEBUG = true
+let DEBUG = false
+
+main.state(
+  'debug.touch',
+  proxy(v => {
+    DEBUG = !!v
+    GestureController.active.forEach(v => v.style())
+  })
+)
+
+const registry = new Registry()
 
 abstract class Gesture {}
 
-class VerticalSwipe extends Gesture {
+export class VerticalSwipe extends Gesture {
   constructor(public readonly anchor: number) {
     super()
   }
 }
 
-class GestureController<T extends Gesture> {
+export class GestureController<T extends Gesture> {
   private observer?: ResizeObserver
   private startBox?: DOMRect
+  private touch?: TouchRegistryEvent
+  static active: GestureController<any>[] = []
 
   constructor(
     private readonly gesture: new (...args: any[]) => T,
     private readonly startNode: HTMLElement
   ) {
-    Object.assign(
-      startNode.style,
-      DEBUG
-        ? { zIndex: 15000, backgroundColor: '#f002', pointerEvents: 'none' }
-        : { visibility: 'hidden' }
-    )
     this.onTouchStart = this.onTouchStart.bind(this)
   }
 
   public start() {
+    this.style()
     document.documentElement.appendChild(this.startNode)
 
     this.observer = new ResizeObserver(() => {
@@ -35,35 +43,39 @@ class GestureController<T extends Gesture> {
     })
     this.observer.observe(this.startNode)
 
-    window.addEventListener('touchstart', this.onTouchStart)
+    registry.addEventListener('start', this.onTouchStart)
+    GestureController.active.push(this)
   }
 
   public stop() {
-    window.removeEventListener('touchstart', this.onTouchStart)
+    registry.removeEventListener('start', this.onTouchStart)
     document.documentElement.removeChild(this.startNode)
     this.observer?.disconnect()
     delete this.startBox
+    if (GestureController.active.includes(this))
+      GestureController.active.splice(GestureController.active.indexOf(this), 1)
   }
 
-  private onTouchStart({ touches: [{ pageX: x, pageY: y }] }: TouchEvent) {
+  private onTouchStart(e: TouchRegistryEvent) {
     if (!this.startBox) return
     const { left, right, top, bottom } = this.startBox
-    if (x < left || x > right || y < top || y > bottom) return
-    // logger.info('gesture start')
+    if (e.x < left || e.x > right || e.y < top || e.y > bottom) return
+    e.claim()
 
-    window.addEventListener('touchmove', e => {
-      // console.log(e.touches)
-    })
+    e.addEventListener('move', ({ path }) => console.log(path.slice(-1)[0]))
+  }
+
+  public style() {
+    Object.assign(
+      this.startNode.style,
+      DEBUG
+        ? {
+            zIndex: 15000,
+            backgroundColor: '#f002',
+            pointerEvents: 'none',
+            visibility: '',
+          }
+        : { visibility: 'hidden' }
+    )
   }
 }
-
-const area = document.createElement('div')
-Object.assign(area.style, {
-  position: 'fixed',
-  bottom: 0,
-  width: '100vw',
-  height: 'calc(var(--bar-height) + var(--player-height)) ',
-})
-
-const controller = new GestureController(VerticalSwipe, area)
-controller.start()
