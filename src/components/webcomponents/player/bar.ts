@@ -12,6 +12,7 @@ import {
 import { animateTo } from 'utils/animate'
 import { transitionStates } from './animation'
 import { setQueryParam, removeQueryParam } from 'utils/url'
+import { desktop } from 'styles/responsive'
 
 const tmpl = document.createElement('template')
 tmpl.innerHTML = html
@@ -26,6 +27,7 @@ export default class Player extends HTMLElement {
   private isFullscreen = location.search.includes('view=player')
   private touchBoxes: HTMLElement[] = []
   private session?: EpisodeId
+  private isDesktop: boolean
 
   constructor() {
     super()
@@ -40,6 +42,7 @@ export default class Player extends HTMLElement {
     this.onSwipe = this.onSwipe.bind(this)
     this.onClick = this.onClick.bind(this)
     this.onPopState = this.onPopState.bind(this)
+    this.onProgress = this.onProgress.bind(this)
 
     this.fullscreen = this.shadowRoot!.querySelector<HTMLElement>(
       '.fullscreen'
@@ -56,6 +59,7 @@ export default class Player extends HTMLElement {
       this.pause()
       main.setPlaying(null)
     })
+    this.audio.addEventListener('progress', this.onProgress)
 
     this.audio.addEventListener('play', () => {
       this.setProgressAttr('current', this.audio.currentTime)
@@ -79,13 +83,21 @@ export default class Player extends HTMLElement {
     this.touchBoxes.push(container.getElementById('closed')!)
     this.touchBoxes.push(container.getElementById('extended')!)
 
+    const q = window.matchMedia(desktop)
+    this.isDesktop = q.matches
+    q.onchange = v => {
+      this.isDesktop = v.matches
+      if (this.isDesktop) this.removeEventListener('click', this.onClick)
+      else this.addEventListener('click', this.onClick)
+    }
+
     playerSub.setState(this)
   }
 
   connectedCallback() {
     logger.info('player connected')
     this.initMediaHandlers()
-    this.addEventListener('click', this.onClick)
+    if (!this.isDesktop) this.addEventListener('click', this.onClick)
     this.attachGesture()
     window.addEventListener('popstate', this.onPopState)
 
@@ -166,8 +178,14 @@ export default class Player extends HTMLElement {
     })
   }
 
+  get progressBars() {
+    return Array.from(
+      this.shadowRoot!.querySelectorAll<Progress>('player-progress')
+    )
+  }
+
   private setProgressAttr(name: string, value: string | number | boolean) {
-    this.shadowRoot!.querySelectorAll('player-progress').forEach(el => {
+    this.progressBars.forEach(el => {
       el.setAttribute(name, value.toString())
     })
   }
@@ -281,7 +299,7 @@ export default class Player extends HTMLElement {
     this.isFullscreen = fullscreen
     this.attachGesture()
     if (fullscreen) setQueryParam('view', 'player')
-    else removeQueryParam('view')
+    else removeQueryParam('view', true)
   }
 
   private onPopState() {
@@ -359,6 +377,25 @@ export default class Player extends HTMLElement {
     navigator.mediaSession.setActionHandler('nexttrack', null)
     navigator.mediaSession.setActionHandler('previoustrack', null)
     navigator.mediaSession.setPositionState?.()
+  }
+
+  private onProgress() {
+    const ranges = this.bufferRanges()
+    for (const bar of this.progressBars) {
+      bar.buffered = ranges
+      bar.scheduleFrame()
+    }
+  }
+
+  private bufferRanges() {
+    const ranges: [number, number][] = []
+    for (let i = 0; i < this.audio.buffered.length; i++) {
+      ranges.push([
+        this.audio.buffered.start(i) / this.audio.duration,
+        this.audio.buffered.end(i) / this.audio.duration,
+      ])
+    }
+    return ranges
   }
 }
 

@@ -19,6 +19,12 @@ export default class Progress extends HTMLElement {
   private dragX?: number
   private bcr?: DOMRect
   private _duration?: number
+  public buffered: [start: number, end: number][] = []
+
+  private static clBar = '#444'
+  private static clBuffered = '#888'
+  private static clProgress = '#ff0'
+  private static clKnob = '#fff'
 
   private get duration() {
     return this._duration ?? 600
@@ -118,7 +124,7 @@ export default class Progress extends HTMLElement {
   }
 
   private afId?: number
-  private scheduleFrame() {
+  public scheduleFrame() {
     if (this.afId) return
     this.afId = requestAnimationFrame(this.render)
   }
@@ -147,25 +153,29 @@ export default class Progress extends HTMLElement {
   }
 
   private renderFull(progress: number) {
-    this.ctx.fillStyle = '#888'
-
     const height = this.canvas.height * Progress.BAR_HEIGHT
     const padd = (this.canvas.height - height) / 2
     const width = this.canvas.width - padd * 2 - height
 
     const knobX = padd + height / 2 + width * progress
 
+    this.ctx.fillStyle = Progress.clBar
     this.drawBar(padd, this.canvas.width - padd, height)
-    this.ctx.fillStyle = '#ff08'
+
+    this.ctx.fillStyle = Progress.clBuffered
+    for (const [start, end] of this.buffered)
+      this.drawBar(padd + start * width, padd + end * width, height)
+
+    this.ctx.fillStyle = Progress.clProgress
     this.drawBar(padd, knobX, height)
     this.drawKnob(knobX)
   }
 
   private renderInline(progress: number) {
     const height = this.canvas.height
-    this.ctx.fillStyle = '#888'
+    this.ctx.fillStyle = Progress.clBar
     this.drawBar(0, this.canvas.width, height, false, false)
-    this.ctx.fillStyle = '#ff08'
+    this.ctx.fillStyle = Progress.clProgress
     this.drawBar(0, progress * this.canvas.width, height, false, true)
   }
 
@@ -212,7 +222,7 @@ export default class Progress extends HTMLElement {
   }
 
   private drawKnob(x: number, rad = this.canvas.height / 2) {
-    this.ctx.fillStyle = '#fff'
+    this.ctx.fillStyle = Progress.clKnob
     this.ctx.beginPath()
     this.ctx.arc(x, this.canvas.height / 2, rad, 0, Math.PI * 2)
     this.ctx.fill()
