@@ -3,7 +3,12 @@ import { main, proxy } from 'workers'
 import { playerSub } from 'utils/player'
 import type { Podcast } from 'main/store/types'
 import type Progress from './progress'
-import { GestureController, VerticalSwipe } from 'interaction/gesture/gestures'
+import {
+  GestureController,
+  VerticalSwipe,
+  UpwardSwipe,
+  DownwardSwipe,
+} from 'interaction/gesture/gestures'
 import { animateTo } from 'utils/animate'
 import { transitionStates } from './animation'
 
@@ -11,13 +16,14 @@ const tmpl = document.createElement('template')
 tmpl.innerHTML = html
 
 export default class Player extends HTMLElement {
+  public podcast?: Podcast
+  public episode?: EpisodeMin
   public readonly audio: HTMLAudioElement
   private readonly fullscreen: HTMLElement
   private readonly mainnav = document.getElementById('mainnav')!
-  public podcast?: Podcast
-  public episode?: EpisodeMin
-
-  private gesture: GestureController<VerticalSwipe>
+  private gesture?: GestureController<UpwardSwipe | DownwardSwipe>
+  private isFullscreen = false
+  private touchBoxes: HTMLElement[] = []
 
   constructor() {
     super()
@@ -66,24 +72,22 @@ export default class Player extends HTMLElement {
 
     playerSub.setState(this)
 
-    this.gesture = new GestureController(
-      VerticalSwipe,
-      (this.shadowRoot!.getElementById('touchbox') as HTMLTemplateElement)
-        .content.firstChild as HTMLElement
-    )
+    const container = (this.shadowRoot!.getElementById(
+      'touchbox'
+    ) as HTMLTemplateElement).content
+    this.touchBoxes.push(container.getElementById('closed')!)
+    this.touchBoxes.push(container.getElementById('extended')!)
   }
 
   connectedCallback() {
     logger.info('player connected')
     this.addEventListener('click', this.onClick)
-    this.gesture.start()
-    this.gesture.addEventListener('start', this.onSwipe)
+    this.attachGesture()
   }
 
   disconnectedCallback() {
     logger.info('player disconnected')
-    this.gesture.removeEventListener('start', this.onSwipe)
-    this.gesture.stop()
+    this.detachGesture()
     this.removeEventListener('click', this.onClick)
   }
 
@@ -214,14 +218,17 @@ export default class Player extends HTMLElement {
     }
 
     const i = dir === 'extend' ? 1 : 0
+    animateTo(this, transitionStates[i].bar, opts, () =>
+      this.onFullscreenChange(dir === 'extend')
+    )
     animateTo(this.fullscreen, transitionStates[i].fullscreen, opts)
-    animateTo(this, transitionStates[i].bar, opts)
     animateTo(this.mainnav, transitionStates[i].nav, opts)
   }
 
   private setTransitionPos(y: number) {
     const height = window.innerHeight - PLAYER_HEIGHT
-    const n = Math.min(y / height, 1)
+    if (y < 0) y = height + y
+    const n = Math.max(Math.min(y / height, 1), 0)
     y = n * height
 
     const player = `-${Math.round(y)}px + ${(n * 100) | 0}%`
@@ -234,10 +241,12 @@ export default class Player extends HTMLElement {
   }
 
   private onSwipe(gesture: VerticalSwipe) {
-    this.gesture.removeEventListener('start', this.onSwipe)
+    this.gesture!.removeEventListener('start', this.onSwipe)
+
     gesture.addEventListener('end', () => {
-      this.gesture.addEventListener('start', this.onSwipe)
-      const frac = gesture.lastY / (window.innerHeight - BAR_HEIGHT)
+      this.gesture!.addEventListener('start', this.onSwipe)
+      let frac = gesture.lastY / (window.innerHeight - BAR_HEIGHT)
+      if (frac < 0) frac += 1
       let vel = gesture.velocity
       if (Math.abs(vel) < 3) vel = 0
       this.transition(
@@ -248,7 +257,33 @@ export default class Player extends HTMLElement {
     gesture.addEventListener('move', off => {
       this.setTransitionPos(off)
     })
-    logger.info('swipe start')
+  }
+
+  private onFullscreenChange(fullscreen: boolean) {
+    if (fullscreen === this.isFullscreen) return
+    this.detachGesture()
+    this.isFullscreen = fullscreen
+    this.attachGesture()
+  }
+
+  private getTouchBox(full: 'extended' | 'closed'): HTMLElement {
+    return this.touchBoxes[full === 'closed' ? 0 : 1]
+  }
+
+  private attachGesture() {
+    this.gesture = new GestureController(
+      this.isFullscreen ? DownwardSwipe : UpwardSwipe,
+      this.getTouchBox(this.isFullscreen ? 'extended' : 'closed')
+    )
+    this.gesture.start()
+    this.gesture.addEventListener('start', this.onSwipe)
+  }
+
+  private detachGesture() {
+    if (!this.gesture) return
+    this.gesture.removeEventListener('start', this.onSwipe)
+    this.gesture.stop()
+    delete this.gesture
   }
 }
 

@@ -113,13 +113,18 @@
 <audio></audio>
 <div class="fullscreen">fullscreen</div>
 
-<template id="touchbox"
-  ><div
+<template id="touchbox">
+  <div
+    id="closed"
     style="
       position: fixed;
       bottom: 0;
       width: 100vw;
       height: calc(var(--bar-height) + var(--player-height));
     "
-  ></div
-></template>
+  ></div>
+  <div
+    id="extended"
+    style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh"
+  ></div>
+</template>

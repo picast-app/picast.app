@@ -16,26 +16,40 @@ abstract class Gesture<T extends EventDef = {}> extends EventManager<
 }
 
 export class VerticalSwipe extends Gesture<{ move: (offY: number) => void }> {
-  private maxY: number
+  protected anchor: number
 
   constructor(touch: TouchRegistryEvent) {
     super(touch)
-    this.maxY = touch.path[0][1]
+    this.anchor = touch.path[0][1]
 
     touch.addEventListener('move', () => {
       const y = this.touch.path.slice(-1)[0][1]
-      if (y > this.maxY) this.maxY = y
-      this.call('move', this.maxY - y)
+      this.anchorCheck(y)
+      this.call('move', this.anchor - y)
     })
   }
 
   get lastY() {
-    return this.maxY - this.touch.path.slice(-1)[0][1]
+    return this.anchor - this.touch.path.slice(-1)[0][1]
   }
 
   get velocity() {
     const [[, y0], [, y1 = y0] = []] = this.touch.path.reverse()
     return y1 - y0
+  }
+
+  protected anchorCheck(y: number) {}
+}
+
+export class UpwardSwipe extends VerticalSwipe {
+  anchorCheck(y: number) {
+    if (y > this.anchor) this.anchor = y
+  }
+}
+
+export class DownwardSwipe extends VerticalSwipe {
+  anchorCheck(y: number) {
+    if (y < this.anchor) this.anchor = y
   }
 }
 
