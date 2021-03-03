@@ -5,6 +5,7 @@ import type { Podcast } from 'main/store/types'
 import type Progress from './progress'
 import { GestureController, VerticalSwipe } from 'interaction/gesture/gestures'
 import { animateTo } from 'utils/animate'
+import { transitionStates } from './animation'
 
 const tmpl = document.createElement('template')
 tmpl.innerHTML = html
@@ -29,6 +30,7 @@ export default class Player extends HTMLElement {
     this.pause = this.pause.bind(this)
     this.transition = this.transition.bind(this)
     this.onSwipe = this.onSwipe.bind(this)
+    this.onClick = this.onClick.bind(this)
 
     this.fullscreen = this.shadowRoot!.querySelector<HTMLElement>(
       '.fullscreen'
@@ -73,7 +75,7 @@ export default class Player extends HTMLElement {
 
   connectedCallback() {
     logger.info('player connected')
-    this.addEventListener('click', this.transition)
+    this.addEventListener('click', this.onClick)
     this.gesture.start()
     this.gesture.addEventListener('start', this.onSwipe)
   }
@@ -82,7 +84,7 @@ export default class Player extends HTMLElement {
     logger.info('player disconnected')
     this.gesture.removeEventListener('start', this.onSwipe)
     this.gesture.stop()
-    this.removeEventListener('click', this.transition)
+    this.removeEventListener('click', this.onClick)
   }
 
   public get playing(): boolean {
@@ -200,28 +202,21 @@ export default class Player extends HTMLElement {
     if (this.playing) this.syncId = setTimeout(this.syncProgress, 5000)
   }
 
-  private transition() {
-    const opts: KeyframeAnimationOptions = {
-      duration: 1000,
+  private onClick(e: MouseEvent) {
+    if (e.target !== this) return
+    this.transition('extend')
+  }
+
+  private transition(dir: 'extend' | 'close') {
+    const opts = {
+      duration: 350,
       easing: 'ease',
     }
 
-    animateTo(
-      this.fullscreen,
-      { transform: 'translateY(calc(-1 * var(--player-height)))' },
-      opts
-    )
-
-    animateTo(
-      this,
-      {
-        transform:
-          'translateY(calc((100vh - var(--bar-height) - var(--player-height)) * -1))',
-      },
-      opts
-    )
-
-    animateTo(this.mainnav, { transform: 'translateY(100%)' }, opts)
+    const i = dir === 'extend' ? 1 : 0
+    animateTo(this.fullscreen, transitionStates[i].fullscreen, opts)
+    animateTo(this, transitionStates[i].bar, opts)
+    animateTo(this.mainnav, transitionStates[i].nav, opts)
   }
 
   private setTransitionPos(y: number) {
@@ -231,7 +226,7 @@ export default class Player extends HTMLElement {
 
     const player = `-${Math.round(y)}px + ${(n * 100) | 0}%`
     const full = `${-n} * var(--player-height)`
-    const nav = `${(n * 100) | 0}%`
+    const nav = `${Math.min(y, BAR_HEIGHT)}px`
 
     this.style.transform = `translateY(calc(${player}))`
     this.fullscreen.style.transform = `translateY(calc(${full}))`
@@ -242,6 +237,12 @@ export default class Player extends HTMLElement {
     this.gesture.removeEventListener('start', this.onSwipe)
     gesture.addEventListener('end', () => {
       this.gesture.addEventListener('start', this.onSwipe)
+      const frac = gesture.lastY / (window.innerHeight - BAR_HEIGHT)
+      let vel = gesture.velocity
+      if (Math.abs(vel) < 3) vel = 0
+      this.transition(
+        vel > 0 ? 'extend' : vel < 0 ? 'close' : frac < 0.5 ? 'close' : 'extend'
+      )
     })
 
     gesture.addEventListener('move', off => {

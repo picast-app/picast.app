@@ -229,7 +229,7 @@ const S = {
 
     @media ${mobile} {
       position: absolute;
-      right: 0.5rem;
+      right: 1rem;
       top: 50%;
       transform: translateY(-50%);
     }

@@ -28,6 +28,15 @@ export class VerticalSwipe extends Gesture<{ move: (offY: number) => void }> {
       this.call('move', this.maxY - y)
     })
   }
+
+  get lastY() {
+    return this.maxY - this.touch.path.slice(-1)[0][1]
+  }
+
+  get velocity() {
+    const [[, y0], [, y1 = y0] = []] = this.touch.path.reverse()
+    return y1 - y0
+  }
 }
 
 export class GestureController<T extends Gesture> extends EventManager<{
