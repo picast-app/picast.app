@@ -11,6 +11,7 @@ import {
 } from 'interaction/gesture/gestures'
 import { animateTo } from 'utils/animate'
 import { transitionStates } from './animation'
+import { setQueryParam, removeQueryParam } from 'utils/url'
 
 const tmpl = document.createElement('template')
 tmpl.innerHTML = html
@@ -22,7 +23,7 @@ export default class Player extends HTMLElement {
   private readonly fullscreen: HTMLElement
   private readonly mainnav = document.getElementById('mainnav')!
   private gesture?: GestureController<UpwardSwipe | DownwardSwipe>
-  private isFullscreen = false
+  private isFullscreen = location.search.includes('view=player')
   private touchBoxes: HTMLElement[] = []
   private session?: EpisodeId
 
@@ -38,6 +39,7 @@ export default class Player extends HTMLElement {
     this.transition = this.transition.bind(this)
     this.onSwipe = this.onSwipe.bind(this)
     this.onClick = this.onClick.bind(this)
+    this.onPopState = this.onPopState.bind(this)
 
     this.fullscreen = this.shadowRoot!.querySelector<HTMLElement>(
       '.fullscreen'
@@ -85,6 +87,14 @@ export default class Player extends HTMLElement {
     this.initMediaHandlers()
     this.addEventListener('click', this.onClick)
     this.attachGesture()
+    window.addEventListener('popstate', this.onPopState)
+
+    if (this.isFullscreen) {
+      this.style.transform = transitionStates[1].bar.transform as string
+      this.mainnav.style.transform = transitionStates[1].nav.transform as string
+      this.fullscreen.style.transform = transitionStates[1].fullscreen
+        .transform as string
+    }
   }
 
   disconnectedCallback() {
@@ -92,6 +102,7 @@ export default class Player extends HTMLElement {
     this.detachGesture()
     this.removeEventListener('click', this.onClick)
     this.removeMediaHandlers()
+    window.removeEventListener('popstate', this.onPopState)
   }
 
   public get playing(): boolean {
@@ -269,6 +280,14 @@ export default class Player extends HTMLElement {
     this.detachGesture()
     this.isFullscreen = fullscreen
     this.attachGesture()
+    if (fullscreen) setQueryParam('view', 'player')
+    else removeQueryParam('view')
+  }
+
+  private onPopState() {
+    const fullscreen = location.search.includes('view=player')
+    if (fullscreen === this.isFullscreen) return
+    this.transition(fullscreen ? 'extend' : 'close')
   }
 
   private getTouchBox(full: 'extended' | 'closed'): HTMLElement {
