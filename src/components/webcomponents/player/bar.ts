@@ -24,6 +24,7 @@ export default class Player extends HTMLElement {
   private gesture?: GestureController<UpwardSwipe | DownwardSwipe>
   private isFullscreen = false
   private touchBoxes: HTMLElement[] = []
+  private session?: EpisodeId
 
   constructor() {
     super()
@@ -70,17 +71,18 @@ export default class Player extends HTMLElement {
       }
     )
 
-    playerSub.setState(this)
-
     const container = (this.shadowRoot!.getElementById(
       'touchbox'
     ) as HTMLTemplateElement).content
     this.touchBoxes.push(container.getElementById('closed')!)
     this.touchBoxes.push(container.getElementById('extended')!)
+
+    playerSub.setState(this)
   }
 
   connectedCallback() {
     logger.info('player connected')
+    this.initMediaHandlers()
     this.addEventListener('click', this.onClick)
     this.attachGesture()
   }
@@ -89,6 +91,7 @@ export default class Player extends HTMLElement {
     logger.info('player disconnected')
     this.detachGesture()
     this.removeEventListener('click', this.onClick)
+    this.removeMediaHandlers()
   }
 
   public get playing(): boolean {
@@ -110,7 +113,6 @@ export default class Player extends HTMLElement {
     if (!episode) return
 
     const current = (episode.relProg ?? 0) >= 1 ? 0 : episode.currentTime ?? 0
-
     this.setProgressAttr('current', current)
     this.audio.src = episode.file
     this.audio.currentTime = current
@@ -172,11 +174,14 @@ export default class Player extends HTMLElement {
     }
 
     await this.audio.play()
+    if (navigator.mediaSession) navigator.mediaSession.playbackState = 'playing'
+    this.setMediaMeta()
     this.syncProgress()
   }
 
   public async pause() {
     this.audio.pause()
+    if (navigator.mediaSession) navigator.mediaSession.playbackState = 'paused'
     await this.syncProgress()
     this.dispatchEvent(new Event('pause'))
   }
@@ -284,6 +289,57 @@ export default class Player extends HTMLElement {
     this.gesture.removeEventListener('start', this.onSwipe)
     this.gesture.stop()
     delete this.gesture
+  }
+
+  private setMediaMeta() {
+    if (!navigator.mediaSession || !this.podcast || !this.episode) return
+    if (
+      this.session?.[0] === this.podcast.id &&
+      this.session?.[1] === this.episode.id
+    )
+      return
+    this.session = [this.podcast.id, this.episode.id]
+
+    const meta: MediaMetadata = new MediaMetadata({
+      title: this.episode.title,
+      artist: this.podcast.author!,
+      album: this.podcast.title,
+      artwork: this.podcast.covers.map(src => ({
+        src: `${process.env.IMG_HOST}/${src}`,
+        type: `image/${src.split('.').pop()}`,
+        sizes: Array(2).fill(src.split('.')[0].split('-').pop()).join('x'),
+      })),
+    })
+    navigator.mediaSession.metadata = meta
+
+    navigator.mediaSession.setPositionState?.({
+      duration: this.audio.duration,
+      playbackRate: 1,
+      position: this.audio.currentTime,
+    })
+  }
+
+  private initMediaHandlers() {
+    if (!navigator.mediaSession) return
+    navigator.mediaSession.setActionHandler('play', () => this.play())
+    navigator.mediaSession.setActionHandler('pause', this.pause)
+    navigator.mediaSession.setActionHandler('stop', this.pause)
+    navigator.mediaSession.setActionHandler('nexttrack', () =>
+      this.jump(30, true)
+    )
+    navigator.mediaSession.setActionHandler('previoustrack', () =>
+      this.jump(-15, true)
+    )
+  }
+
+  private removeMediaHandlers() {
+    if (!navigator.mediaSession) return
+    navigator.mediaSession.setActionHandler('play', null)
+    navigator.mediaSession.setActionHandler('pause', null)
+    navigator.mediaSession.setActionHandler('stop', null)
+    navigator.mediaSession.setActionHandler('nexttrack', null)
+    navigator.mediaSession.setActionHandler('previoustrack', null)
+    navigator.mediaSession.setPositionState?.()
   }
 }
 
