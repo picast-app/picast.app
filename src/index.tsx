@@ -29,4 +29,17 @@ ReactDOM.render(
   document.getElementById('root')
 )
 
+window.addEventListener('storage', ({ key, newValue }) => {
+  if (key !== 'custom-theme') return
+  if (newValue !== localStorage.getItem(key))
+    newValue
+      ? localStorage.setItem(key, newValue)
+      : localStorage.removeItem(key)
+
+  const theme =
+    newValue ??
+    (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+  document.documentElement.dataset.theme = theme
+})
+
 reportWebVitals()

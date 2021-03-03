@@ -87,8 +87,8 @@ export default class Player extends HTMLElement {
     this.isDesktop = q.matches
     q.onchange = v => {
       this.isDesktop = v.matches
-      if (this.isDesktop) this.removeEventListener('click', this.onClick)
-      else this.addEventListener('click', this.onClick)
+      this.removeEventListener('click', this.onClick)
+      if (!this.isDesktop) this.addEventListener('click', this.onClick)
     }
 
     playerSub.setState(this)
@@ -249,7 +249,7 @@ export default class Player extends HTMLElement {
     const opts = {
       duration: 350,
       easing: 'ease',
-    }
+    } as const
 
     const i = dir === 'extend' ? 1 : 0
     animateTo(this, transitionStates[i].bar, opts, () =>
@@ -283,6 +283,7 @@ export default class Player extends HTMLElement {
       if (frac < 0) frac += 1
       let vel = gesture.velocity
       if (Math.abs(vel) < 3) vel = 0
+      if (frac === 0) return
       this.transition(
         vel > 0 ? 'extend' : vel < 0 ? 'close' : frac < 0.5 ? 'close' : 'extend'
       )
