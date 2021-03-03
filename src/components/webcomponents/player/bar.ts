@@ -272,7 +272,7 @@ export default class Player extends HTMLElement {
 
   private setTransitionPos(y: number) {
     const height = window.innerHeight - PLAYER_HEIGHT
-    if (y < 0) y = height + y
+    if (y <= 0 && this.isFullscreen) y = height + y
     const n = Math.max(Math.min(y / height, 1), 0)
     y = n * height
 
@@ -280,7 +280,7 @@ export default class Player extends HTMLElement {
     const full = `${-n} * var(--player-height)`
     const nav = `${Math.min(y, BAR_HEIGHT)}px`
 
-    this.style.transform = `translateY(calc(${player}))`
+    this.style.transform = n === 0 ? '' : `translateY(calc(${player}))`
     this.fullscreen.style.transform = `translateY(calc(${full}))`
     this.mainnav.style.transform = `translateY(${nav})`
   }

@@ -1,146 +1,96 @@
-import React from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import styled from 'styled-components'
-import { Icon, Artwork } from 'components/atoms'
-import Controls, { ControlsSC } from './Controls'
-import Progress from './ProgressBar'
-import { usePlaying } from 'utils/player'
-import { useMatchMedia } from 'utils/hooks'
-import { desktop } from 'styles/responsive'
+import { Artwork } from 'components/atoms'
+import { useTheme } from 'utils/hooks'
+import type { Podcast } from 'main/store/types'
 
 interface Props {
-  onHide(): void
+  podcast: Podcast
+  episode: EpisodeMin
+  slot?: string
 }
 
-export default function Fullscreen({ onHide }: Props) {
-  const [podcast, episode] = usePlaying()
-  const isDesktop = useMatchMedia(desktop)
+export default function Fullscreen({ podcast, episode, ...props }: Props) {
+  const background = useMemo(() => {
+    if (!podcast.covers?.length) return podcast.artwork!
+    else {
+      const srcs = podcast.covers.filter(v => v.endsWith('.webp'))
+      return `${process.env.IMG_HOST}/${
+        srcs
+          .map(v => [parseInt(v.split('.')[0].split('-').pop()!), v] as const)
+          .sort(([a], [b]) => b - a)[0][1]
+      }`
+    }
+  }, [podcast])
 
-  if (isDesktop) return null
   return (
-    <S.Fullscreen>
-      <S.Main id="fullscreen-player">
-        <S.Background background={podcast?.artwork ?? undefined} />
-        <S.Navigation>
-          <Icon icon="arrow_down" onClick={onHide} label="minimize player" />
-        </S.Navigation>
-        <S.Content>
-          <S.Info>
-            <Artwork src={podcast?.artwork} />
-            <span>{episode?.title}</span>
-            <span>{podcast?.title}</span>
-          </S.Info>
-          <Progress />
-          <Controls />
-        </S.Content>
-      </S.Main>
-    </S.Fullscreen>
+    <S.Container {...props}>
+      <Background src={background} />
+      {/* <Artwork
+        src={podcast.artwork}
+        title={podcast.title}
+        covers={podcast.covers}
+      /> */}
+    </S.Container>
   )
 }
 
+function Background({ src }: { src: string }) {
+  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
+  const [ctx, setCtx] = useState<CanvasRenderingContext2D>()
+  const [img, setImg] = useState<HTMLImageElement>()
+  const theme = useTheme()
+
+  useEffect(() => {
+    const img = new Image()
+    img.onload = () => {
+      setImg(img)
+    }
+    img.src = src
+  }, [src])
+
+  useEffect(() => {
+    if (!canvas || !img) return
+    canvas.width = window.innerWidth * devicePixelRatio
+    canvas.height = window.innerHeight * devicePixelRatio
+    setCtx(canvas.getContext('2d')!)
+  }, [canvas, img])
+
+  useEffect(() => {
+    if (!ctx || !canvas || !img) return
+    ctx.globalAlpha = 1
+    ctx.filter = ''
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    let scale = canvas.height / img.height
+    scale *= 1.3
+
+    ctx.fillStyle = theme === 'light' ? '#fff' : '#000'
+
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.globalAlpha = 0.2
+    ctx.filter = `blur(${120 * devicePixelRatio}px) saturate(150%)`
+
+    ctx.drawImage(
+      img,
+      (canvas.width - scale * img.width) / 2,
+      (canvas.height - scale * img.height) / 2,
+      scale * img.width,
+      scale * img.height
+    )
+  }, [ctx, canvas, img, theme])
+
+  return <S.Background ref={setCanvas} />
+}
+
 const S = {
-  Fullscreen: styled.div`
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 12000;
-    pointer-events: none;
-    --cl-icon: #fff !important;
+  Container: styled.div``,
 
-    &[data-state='visible']::before {
-      content: '';
-      background-color: var(--cl-background);
-      position: absolute;
-      top: var(--bar-height);
-      height: 100%;
-      left: 0;
-      width: 100vw;
-      z-index: -1;
-    }
-  `,
-
-  Main: styled.div`
-    position: relative;
-    background-color: var(--cl-surface-alt);
-    opacity: 0;
-    width: 100%;
-    height: 100%;
-    transform: translateY(var(--bar-height));
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-
-    --cl-text: var(--cl-text-alt);
-    color: var(--cl-text);
-
-    ${ControlsSC} {
-      position: static;
-      transform: unset;
-      margin: 1rem 0;
-
-      button {
-        transform: scale(1.3);
-      }
-
-      & > button {
-        margin: 0 15vmin;
-        transform: scale(1.7);
-
-        & > svg {
-          fill: var(--cl-surface-alt);
-        }
-      }
-    }
-  `,
-
-  Content: styled.div`
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    flex-grow: 1;
-  `,
-
-  Info: styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    img {
-      margin-bottom: 1rem;
-      width: 90vw;
-      max-width: 40vh;
-      border-radius: 0.5rem;
-    }
-
-    span:last-of-type {
-      font-size: 0.9rem;
-      opacity: 0.8;
-      margin-top: 0.7rem;
-    }
-  `,
-
-  Background: styled.div<{ background?: string }>`
+  Background: styled.canvas`
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    z-index: -1;
-
-    background-image: url('${({ background }) => background}');
-    background-size: cover;
-    background-position: center;
-    opacity: 0.25;
-    filter: blur(80px) brightness(30%) saturate(150%);
-  `,
-
-  Navigation: styled.div`
-    display: flex;
-    align-items: center;
-    width: 100%;
-    justify-self: flex-start;
   `,
 }

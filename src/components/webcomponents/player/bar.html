@@ -100,7 +100,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: #ee8;
+    background-color: inherit;
   }
 </style>
 
@@ -111,7 +111,7 @@
 </div>
 <slot name="info" class="info"></slot>
 <audio preload></audio>
-<div class="fullscreen">fullscreen</div>
+<div class="fullscreen"><slot name="fullscreen"></slot></div>
 
 <template id="touchbox">
   <div
