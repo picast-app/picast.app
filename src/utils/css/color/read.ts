@@ -5,6 +5,7 @@ type ColorName =
   | 'background'
   | 'surface'
   | 'text'
+  | 'text-alt'
   | 'primary'
   | 'surface-alt'
   | 'border'

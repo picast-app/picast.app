@@ -3,13 +3,15 @@ import styled from 'styled-components'
 import { Link, Artwork } from 'components/atoms'
 import Controls from './player/Controls'
 import { usePlaying } from 'utils/player'
+import { useTheme } from 'utils/hooks'
 
 export function Player() {
   const [podcast] = usePlaying()
+  const theme = useTheme()
 
   if (!podcast) return null
   return (
-    <picast-player>
+    <picast-player theme={theme}>
       <Controls slot="controls" />
       <Thumbnail to={`/show/${podcast?.id}`} slot="info">
         <Artwork

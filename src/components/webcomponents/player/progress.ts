@@ -2,6 +2,7 @@ import html from './progress.html'
 import debounce from 'lodash/debounce'
 import { durAttr, formatDuration } from 'utils/time'
 import { desktop } from 'styles/responsive'
+import * as cl from 'utils/css/color'
 
 const tmpl = document.createElement('template')
 tmpl.innerHTML = html
@@ -18,7 +19,8 @@ export default class Progress extends HTMLElement {
   private playStart?: number
   private dragX?: number
   private bcr?: DOMRect
-  private _duration?: number
+  private duration?: number
+  private theme?: 'light' | 'dark'
   public buffered: [start: number, end: number][] = []
 
   private static clBar = '#444'
@@ -26,12 +28,6 @@ export default class Progress extends HTMLElement {
   private static clProgress = '#ff0'
   private static clKnob = '#fff'
 
-  private get duration() {
-    return this._duration ?? 600
-  }
-  private set duration(n) {
-    this._duration = n
-  }
   private get inline() {
     return this.isInline && !this.isDesktop
   }
@@ -39,10 +35,10 @@ export default class Progress extends HTMLElement {
   private static BAR_HEIGHT = 1 / 3
 
   private get progress(): number {
-    return (this.current ?? 0) / this.duration
+    return (this.current ?? 0) / this.duration!
   }
   private get remaining(): number {
-    return this.duration - (this.current ?? 0)
+    return this.duration! - (this.current ?? 0)
   }
 
   private readonly resizeObserver = new ResizeObserver(
@@ -71,11 +67,13 @@ export default class Progress extends HTMLElement {
       this.isDesktop = v.matches
     }
     this.isInline = this.hasAttribute('inline')
+    this.setColors(this.getAttribute('theme') as any)
   }
 
   connectedCallback() {
     this.resizeObserver.observe(this.canvas)
     this.canvas.addEventListener('pointerdown', this.onDragStart)
+    this.scheduleFrame()
   }
 
   disconnectedCallback() {
@@ -87,7 +85,7 @@ export default class Progress extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['duration', 'current', 'playing']
+    return ['duration', 'current', 'playing', 'theme']
   }
 
   attributeChangedCallback(name: string, old: string, current: string) {
@@ -107,8 +105,25 @@ export default class Progress extends HTMLElement {
           this.scheduleFrame()
         }
         break
+      case 'theme':
+        this.setColors(current as any)
+        break
     }
     this.scheduleFrame()
+  }
+
+  private setColors(theme: 'light' | 'dark') {
+    if (theme === this.theme) return
+    this.theme = theme
+    logger.info('progress bar theme', theme)
+
+    const primary = cl.read('primary')
+    const back = cl.read('surface-alt')
+    const text = cl.read('text-alt')
+
+    Progress.clProgress = cl.format.hex(primary)
+    Progress.clBar = cl.format.hex(cl.blend(back, cl.alpha(text, 0x44)))
+    Progress.clBuffered = cl.format.hex(cl.blend(back, cl.alpha(text, 0x88)))
   }
 
   public jump(pos: number) {
@@ -142,8 +157,8 @@ export default class Progress extends HTMLElement {
             (performance.now() - this.playStart!) / 1000) /
           this.duration!
 
-    this.labelProg = progress * this.duration
-    this.labelRemains = this.duration * (1 - progress)
+    this.labelProg = progress * this.duration!
+    this.labelRemains = this.duration! * (1 - progress)
 
     if (this.inline) this.renderInline(progress)
     else this.renderFull(progress)
@@ -161,6 +176,7 @@ export default class Progress extends HTMLElement {
 
     this.ctx.fillStyle = Progress.clBar
     this.drawBar(padd, this.canvas.width - padd, height)
+    if (!this.duration) return
 
     this.ctx.fillStyle = Progress.clBuffered
     for (const [start, end] of this.buffered)
@@ -175,6 +191,7 @@ export default class Progress extends HTMLElement {
     const height = this.canvas.height
     this.ctx.fillStyle = Progress.clBar
     this.drawBar(0, this.canvas.width, height, false, false)
+    if (!this.duration) return
     this.ctx.fillStyle = Progress.clProgress
     this.drawBar(0, progress * this.canvas.width, height, false, true)
   }
@@ -245,7 +262,7 @@ export default class Progress extends HTMLElement {
   }
 
   private onDragStop() {
-    const progress = this.dragProgress * this.duration
+    const progress = this.dragProgress * this.duration!
     this.onDragCancel()
     this.dispatchEvent(new CustomEvent('jump', { detail: progress }))
   }

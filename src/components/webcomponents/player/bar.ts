@@ -117,6 +117,17 @@ export default class Player extends HTMLElement {
     window.removeEventListener('popstate', this.onPopState)
   }
 
+  static get observedAttributes() {
+    return ['theme']
+  }
+
+  attributeChangedCallback(name: string, old: string, current: string) {
+    if (name !== 'theme') return
+    for (const bar of this.progressBars) {
+      bar.setAttribute('theme', current)
+    }
+  }
+
   public get playing(): boolean {
     return !this.audio.paused
   }
