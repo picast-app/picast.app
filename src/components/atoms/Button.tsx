@@ -50,7 +50,9 @@ const S = {
       padding: 0;
       border: none;
       border-radius: unset;
-      height: 24px;
+      display: block;
+      width: var(--icon-size);
+      height: var(--icon-size);
     }
 
     &[data-style~='text'] {
