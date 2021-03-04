@@ -5,6 +5,8 @@ type Props = {
   onClick?(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void
   iconWrap?: string
   text?: boolean
+  autoFocus?: boolean
+  tabIndex?: number
 }
 
 export const Button: React.FC<Props> = ({
@@ -12,12 +14,14 @@ export const Button: React.FC<Props> = ({
   text,
   onClick,
   children,
+  ...props
 }) => {
   const styles: string[] = []
   if (iconWrap) styles.push('icon-wrap')
   if (text) styles.push('text')
   return (
     <S.Button
+      {...props}
       {...(styles.length && { ['data-style']: styles.join(' ') })}
       onClick={e => onClick?.(e)}
     >
@@ -46,7 +50,9 @@ const S = {
       padding: 0;
       border: none;
       border-radius: unset;
-      height: 24px;
+      display: block;
+      width: var(--icon-size);
+      height: var(--icon-size);
     }
 
     &[data-style~='text'] {

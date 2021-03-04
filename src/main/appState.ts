@@ -3,7 +3,7 @@ import dbProm from './store/idb'
 import store from './store'
 import { Podcast } from './store/types'
 
-type State = {
+export type State = {
   subscriptions: string[]
   user: {
     provider?: 'google'
@@ -18,12 +18,18 @@ type State = {
     podcast: Podcast | null
     set(id: EpisodeId | null): Promise<EpisodeMin | undefined>
   }
+  debug: {
+    touch: boolean
+    set(update: Omit<Partial<State['debug']>, 'set'>): void
+  }
 }
 
 async function init(): Promise<{
   state: State
   subscribe: <T = unknown>(path: string, handler: (v: T) => void) => () => void
 }> {
+  const db = await dbProm
+
   const state = observable<State>({
     subscriptions: [],
     user: {},
@@ -58,9 +64,18 @@ async function init(): Promise<{
         }
       },
     },
+    debug: {
+      touch: !!(await db.get('meta', 'touch')),
+      async set(update) {
+        for (const [k, v] of Object.entries(update)) {
+          // @ts-ignore
+          this[k] = v
+          await db.put('meta', v, k)
+        }
+      },
+    },
   })
 
-  const db = await dbProm
   const signin = await db.get('meta', 'signin')
   if (signin) state.signIn(signin)
   state.subscriptions = await db.getAllKeys('subscriptions')

@@ -1,0 +1,49 @@
+<style>
+  :host {
+    width: 100%;
+    display: block;
+    position: relative;
+    height: var(--canvas-height);
+  }
+
+  canvas {
+    width: 100%;
+    cursor: pointer;
+    height: var(--canvas-height);
+    position: absolute;
+    top: 0;
+  }
+
+  @media (max-width: 900px) {
+    canvas {
+      pointer-events: none;
+    }
+
+    time {
+      display: none;
+    }
+  }
+
+  @media (min-width: 901px) {
+    :host {
+      height: 2.5rem;
+    }
+  }
+
+  time {
+    position: absolute;
+    bottom: 0;
+    left: 0.25rem;
+    font-size: 0.8rem;
+    opacity: 0.9;
+  }
+
+  #remaining {
+    left: unset;
+    right: 0.25rem;
+  }
+</style>
+
+<canvas></canvas>
+<time aria-label="progress" id="current"></time>
+<time aria-label="time remaining" id="remaining"></time>

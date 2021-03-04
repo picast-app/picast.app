@@ -5,20 +5,15 @@ import { center } from 'styles/mixin'
 
 type Props = {
   ms: number
+  onJump: (n: number) => void
 }
 
-export default function SkipControl({ ms }: Props) {
+export default function SkipControl({ ms, onJump }: Props) {
   return (
     <S.Wrap data-dir={ms >= 0 ? 'forward' : 'backward'}>
       <Icon
         icon="skip"
-        onClick={() => {
-          window.dispatchEvent(
-            new CustomEvent<EchoSkipEvent['detail']>('echo_skip', {
-              detail: { seconds: ms / 1000 },
-            })
-          )
-        }}
+        onClick={() => onJump(ms / 1000)}
         label={`skip ${Math.abs(ms / 1000)} seconds ${
           ms > 0 ? 'forward' : 'backward'
         }`}

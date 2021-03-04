@@ -186,7 +186,7 @@ export function useNavbarWidget(widget?: JSX.Element) {
 
 export function useSubscription<T>(sub: Subscription<T>): [T, (v: T) => void] {
   const [v, setV] = useState<T>(sub.state)
-  useEffect(() => sub.subscribe(setV), [sub])
+  useEffect(() => (setV(sub.state), sub.subscribe(setV)), [sub])
 
   const set = useCallback((v: T) => sub.setState(v), [sub])
 

@@ -9,7 +9,7 @@
   --cl-text-disabled: #00000060;
   --cl-border: #0002;
   --cl-border-light: #0001;
-  --cl-primary: #F9A825;
+  --cl-primary: #f9a825;
   --cl-icon: var(--cl-text-strong);
 }
 
@@ -25,5 +25,5 @@
   --cl-text-disabled: #ffffff60;
   --cl-border: #fff3;
   --cl-border-light: #fff1;
-  --cl-primary: #FFEB3B;
+  --cl-primary: #ffeb3b;
 }

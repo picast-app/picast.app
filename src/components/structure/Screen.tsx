@@ -3,7 +3,6 @@ import styled, { AnyStyledComponent } from 'styled-components'
 import { desktop, mobile } from 'styles/responsive'
 import Appbar, { AppbarSC } from 'components/Appbar'
 import { Progress, ProgressSC, Icon } from 'components/atoms'
-import { PlayerSC } from 'components/composite'
 import { animateTo } from 'utils/animate'
 
 type Props = {
@@ -136,8 +135,7 @@ const S = {
       --top-off: 0px;
     }
 
-    /* stylelint-disable-next-line */
-    ${PlayerSC} ~ & {
+    picast-player ~ & {
       height: calc(100% - var(--bar-height) - var(--player-height));
 
       @media ${desktop} {

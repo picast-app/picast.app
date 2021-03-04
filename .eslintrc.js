@@ -30,5 +30,7 @@ module.exports = {
     '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
     '@typescript-eslint/no-empty-function': 'off',
     'no-debugger': 'warn',
+    'no-constant-condition': 'warn',
+    '@typescript-eslint/ban-types': ['warn', { types: { '{}': false } }],
   },
 }

@@ -1,0 +1,133 @@
+<style>
+  :host {
+    position: fixed;
+    z-index: 9000;
+    left: 0;
+    bottom: 0;
+    width: 100vw;
+    height: var(--player-height);
+    display: block;
+    background-color: var(--cl-surface-alt);
+    box-shadow: #0003 0px 2px 4px -1px, #00000024 0px 4px 5px 0px,
+      #0000001f 0px 1px 10px 0px;
+    color: #fff;
+    will-change: transform;
+
+    --cl-icon: #fff;
+    --canvas-height: 1rem;
+  }
+
+  .central > player-progress {
+    --canvas-height: 0.3rem;
+  }
+
+  :host-context([data-theme='dark']) {
+    background-color: #242628ff;
+  }
+
+  /* phones */
+  @media (max-width: 900px) {
+    :host {
+      bottom: var(--bar-height);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding-bottom: 0.3rem;
+    }
+
+    :host-context([data-theme='light']) {
+      background-color: var(--cl-surface);
+      color: #000;
+      --cl-icon: #000;
+    }
+
+    player-progress {
+      position: absolute;
+      bottom: 0;
+    }
+
+    .central {
+      display: contents;
+    }
+
+    .central > *:not(player-progress) {
+      display: none;
+    }
+  }
+
+  /* desktop */
+  @media (min-width: 901px) {
+    :host {
+      display: grid;
+      grid-template-columns: [ctrl] var(--sidebar-width) [center] auto [info] var(
+          --sidebar-width
+        );
+    }
+
+    .central > player-progress {
+      --canvas-height: 1rem;
+    }
+
+    .central {
+      display: flex;
+      flex-direction: column;
+      grid-column: center;
+      justify-content: space-around;
+      overflow: hidden;
+    }
+
+    .ctrl {
+      grid-column: ctrl;
+      place-self: center;
+    }
+
+    .info {
+      grid-column: info;
+    }
+  }
+
+  .title {
+    font-size: 1.1rem;
+    width: 100%;
+    height: 1.5rem;
+    line-height: 1.5rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: center;
+  }
+
+  .fullscreen {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: inherit;
+  }
+</style>
+
+<slot name="controls" class="ctrl"></slot>
+<div class="central">
+  <span class="title"></span>
+  <player-progress inline></player-progress>
+</div>
+<slot name="info" class="info"></slot>
+<audio preload></audio>
+<div class="fullscreen"><slot name="fullscreen"></slot></div>
+
+<template id="touchbox">
+  <div
+    id="closed"
+    style="
+      position: fixed;
+      bottom: 0;
+      width: 100vw;
+      height: calc(var(--bar-height) + var(--player-height));
+    "
+  ></div>
+  <div
+    id="extended"
+    style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh"
+  ></div>
+</template>

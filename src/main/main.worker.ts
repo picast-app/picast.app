@@ -6,7 +6,7 @@ import bufferInstance from 'utils/instantiationBuffer'
 import dbProm from './store/idb'
 import store from './store'
 import * as account from './account'
-import appState from './appState'
+import appState, { State } from './appState'
 import { deleteDB } from 'idb'
 import * as playback from './playback'
 
@@ -42,6 +42,11 @@ const readState = async <T = any>(path: string): Promise<T> => {
   })
 }
 
+async function updateDebug(...args: Parameters<State['debug']['set']>) {
+  const { state } = await appState
+  state.debug.set(...args)
+}
+
 const api = {
   ...apiCalls,
   ...idbInterface,
@@ -50,6 +55,7 @@ const api = {
   ...account,
   state,
   readState,
+  updateDebug: proxy(updateDebug),
   deleteIDB,
 } as const
 

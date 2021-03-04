@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useReducer, useRef } from 'react'
 import styled from 'styled-components'
-import { PlayerSC, SnackBar } from 'components/composite'
+import { SnackBar } from 'components/composite'
 import { desktop } from 'styles/responsive'
 import { animateTo } from 'utils/animate'
 
@@ -113,7 +113,7 @@ const S = {
     display: flex;
     flex-direction: column-reverse;
 
-    ${PlayerSC} ~ & {
+    picast-player ~ & {
       bottom: calc(var(--bottom) + var(--player-height));
     }
 

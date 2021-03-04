@@ -86,6 +86,7 @@ const S = {
 
     --item-height: ${desktopItemHeight}px;
     height: calc(var(--item-height) * ${({ episodes }) => episodes});
+    overflow: hidden;
 
     @media ${desktop} {
       margin: 1rem 1.5rem;

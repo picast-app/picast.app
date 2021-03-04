@@ -45,6 +45,8 @@ export default function Appearance() {
           setCstTheme(!v ? (systemTheme as any) : null)
         }}
       />
+      <label htmlFor="extract">Extract color from artwork</label>
+      <Switch id="extract" />
     </Section>
   )
 }

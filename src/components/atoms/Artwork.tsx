@@ -136,10 +136,6 @@ const S = {
       width: 100%;
       height: 100%;
       background-color: var(--cl-border-light);
-
-      @media (resolution: 1dppx) {
-        image-rendering: pixelated;
-      }
     }
   `,
 }

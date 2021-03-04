@@ -2,7 +2,6 @@ import React from 'react'
 import styled from 'styled-components'
 import { Icon, Link } from 'components/atoms'
 import { Surface } from 'components/structure'
-import { PlayerSC } from 'components/composite'
 import { bar } from 'styles/mixin'
 import { desktop, mobile } from 'styles/responsive'
 import {
@@ -125,14 +124,15 @@ const S = {
         align-items: flex-start;
       }
 
-      ${PlayerSC} ~ & {
+      picast-player ~ & {
         padding-bottom: var(--player-height);
       }
     }
 
     @media ${mobile} {
       z-index: 9001;
-      ${PlayerSC} ~ & {
+
+      picast-player ~ & {
         box-shadow: unset;
       }
 

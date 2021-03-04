@@ -287,6 +287,11 @@ export default class Store {
     })
   }
 
+  public async getEpisodeProgress(id: string): Promise<number> {
+    const episode = await this.db.get('episodes', id)
+    return episode?.relProg ?? 0
+  }
+
   public async episodesCrc(podcast: string) {
     const { episodeIds } = await this.epStore.getPodcast(podcast)
     return hashIds(episodeIds)
