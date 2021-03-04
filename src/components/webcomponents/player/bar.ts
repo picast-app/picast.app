@@ -48,7 +48,6 @@ export default class Player extends HTMLElement {
       '.fullscreen'
     )!
     this.audio = this.shadowRoot!.querySelector('audio')!
-    this.audio.volume = 0.4
 
     main.state('playing', proxy(this.onStateChange as any))
     this.audio.addEventListener('durationchange', () => {
@@ -100,6 +99,7 @@ export default class Player extends HTMLElement {
     if (!this.isDesktop) this.addEventListener('click', this.onClick)
     this.attachGesture()
     window.addEventListener('popstate', this.onPopState)
+    this.audio.volume = 0.4
 
     if (this.isFullscreen) {
       this.style.transform = transitionStates[1].bar.transform as string
@@ -259,7 +259,7 @@ export default class Player extends HTMLElement {
   }
 
   private onClick(e: MouseEvent) {
-    if (e.target !== this) return
+    if (e.target !== this && (e.target as any).slot !== 'info') return
     this.transition('extend')
   }
 

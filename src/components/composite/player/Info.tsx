@@ -44,6 +44,7 @@ const S = {
       justify-content: space-between;
       flex-direction: row-reverse;
       padding: 0 1rem;
+      z-index: -1;
       --size: calc(var(--player-height) - 1.5rem);
 
       & > button {
