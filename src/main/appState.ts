@@ -78,7 +78,14 @@ async function init(): Promise<{
 
   const signin = await db.get('meta', 'signin')
   if (signin) state.signIn(signin)
-  state.subscriptions = await db.getAllKeys('subscriptions')
+  const subs = await db.getAll('subscriptions')
+  const sorted = subs
+    .map(v => ({
+      ...v,
+      sortName: v.title.replace(/^(the|a|an)\s/i, '').toLowerCase(),
+    }))
+    .sort(({ sortName: a }, { sortName: b }) => a.localeCompare(b))
+  state.subscriptions = sorted.map(({ id }) => id)
 
   const playing = await db.get('meta', 'playing')
   if (playing) {
