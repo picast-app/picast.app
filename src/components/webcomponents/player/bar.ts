@@ -190,15 +190,24 @@ export default class Player extends HTMLElement {
   }
 
   get progressBars() {
-    return Array.from(
-      this.shadowRoot!.querySelectorAll<Progress>('player-progress')
-    )
+    return [
+      ...Array.from(
+        this.shadowRoot!.querySelectorAll<Progress>('player-progress')
+      ),
+      ...this.shadowRoot!.querySelector<HTMLSlotElement>(
+        "slot[name='fullscreen']"
+      )!
+        .assignedElements()
+        .flatMap(node =>
+          Array.from(node.querySelectorAll<Progress>('player-progress'))
+        ),
+    ]
   }
 
   private setProgressAttr(name: string, value: string | number | boolean) {
-    this.progressBars.forEach(el => {
-      el.setAttribute(name, value.toString())
-    })
+    for (const bar of this.progressBars) {
+      bar.setAttribute(name, value.toString())
+    }
   }
 
   public async play(id?: EpisodeId) {
@@ -229,11 +238,9 @@ export default class Player extends HTMLElement {
   public async jump(pos: number, relative = false) {
     if (relative) pos = this.audio.currentTime + pos
     this.audio.currentTime = pos
-    this.shadowRoot!.querySelectorAll<Progress>('player-progress').forEach(
-      el => {
-        el.jump(pos)
-      }
-    )
+    this.progressBars.forEach(el => {
+      el.jump(pos)
+    })
   }
 
   private syncId?: number

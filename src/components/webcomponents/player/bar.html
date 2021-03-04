@@ -14,6 +14,10 @@
     will-change: transform;
 
     --cl-icon: #fff;
+    --canvas-height: 1rem;
+  }
+
+  .central > player-progress {
     --canvas-height: 0.3rem;
   }
 
@@ -28,7 +32,7 @@
       display: flex;
       justify-content: space-around;
       align-items: center;
-      padding-bottom: var(--canvas-height);
+      padding-bottom: 0.3rem;
     }
 
     :host-context([data-theme='light']) {
@@ -62,6 +66,9 @@
       grid-template-columns: [ctrl] var(--sidebar-width) [center] auto [info] var(
           --sidebar-width
         );
+    }
+
+    .central > player-progress {
       --canvas-height: 1rem;
     }
 
