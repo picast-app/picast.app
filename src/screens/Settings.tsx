@@ -11,6 +11,7 @@ import About from './settings/About'
 import Appearance from './settings/Appearance'
 import Debug from './settings/Debug'
 import Storage from './settings/Storage'
+import Notifications from './settings/Notifications'
 
 type SettingsRoute = {
   name: string
@@ -22,7 +23,7 @@ type SettingsRoute = {
 let routes: SettingsRoute[] = [
   { name: 'General', icon: 'gear' },
   { name: 'Appearance', icon: 'palette', component: Appearance },
-  { name: 'Notifications', icon: 'bell' },
+  { name: 'Notifications', icon: 'bell', component: Notifications },
   {
     name: 'Storage',
     icon: 'storage',

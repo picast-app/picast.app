@@ -9,9 +9,10 @@ type Props = {
   text: string
   action?: string
   onAction?(): void
+  lvl?: string
 }
 
-export function SnackBar({ text, action, onAction }: Props) {
+export function SnackBar({ text, action, onAction, lvl = 'info' }: Props) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export function SnackBar({ text, action, onAction }: Props) {
       role={action ? 'alertdialog' : 'alert'}
       ref={ref}
       el={4}
+      data-lvl={lvl}
     >
       <span>{text}</span>
       {action && (
@@ -61,6 +63,10 @@ const S = {
 
     button {
       margin-left: 1rem;
+    }
+
+    &[data-lvl='error'] {
+      border: 2px solid var(--cl-error);
     }
 
     @media ${desktop} {

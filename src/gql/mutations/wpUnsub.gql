@@ -1,0 +1,3 @@
+mutation removeWebPushSubscription($sub: ID!) {
+  removeWPSub(sub: $sub)
+}

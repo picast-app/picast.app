@@ -9,6 +9,7 @@ export type Snack = {
   action?: string
   timeout?: number
   actionEvent?: string
+  lvl?: 'error' | 'info'
 }
 
 type QueueAction = { type: 'push'; snack: Snack } | { type: 'shift' }
@@ -24,12 +25,12 @@ export function SnackTray() {
 
   useEffect(() => {
     const onMsg: any = (e: CustomEvent<EchoSnackEvent['detail']>) => {
-      const { text, action, actionEvent, ...snack } = e.detail
+      const { text, action, actionEvent, lvl, ...snack } = e.detail
       let timeout: number | undefined = 4000
       if (typeof snack.timeout === 'number')
         timeout = Math.min(Math.max(snack.timeout, 4), 10) * 1000
       if (snack.timeout === 'never') timeout = undefined
-      set({ type: 'push', snack: { text, action, actionEvent, timeout } })
+      set({ type: 'push', snack: { text, action, actionEvent, timeout, lvl } })
     }
 
     window.addEventListener('echo_snack', onMsg)
@@ -64,6 +65,7 @@ export function SnackTray() {
       container.addEventListener('scroll', onScroll)
       clear.push(() => container?.removeEventListener('scroll', onScroll))
     }
+    console.log({ snack })
     if (snack?.timeout) {
       const toId = setTimeout(() => {
         const remove = () => setSnack(undefined)
@@ -95,6 +97,7 @@ export function SnackTray() {
               if (!snack.actionEvent) return
               window.dispatchEvent(new CustomEvent(snack.actionEvent))
             }}
+            lvl={snack.lvl}
           />
           <S.ScrollStop />
         </S.Slider>

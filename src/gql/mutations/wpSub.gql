@@ -1,0 +1,3 @@
+mutation addWebPushSubscription($sub: ID!) {
+  addWPSub(sub: $sub)
+}

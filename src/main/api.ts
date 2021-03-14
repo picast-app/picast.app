@@ -14,6 +14,8 @@ import parseMutation from 'gql/mutations/parse.gql'
 import deleteMutation from 'gql/mutations/delete.gql'
 import diffEpisodesQuery from 'gql/queries/episodes.gql'
 import signOutMutation from 'gql/mutations/signOut.gql'
+import addWpSubMutation from 'gql/mutations/wpSub.gql'
+import removeWpSubMutation from 'gql/mutations/wpUnsub.gql'
 
 export const client = new GraphQLClient(process.env.REACT_APP_API as string, {
   headers: {},
@@ -122,4 +124,12 @@ export async function diffEpisodes(...podcasts: [id: string, known: string][]) {
     podcasts: podcasts.map(([id, known]) => ({ id, known })),
   })
   return episodeDiff
+}
+
+export async function wpSub(sub: string) {
+  await client.request(addWpSubMutation, { sub })
+}
+
+export async function wpUnsub(sub: string) {
+  await client.request(removeWpSubMutation, { sub })
 }

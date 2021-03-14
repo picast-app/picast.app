@@ -17,6 +17,7 @@ type EchoSnackEvent = CustomEvent<{
   action?: string
   timeout?: number | 'never'
   actionEvent?: string
+  lvl?: 'error' | 'info'
 }>
 
 type EpisodeId = [podcast: string, episode: string]
