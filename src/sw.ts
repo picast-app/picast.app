@@ -49,6 +49,69 @@ self.addEventListener('activate', event => {
   )
 })
 
+self.addEventListener('push', event => {
+  event.waitUntil(handleNotification(event))
+})
+
+self.addEventListener('notificationclick', event => {
+  event.waitUntil(handleNotificationClick(event))
+})
+
+async function handleNotification(event: PushEvent) {
+  if (Notification?.permission !== 'granted') return
+  const { type, payload } = event.data?.json()
+  logger.info('push event', { type, payload })
+  if (type !== 'episode') return
+
+  const main = await mainWorker
+  const data = await main.idbGet('subscriptions', payload.podcast.id)
+
+  let icon: string | undefined = undefined
+  if (data?.covers) {
+    try {
+      icon = `${process.env.IMG_HOST}/${
+        (data.covers as string[])
+          .filter(v => /\.jpeg$/.test(v))
+          .map(path => ({
+            path,
+            size: parseInt(path.split('.')[0].split('-').pop()!),
+          }))
+          .sort(({ size: a }, { size: b }) => a - b)[0].path
+      }`
+    } catch (e) {
+      logger.error(e)
+    }
+  }
+
+  self.registration.showNotification(payload.podcast.title, {
+    body: payload.episode.title,
+    icon,
+    data: {
+      podcast: payload.podcast.id,
+      episode: payload.episode.id,
+    },
+  })
+}
+
+async function handleNotificationClick({
+  notification,
+  action,
+}: NotificationEvent) {
+  logger.info('notification clicked', action)
+  notification.close()
+  if (action === 'close') return
+  const url = `/show/${notification.data.podcast}`
+  const clients = (await self.clients.matchAll({
+    type: 'window',
+  })) as WindowClient[]
+  const activeClient = clients.find(
+    client => client.visibilityState === 'visible'
+  )
+  if (activeClient) await activeClient.navigate(url)
+  else if (clients.length) await clients[0].navigate(url)
+  else await self.clients.openWindow(url)
+}
+
 type FetchHandler<T extends boolean = false> = (
   e: FetchEvent
 ) => T extends false ? Promise<Response | void> : Promise<Response>

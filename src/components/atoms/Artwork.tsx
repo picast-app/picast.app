@@ -103,7 +103,7 @@ export function Artwork({
   return (
     <S.Artwork onClick={onClick}>
       {sources}
-      {imgSrc && <source srcSet={imgSrc} />}
+      {imgSrc && !sources?.length && <source srcSet={imgSrc} />}
       <img
         width={200}
         height={200}
