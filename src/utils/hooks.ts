@@ -7,7 +7,6 @@ import {
   useCallback,
 } from 'react'
 import { Theme } from 'styles'
-import createSubscription from './subscription'
 import subscription, { Subscription } from './subscription'
 import throttle from 'lodash/throttle'
 import { main, subscriptionSub, proxy } from 'workers'
@@ -192,13 +191,6 @@ export function useSubscription<T>(sub: Subscription<T>): [T, (v: T) => void] {
 
   return [v, set]
 }
-
-const visibility = createSubscription(document.visibilityState)
-document.addEventListener('visibilitychange', () => {
-  visibility.setState(document.visibilityState)
-})
-
-export const useVisibility = () => useSubscription(visibility)[0]
 
 export function useCanvas(
   canvas?: HTMLCanvasElement | null,

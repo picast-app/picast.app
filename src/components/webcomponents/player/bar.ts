@@ -100,6 +100,7 @@ export default class Player extends HTMLElement {
     this.attachGesture()
     window.addEventListener('popstate', this.onPopState)
     this.audio.volume = 0.4
+    window.addEventListener('pagehide', this.syncProgress)
 
     if (this.isFullscreen) {
       this.style.transform = transitionStates[1].bar.transform as string
@@ -115,6 +116,7 @@ export default class Player extends HTMLElement {
     this.removeEventListener('click', this.onClick)
     this.removeMediaHandlers()
     window.removeEventListener('popstate', this.onPopState)
+    window.removeEventListener('pagehide', this.syncProgress)
   }
 
   static get observedAttributes() {
@@ -238,6 +240,7 @@ export default class Player extends HTMLElement {
   public jump(pos: number, relative = false) {
     if (relative) pos = this.audio.currentTime + pos
     this.audio.currentTime = pos
+    this.syncProgress()
     this.progressBars.forEach(el => {
       el.jump(pos)
     })
