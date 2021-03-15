@@ -34,7 +34,7 @@ const state = async <T = unknown>(p: string, f: (v: T) => void) => {
 }
 
 const readState = async <T = any>(path: string): Promise<T> => {
-  return await new Promise<T>(async res => {
+  return await new Promise<T>(res => {
     const sp = state<T>(path, state => {
       res(state)
       sp.then(unsub => unsub())

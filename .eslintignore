@@ -7,3 +7,5 @@ src/types
 src/typings/lib.esnext.weakref.d.ts
 apollo.config.js
 tmp
+.eslintrc.js
+/*.config.js

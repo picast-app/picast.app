@@ -58,9 +58,10 @@ self.addEventListener('notificationclick', event => {
 })
 
 async function handleNotification(event: PushEvent) {
+  logger.info('push event', Notification?.permission)
   if (Notification?.permission !== 'granted') return
   const { type, payload } = event.data?.json()
-  logger.info('push event', { type, payload })
+  logger.info({ type, payload })
   if (type !== 'episode') return
 
   const main = await mainWorker
@@ -84,7 +85,7 @@ async function handleNotification(event: PushEvent) {
     }
   }
 
-  self.registration.showNotification(title, {
+  await self.registration.showNotification(title, {
     body: payload.episode.title,
     icon,
     data: {

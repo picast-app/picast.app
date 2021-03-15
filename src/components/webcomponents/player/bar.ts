@@ -235,7 +235,7 @@ export default class Player extends HTMLElement {
     this.dispatchEvent(new Event('pause'))
   }
 
-  public async jump(pos: number, relative = false) {
+  public jump(pos: number, relative = false) {
     if (relative) pos = this.audio.currentTime + pos
     this.audio.currentTime = pos
     this.progressBars.forEach(el => {

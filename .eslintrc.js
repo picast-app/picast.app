@@ -8,6 +8,9 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
   ],
   parser: '@typescript-eslint/parser',
+  parserOptions: {
+    project: './tsconfig.json',
+  },
   plugins: ['@typescript-eslint'],
   globals: {
     logger: 'readonly',
@@ -32,5 +35,7 @@ module.exports = {
     'no-debugger': 'warn',
     'no-constant-condition': 'warn',
     '@typescript-eslint/ban-types': ['warn', { types: { '{}': false } }],
+    'require-await': 'off',
+    '@typescript-eslint/require-await': 'warn',
   },
 }
