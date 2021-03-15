@@ -66,11 +66,11 @@ export async function episodes(id: string, limit: number, cursor?: string) {
   return podcast?.episodes
 }
 
-export async function signInGoogle(accessToken: string) {
+export async function signInGoogle(accessToken: string, wpSub?: string) {
   const { signInGoogle: me } = await client.request<
     T.SignInGoogle,
     T.SignInGoogleVariables
-  >(googleSigninMutation, { accessToken })
+  >(googleSigninMutation, { accessToken, wpSub })
   return me
 }
 

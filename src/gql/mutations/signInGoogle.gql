@@ -1,7 +1,7 @@
 #import "../fragments/user.gql"
 
-mutation SignInGoogle($accessToken: ID!, $known: [ID!] = []) {
-  signInGoogle(accessToken: $accessToken) {
+mutation SignInGoogle($accessToken: ID!, $known: [ID!] = [], $wpSub: ID) {
+  signInGoogle(accessToken: $accessToken, wpSub: $wpSub) {
     ...MeInitial
   }
 }

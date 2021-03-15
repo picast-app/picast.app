@@ -4,6 +4,7 @@ import { Redirect } from 'react-router-dom'
 import { Screen } from 'components/structure'
 import { main } from 'workers'
 import { useHistory, useAppState } from 'utils/hooks'
+import * as wp from 'utils/webpush'
 
 const url = new URL(process.env.GOOGLE_OAUTH_ENDPOINT as string)
 
@@ -28,10 +29,15 @@ export default function SignIn() {
       .map(v => v.split('='))
   )
 
+  async function signIn() {
+    main.signIn({ accessToken }, await wp.getSubscription(true))
+    history.replace(location.pathname)
+  }
+
   useEffect(() => {
     if (!accessToken) return
-    main.signIn({ accessToken })
-    history.replace(location.pathname)
+    signIn()
+    // eslint-disable-next-line
   }, [accessToken, history])
 
   if (!loading && signedIn) return <Redirect to="/" />

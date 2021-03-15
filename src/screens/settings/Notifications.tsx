@@ -3,12 +3,13 @@ import Section from './Section'
 import { Button } from 'components/atoms'
 import { main } from 'workers'
 import * as notify from 'utils/notification'
+import * as wp from 'utils/webpush'
 
 export default function Notifications() {
   const [granted, setGranted] = useState<PushSubscription | null>()
 
   useEffect(() => {
-    getPushSub().then(setGranted)
+    wp.getSubscription().then(setGranted)
   }, [])
 
   async function grant() {
@@ -30,7 +31,7 @@ export default function Notifications() {
   }
 
   async function revoke() {
-    const sub = await getPushSub()
+    const sub = await wp.getSubscription()
     if (!sub) return
     await main.wpUnsub(JSON.stringify(sub))
     await sub.unsubscribe()
@@ -46,9 +47,4 @@ export default function Notifications() {
       </Button>
     </Section>
   )
-}
-
-async function getPushSub() {
-  const sw = await navigator.serviceWorker.ready
-  return await sw.pushManager.getSubscription()
 }

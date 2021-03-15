@@ -327,13 +327,13 @@ export function useSubscriptions(): [
   function subscribe(id: string) {
     if (subs.includes(id)) return
     set([...subs, id])
-    main.addSubscription(id, false, false)
+    main.addSubscription(id, false)
   }
 
   function unsubscribe(id: string) {
     if (!subs.includes(id)) return
     set(subs.filter(v => v !== id))
-    main.removeSubscription(id, false, false)
+    main.removeSubscription(id, false)
   }
 
   return [subs, subscribe, unsubscribe]
