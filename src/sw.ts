@@ -64,8 +64,9 @@ async function handleNotification(event: PushEvent) {
   if (type !== 'episode') return
 
   const main = await mainWorker
-  const data = await main.idbGet('subscriptions', payload.podcast.id)
+  const data = await main.idbGet('subscriptions', payload.podcast)
 
+  const title = data?.title ?? 'New podcast episode'
   let icon: string | undefined = undefined
   if (data?.covers) {
     try {
@@ -83,11 +84,11 @@ async function handleNotification(event: PushEvent) {
     }
   }
 
-  self.registration.showNotification(payload.podcast.title, {
+  self.registration.showNotification(title, {
     body: payload.episode.title,
     icon,
     data: {
-      podcast: payload.podcast.id,
+      podcast: payload.podcast,
       episode: payload.episode.id,
     },
   })
