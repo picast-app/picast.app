@@ -9,7 +9,7 @@ import type * as T from 'types/gql'
 export async function signIn(creds: SignInCreds, wpSub?: string | null) {
   const me = await api.signInGoogle(creds.accessToken, wpSub ?? undefined)
   const { state } = await stateProm
-  storeSignIn(me)
+  storeSignIn(me, true)
   await state.setWPSubs(me.wpSubs)
   await pullSubscriptions(me.subscriptions)
 }
@@ -60,7 +60,8 @@ export async function pullSubscriptions(
   })
 }
 
-async function storeSignIn(me: T.Me_me | null) {
+async function storeSignIn(me: T.Me_me | null, action = false) {
+  logger.info('store sign in', me)
   const db = await dbProm
   const { state } = await stateProm
   if (!me) {
@@ -70,7 +71,7 @@ async function storeSignIn(me: T.Me_me | null) {
     const info = { provider: me.authProvider }
     await db.put('meta', info, 'signin')
     state.signIn(info)
-    await sync.meta()
+    await sync.meta(!action)
     if (!me.wsAuth) return
     state.user.wsAuth = me.wsAuth
     await wsApi.notify('identify', me.wsAuth)

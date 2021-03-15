@@ -7,7 +7,7 @@ const hour = (n: number) => n * 60 ** 2 * 1000
 const META_RATE = hour(24)
 const EPISODE_RATE = hour(1)
 
-export async function meta() {
+export async function meta(episodes = true) {
   const podcasts = (await Promise.all(
     (await store.getSubscriptions()).map(id => store.podcast(id))
   )) as Podcast[]
@@ -16,9 +16,10 @@ export async function meta() {
     .map(({ id, lastMetaCheck, check: meta, lastEpisodeCheck }) => ({
       id,
       ...(Date.now() - (lastMetaCheck ?? 0) >= META_RATE && { meta }),
-      ...(Date.now() - (lastEpisodeCheck ?? 0) >= EPISODE_RATE && {
-        episodes: '',
-      }),
+      ...(Date.now() - (lastEpisodeCheck ?? 0) >= EPISODE_RATE &&
+        episodes && {
+          episodes: '',
+        }),
     }))
     .filter(v => Object.keys(v).length > 1)
 
@@ -32,6 +33,7 @@ export async function meta() {
     ) as any
   )
 
+  logger.info({ sums })
   if (!sums.length) return logger.info('skip meta check')
 
   logger.info(
