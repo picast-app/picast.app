@@ -65,7 +65,6 @@ export function SnackTray() {
       container.addEventListener('scroll', onScroll)
       clear.push(() => container?.removeEventListener('scroll', onScroll))
     }
-    console.log({ snack })
     if (snack?.timeout) {
       const toId = setTimeout(() => {
         const remove = () => setSnack(undefined)

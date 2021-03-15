@@ -20,7 +20,8 @@ export default class Store {
   constructor(
     private readonly db: PromiseType<typeof dbProm>,
     private readonly epStore: EpisodeStore,
-    subs: Podcast[]
+    subs: Podcast[],
+    private wpSubs: string[]
   ) {
     this.subscriptions = subs.map(({ id }) => id)
     for (const podcast of subs) this.podcasts[podcast.id] = podcast
@@ -56,7 +57,8 @@ export default class Store {
       db,
       subs.map(({ id }) => id)
     )
-    return new Store(db, eps, subs)
+    const wpSubs = await db.get('meta', 'wpSubs')
+    return new Store(db, eps, subs, wpSubs ?? [])
   }
 
   public async refresh() {
@@ -214,24 +216,24 @@ export default class Store {
     return proxy(sub.addSub(index, update))
   }
 
-  public async addSubscription(id: string, existing: boolean, cb = true) {
+  public async addSubscription(id: string, existing: boolean) {
     logger.info('subscribe to', id)
     if (this.subscriptions.includes(id)) return
     this.subscriptions.push(id)
     if (!(await this.podcast(id))) throw Error(`can't subscribe to ${id}`)
     const { state } = await appState
-    state.subscriptions = this.subscriptions
+    state.addSubscription(id)
     await this.storeSubscription(id)
     await this.epStore.subscribe(id)
     if (!existing) await api.subscribe(id)
   }
 
-  public async removeSubscription(id: string, existing: boolean, cb = true) {
+  public async removeSubscription(id: string, existing: boolean) {
     logger.info('unsubscribe from', id)
     if (!this.subscriptions.includes(id)) return
     this.subscriptions = this.subscriptions.filter(v => v !== id)
     const { state } = await appState
-    state.subscriptions = this.subscriptions
+    state.removeSubscription(id)
     await this.db.delete('subscriptions', id)
     await this.epStore.unsubscribe(id)
     if (!existing) await api.unsubscribe(id)
@@ -299,5 +301,19 @@ export default class Store {
 
   private getFeedSub(id: string): Feed.Base | undefined {
     return this.feedSubs.find(v => v.id === id)
+  }
+
+  public async wpSubscriptions(): Promise<string[]> {
+    return this.wpSubs
+  }
+
+  public async addWpSub(...ids: string[]) {
+    this.wpSubs.push(...ids)
+    await this.db.put('meta', this.wpSubs, 'wpSubs')
+  }
+
+  public async removeWpSubs(...ids: string[]) {
+    this.wpSubs = this.wpSubs.filter(id => !ids.includes(id))
+    await this.db.put('meta', this.wpSubs, 'wpSubs')
   }
 }

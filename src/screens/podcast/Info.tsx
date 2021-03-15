@@ -4,8 +4,9 @@ import { Icon, Artwork, Button } from 'components/atoms'
 import { ArtworkShowcase } from 'components/composite'
 import { lineClamp } from 'styles/mixin'
 import { desktop, mobile } from 'styles/responsive'
-import { useMatchMedia, useSubscriptions } from 'utils/hooks'
+import { useMatchMedia, useSubscriptions, useAppState } from 'utils/hooks'
 import ContextMenu from './ContextMenu'
+import { main } from 'workers'
 import type * as T from 'types/gql'
 
 export default function Info(podcast: Partial<T.PodcastPage_podcast>) {
@@ -13,8 +14,17 @@ export default function Info(podcast: Partial<T.PodcastPage_podcast>) {
   const isDesktop = useMatchMedia(desktop)
   const [subscriptions, subscribe, unsubscribe] = useSubscriptions()
   const [showcaseArt, setShowcaseArt] = useState(false)
+  const [wpSubs = []] = useAppState<string[]>('wpSubs')
 
   if (!podcast?.id) return <S.Info />
+
+  const wpActive = wpSubs.includes(podcast.id!)
+
+  async function toggleNotifications() {
+    if (!podcast.id) return
+    if (wpActive) await main.disablePushNotifications(podcast.id)
+    else await main.enablePushNotifications(podcast.id)
+  }
 
   const actions = (
     <S.Actions>
@@ -26,6 +36,15 @@ export default function Info(podcast: Partial<T.PodcastPage_podcast>) {
         <Button onClick={() => subscribe(podcast.id!)}>Subscribe</Button>
       )}
       <ContextMenu id={podcast.id} feed={podcast.feed} />
+      <Icon
+        icon={
+          `bell_${
+            wpSubs.includes(podcast.id!) ? 'active' : 'inactive'
+          }` as const
+        }
+        label={`${wpActive ? 'disable' : 'enable'} push notifications`}
+        onClick={toggleNotifications}
+      ></Icon>
       <Icon
         icon={`expand_${showDescription ? 'less' : 'more'}` as any}
         onClick={() => setShowDescription(!showDescription)}
@@ -146,12 +165,23 @@ const S = {
     align-items: center;
     height: var(--action-height);
 
-    & > :last-child {
-      margin-left: auto;
+    & > :first-child {
+      margin-right: auto;
+    }
+
+    & > button[data-style~='icon-wrap'] {
+      margin-left: 0.8rem;
+      margin-right: 0.2rem;
+      opacity: 0.9;
+
+      &:not(:last-of-type) {
+        transform: scale(0.9);
+      }
     }
 
     @media ${desktop} {
       margin-top: 0;
+      margin-right: 1.5rem;
 
       & > :last-child {
         display: none;

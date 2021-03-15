@@ -6,9 +6,11 @@ import * as sync from './sync'
 import { wsApi } from './ws'
 import type * as T from 'types/gql'
 
-export async function signIn(creds: SignInCreds) {
-  const me = await api.signInGoogle(creds.accessToken)
+export async function signIn(creds: SignInCreds, wpSub?: string | null) {
+  const me = await api.signInGoogle(creds.accessToken, wpSub ?? undefined)
+  const { state } = await stateProm
   storeSignIn(me)
+  await state.setWPSubs(me.wpSubs)
   await pullSubscriptions(me.subscriptions)
 }
 
@@ -21,6 +23,7 @@ export async function signOut() {
   await db.clear('subscriptions')
   await db.clear('episodes')
   await db.delete('meta', 'signin')
+  await db.delete('meta', 'wpSubs')
 
   const cacheKeys = await caches.keys()
   logger.info(cacheKeys)
@@ -42,10 +45,12 @@ export async function pullSubscriptions(
   | undefined
 > {
   logger.info('pull subscriptions')
+  const { state } = await stateProm
   if (!subs) {
     const subscriptions = await store.getSubscriptions()
     const me = await api.me(subscriptions)
-    storeSignIn(me)
+    await storeSignIn(me)
+    if (me) await state.setWPSubs(me.wpSubs)
     if (!me) return logger.info('not logged in')
     subs = me.subscriptions
   }
@@ -73,6 +78,20 @@ async function storeSignIn(me: T.Me_me | null) {
     const { podcast, episode } = me.currentEpisode.id
     state.playing.set([podcast, episode])
   }
+}
+
+export async function enablePushNotifications(id: string) {
+  logger.info('enable push notifications', id)
+  const { state } = await stateProm
+  state.addWPSub(id)
+  await api.wpPodSub(id)
+}
+
+export async function disablePushNotifications(id: string) {
+  logger.info('disable push notifications', id)
+  const { state } = await stateProm
+  state.removeWPSub(id)
+  await api.wpPodUnsub(id)
 }
 
 pullSubscriptions()

@@ -16,6 +16,8 @@ import diffEpisodesQuery from 'gql/queries/episodes.gql'
 import signOutMutation from 'gql/mutations/signOut.gql'
 import addWpSubMutation from 'gql/mutations/wpSub.gql'
 import removeWpSubMutation from 'gql/mutations/wpUnsub.gql'
+import wpPodSubMutation from 'gql/mutations/wpPodSub.gql'
+import wpPodUnsubMutation from 'gql/mutations/wpPodUnsub.gql'
 
 export const client = new GraphQLClient(process.env.REACT_APP_API as string, {
   headers: {},
@@ -132,4 +134,12 @@ export async function wpSub(sub: string) {
 
 export async function wpUnsub(sub: string) {
   await client.request(removeWpSubMutation, { sub })
+}
+
+export async function wpPodSub(id: string) {
+  await client.request(wpPodSubMutation, { id })
+}
+
+export async function wpPodUnsub(id: string) {
+  await client.request(wpPodUnsubMutation, { id })
 }

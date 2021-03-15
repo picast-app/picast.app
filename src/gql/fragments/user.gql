@@ -10,6 +10,7 @@ fragment MeInitial on User {
     }
     removed
   }
+  wpSubs
   currentEpisode {
     id {
       podcast

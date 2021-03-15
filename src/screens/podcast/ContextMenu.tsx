@@ -15,11 +15,7 @@ export default function ContextMenu({ id, feed }: Props) {
 
   return (
     <S.Wrap>
-      <Icon
-        icon="more"
-        onClick={() => setExpanded(!expanded)}
-        label="context menu"
-      />
+      <Icon icon="more" onClick={() => setExpanded(!expanded)} label="more" />
       <Dropdown visible={expanded} onToggle={setExpanded}>
         <Link to={`/feedview/${feed}`}>View Feed</Link>
         <button onClick={() => main.parse(id)}>Parse Feed</button>

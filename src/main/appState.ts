@@ -5,6 +5,12 @@ import { Podcast } from './store/types'
 
 export type State = {
   subscriptions: string[]
+  addSubscription(...ids: string[]): void
+  removeSubscription(...ids: string[]): void
+  wpSubs: string[]
+  addWPSub(...ids: string[]): Promise<void>
+  removeWPSub(...ids: string[]): Promise<void>
+  setWPSubs(ids: string[]): Promise<void>
   user: {
     provider?: 'google'
     wsAuth?: string
@@ -32,6 +38,7 @@ async function init(): Promise<{
 
   const state = observable<State>({
     subscriptions: [],
+    wpSubs: await store.wpSubscriptions(),
     user: {},
     get signedIn() {
       return this.user.provider !== undefined
@@ -73,6 +80,28 @@ async function init(): Promise<{
           await db.put('meta', v, k)
         }
       },
+    },
+
+    addSubscription(...ids) {
+      this.subscriptions = Array.from(new Set([...this.subscriptions, ...ids]))
+    },
+    removeSubscription(...ids) {
+      this.subscriptions = this.subscriptions.filter(id => !ids.includes(id))
+    },
+    async addWPSub(...ids) {
+      this.wpSubs = Array.from(new Set([...this.wpSubs, ...ids]))
+      await store.addWpSub(...ids)
+    },
+    async removeWPSub(...ids) {
+      this.wpSubs = this.wpSubs.filter(id => !ids.includes(id))
+      await store.removeWpSubs(...ids)
+    },
+    async setWPSubs(ids) {
+      const added = ids.filter(id => !this.wpSubs.includes(id))
+      const removed = this.wpSubs.filter(id => !ids.includes(id))
+      this.wpSubs = ids
+      if (added.length) await store.addWpSub(...added)
+      if (removed.length) await store.removeWpSubs(...removed)
     },
   })
 

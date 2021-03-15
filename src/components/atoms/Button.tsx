@@ -24,6 +24,7 @@ export const Button: React.FC<Props> = ({
       {...props}
       {...(styles.length && { ['data-style']: styles.join(' ') })}
       onClick={e => onClick?.(e)}
+      {...(iconWrap && { title: iconWrap })}
     >
       {children}
       {iconWrap && <S.Label>{iconWrap}</S.Label>}
