@@ -64,32 +64,11 @@ async function handleNotification(event: PushEvent) {
   logger.info({ type, payload })
   if (type !== 'episode') return
 
-  const main = await mainWorker
-  const data = await main.idbGet('subscriptions', payload.podcast)
-
-  const title = data?.title ?? 'New podcast episode'
-  let icon: string | undefined = undefined
-  if (data?.covers) {
-    try {
-      icon = `${process.env.IMG_HOST}/${
-        (data.covers as string[])
-          .filter(v => /\.jpeg$/.test(v))
-          .map(path => ({
-            path,
-            size: parseInt(path.split('.')[0].split('-').pop()!),
-          }))
-          .sort(({ size: a }, { size: b }) => a - b)[0].path
-      }`
-    } catch (e) {
-      logger.error(e)
-    }
-  }
-
-  await self.registration.showNotification(title, {
+  await self.registration.showNotification(payload.podcast.title, {
     body: payload.episode.title,
-    icon,
+    icon: payload.podcast.artwork,
     data: {
-      podcast: payload.podcast,
+      podcast: payload.podcast.id,
       episode: payload.episode.id,
     },
   })
