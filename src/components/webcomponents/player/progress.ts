@@ -127,6 +127,7 @@ export default class Progress extends HTMLElement {
   }
 
   public jump(pos: number) {
+    logger.info(`jump to ${pos | 0}s (${pos / this.duration!})`)
     this.current = pos
     if (this.playing) this.playStart = performance.now()
     this.scheduleFrame()
@@ -170,12 +171,11 @@ export default class Progress extends HTMLElement {
   private renderFull(progress: number) {
     const height = this.canvas.height * Progress.BAR_HEIGHT
     const padd = (this.canvas.height - height) / 2
-    const width = this.canvas.width - padd * 2 - height
-
-    const knobX = padd + height / 2 + width * progress
+    const width = this.canvas.width - padd * 2
+    const knobX = padd + height / 2 + (width - height) * progress
 
     this.ctx.fillStyle = Progress.clBar
-    this.drawBar(padd, this.canvas.width - padd, height)
+    this.drawBar(padd, padd + width, height)
     if (!this.duration) return
 
     this.ctx.fillStyle = Progress.clBuffered

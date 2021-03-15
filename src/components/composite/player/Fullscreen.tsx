@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import styled from 'styled-components'
 import { Artwork } from 'components/atoms'
-import { useTheme } from 'utils/hooks'
+import { useTheme, useMatchMedia } from 'utils/hooks'
 import Controls, { ControlsSC } from './Controls'
+import { desktop } from 'styles/responsive'
 import type { Podcast } from 'main/store/types'
 
 interface Props {
@@ -24,6 +25,7 @@ export default function Fullscreen({ podcast, episode, ...props }: Props) {
     }
   }, [podcast])
 
+  if (useMatchMedia(desktop)) return null
   return (
     <S.Container {...props}>
       <Background src={background} />

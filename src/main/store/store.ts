@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 import dbProm, { gql as convert } from './idb'
 import * as api from 'main/api'
 import { proxy } from 'comlink'
@@ -153,9 +154,7 @@ export default class Store {
         logger.info(`removed from ${podcast} ${removed.join(', ')}`)
       }
       if (added?.length) {
-        logger.info(
-          `added to ${podcast} ${added.map(({ id }) => id).join(', ')}`
-        )
+        logger.info(`added ${added.length} episodes to ${podcast}`)
         await podcasts[podcast].addEpisodes(
           added.map(v => convert.episode(v as any, podcast)),
           true
@@ -317,3 +316,4 @@ export default class Store {
     await this.db.put('meta', this.wpSubs, 'wpSubs')
   }
 }
+/* eslint-enable @typescript-eslint/require-await */
