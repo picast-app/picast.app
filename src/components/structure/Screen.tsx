@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import styled, { AnyStyledComponent } from 'styled-components'
 import { desktop, mobile } from 'styles/responsive'
-import Appbar, { AppbarSC } from 'components/Appbar'
+import Appbar from 'components/Appbar'
 import { Progress, ProgressSC, Icon } from 'components/atoms'
 import { animateTo } from 'utils/animate'
 

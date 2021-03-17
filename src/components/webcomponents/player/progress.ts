@@ -58,6 +58,7 @@ export default class Progress extends HTMLElement {
     this.onDrag = this.onDrag.bind(this)
     this.onDragCancel = this.onDragCancel.bind(this)
     this.onVisibilityChange = this.onVisibilityChange.bind(this)
+    this.onTouchStart = this.onTouchStart.bind(this)
 
     this.tsCurrent = this.shadowRoot!.getElementById('current') as any
     this.tsRemains = this.shadowRoot!.getElementById('remaining') as any
@@ -76,6 +77,7 @@ export default class Progress extends HTMLElement {
     this.canvas.addEventListener('pointerdown', this.onDragStart)
     this.scheduleFrame()
     document.addEventListener('visibilitychange', this.onVisibilityChange)
+    this.addEventListener('touchstart', this.onTouchStart)
   }
 
   disconnectedCallback() {
@@ -85,6 +87,7 @@ export default class Progress extends HTMLElement {
     window.removeEventListener('pointerup', this.onDragStop)
     window.removeEventListener('keydown', this.onDragCancel)
     document.removeEventListener('visibilitychange', this.onVisibilityChange)
+    this.removeEventListener('touchstart', this.onTouchStart)
   }
 
   static get observedAttributes() {
@@ -254,6 +257,10 @@ export default class Progress extends HTMLElement {
     this.ctx.beginPath()
     this.ctx.arc(x, this.canvas.height / 2, rad, 0, Math.PI * 2)
     this.ctx.fill()
+  }
+
+  private onTouchStart(e: TouchEvent) {
+    e.stopPropagation()
   }
 
   private onDragStart(e: MouseEvent) {

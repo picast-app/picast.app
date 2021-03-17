@@ -3,7 +3,6 @@
     width: 100%;
     display: block;
     position: relative;
-
     height: 2.5rem;
   }
 
@@ -16,16 +15,16 @@
   }
 
   @media (max-width: 900px) {
-    canvas {
-      pointer-events: none;
-    }
-
     :host([inline]) {
       height: var(--canvas-height);
     }
 
     :host([inline]) > time {
       display: none;
+    }
+
+    :host([inline]) > canvas {
+      pointer-events: none;
     }
   }
 

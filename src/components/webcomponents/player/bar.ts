@@ -43,6 +43,7 @@ export default class Player extends HTMLElement {
     this.onClick = this.onClick.bind(this)
     this.onPopState = this.onPopState.bind(this)
     this.onProgress = this.onProgress.bind(this)
+    this.onBarJump = this.onBarJump.bind(this)
 
     this.fullscreen = this.shadowRoot!.querySelector<HTMLElement>(
       '.fullscreen'
@@ -69,13 +70,6 @@ export default class Player extends HTMLElement {
       this.setProgressAttr('playing', false)
     })
 
-    this.shadowRoot!.querySelector('player-progress')!.addEventListener(
-      'jump',
-      (e: any) => {
-        this.jump((e as CustomEvent<number>).detail)
-      }
-    )
-
     const container = (this.shadowRoot!.getElementById(
       'touchbox'
     ) as HTMLTemplateElement).content
@@ -101,6 +95,9 @@ export default class Player extends HTMLElement {
     window.addEventListener('popstate', this.onPopState)
     this.audio.volume = 0.4
     window.addEventListener('pagehide', this.syncProgress)
+    this.progressBars.forEach(bar =>
+      bar.addEventListener('jump', this.onBarJump as any)
+    )
 
     if (this.isFullscreen) {
       this.style.transform = transitionStates[1].bar.transform as string
@@ -117,6 +114,9 @@ export default class Player extends HTMLElement {
     this.removeMediaHandlers()
     window.removeEventListener('popstate', this.onPopState)
     window.removeEventListener('pagehide', this.syncProgress)
+    this.progressBars.forEach(bar =>
+      bar.removeEventListener('jump', this.onBarJump as any)
+    )
   }
 
   static get observedAttributes() {
@@ -418,6 +418,10 @@ export default class Player extends HTMLElement {
       ])
     }
     return ranges
+  }
+
+  private onBarJump(e: CustomEvent<number>) {
+    this.jump((e as CustomEvent<number>).detail)
   }
 }
 
