@@ -90,7 +90,11 @@ function usePullEffect(node: HTMLElement | null, action?: () => void) {
     }
 
     const onDrag = ({ touches: [{ screenY }] }: TouchEvent) => {
-      const off = screenY - startY
+      let off = screenY - startY
+      if (content.scrollTop > 0) {
+        off = 0
+        startY = screenY
+      }
       if (lastOff > actionOff !== off > actionOff)
         content.dataset.action = off > actionOff ? 'refresh' : 'none'
       lastOff = off
