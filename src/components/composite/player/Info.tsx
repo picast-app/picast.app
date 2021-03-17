@@ -66,5 +66,9 @@ const S = {
     &:hover {
       transform: scale(1.05);
     }
+
+    @media ${mobile} {
+      pointer-events: none;
+    }
   `,
 }

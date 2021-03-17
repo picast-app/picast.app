@@ -3,7 +3,8 @@
     width: 100%;
     display: block;
     position: relative;
-    height: var(--canvas-height);
+
+    height: 2.5rem;
   }
 
   canvas {
@@ -19,14 +20,12 @@
       pointer-events: none;
     }
 
-    time {
-      display: none;
+    :host([inline]) {
+      height: var(--canvas-height);
     }
-  }
 
-  @media (min-width: 901px) {
-    :host {
-      height: 2.5rem;
+    :host([inline]) > time {
+      display: none;
     }
   }
 
