@@ -59,9 +59,7 @@ export const Screen: React.FC<Props> = ({
 function usePullEffect(node: HTMLElement | null, action?: () => void) {
   useEffect(() => {
     if (!node || !action) return
-    const content = Array.from(node.children).find(
-      el => !el.classList.contains(AppbarSC.Wrap.styledComponentId)
-    ) as HTMLElement
+    const content = node
 
     let startY: number
     let lastOff = 0
@@ -74,7 +72,7 @@ function usePullEffect(node: HTMLElement | null, action?: () => void) {
         requestAnimationFrame(() => requestAnimationFrame(res))
       )
       if (cancelled) return
-      if (lastOff > actionOff) action()
+      if (lastOff > actionOff && content.scrollTop === 0) action()
       lastOff = 0
       delete content.dataset.action
       node.removeEventListener('touchmove', onDrag)
