@@ -139,7 +139,7 @@ const S = {
       --top-off: 0px;
     }
 
-    picast-player ~ & {
+    picast-player:not([hidden]) ~ & {
       height: calc(100% - var(--bar-height) - var(--player-height));
 
       @media ${desktop} {

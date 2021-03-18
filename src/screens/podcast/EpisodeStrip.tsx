@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 import { Icon } from 'components/atoms'
 import { main } from 'workers'
 import type { EpisodeBase } from 'main/store/types'
 import { proxy } from 'comlink'
 import { playerSub, useEpisodePlaying, useEpisodeProgress } from 'utils/player'
-import { useComputed } from 'utils/hooks'
 import { mobile } from 'styles/responsive'
 import { center, transition } from 'styles/mixin'
 
@@ -16,13 +15,12 @@ type Props = {
 
 export default function EpisodeStrip({ feed, index }: Props) {
   const episode = useEpisode(feed, index)
-  const date = useComputed(episode?.published, format)
 
   if (!episode) return null
   return (
     <S.Strip index={index}>
       <S.Title>{episode.title}</S.Title>
-      <S.Date>{date}</S.Date>
+      <Published>{episode.published}</Published>
       <Duration>{episode.duration}</Duration>
       <S.Actions>
         <PlayButton
@@ -33,12 +31,6 @@ export default function EpisodeStrip({ feed, index }: Props) {
     </S.Strip>
   )
 }
-
-const { format } = new Intl.DateTimeFormat('en-US', {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-})
 
 function useEpisode(feed: string, index: number) {
   const [episode, setEpisode] = useState<EpisodeBase>()
@@ -58,9 +50,11 @@ const toggle = ([pod, ep]: EpisodeId) => async () => {
   const player = playerSub.state
 
   if (pod !== player?.podcast?.id || ep !== player?.episode?.id) {
-    if (player) await player.play([pod, ep])
-    else {
+    if (player) {
+      await player.play([pod, ep])
+    } else {
       const unsub = playerSub.subscribe(player => {
+        if (!player) return
         player.play()
         unsub()
       })
@@ -136,6 +130,22 @@ function Duration({ children: dur }: { children: number }) {
   return <S.Duration>{txt}</S.Duration>
 }
 
+const { format } = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+})
+
+function Published({ children: time }: { children: number }) {
+  const date = useMemo(() => formatDate(time), [time])
+
+  return <S.Date>{date}</S.Date>
+}
+
+function formatDate(raw: number) {
+  return format(raw)
+}
+
 const S = {
   Strip: styled.article.attrs<{ index: number }>(({ index }) => ({
     style: { top: `calc(${index} * var(--item-height))` },
@@ -198,7 +208,7 @@ const S = {
     }
   `,
 
-  Date: styled.span`
+  Date: styled.time`
     flex-shrink: 0;
     opacity: 0.9;
 

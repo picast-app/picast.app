@@ -115,7 +115,7 @@ const S = {
     display: flex;
     flex-direction: column-reverse;
 
-    picast-player ~ & {
+    picast-player:not([hidden]) ~ & {
       bottom: calc(var(--bottom) + var(--player-height));
     }
 

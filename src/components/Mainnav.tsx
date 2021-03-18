@@ -124,7 +124,7 @@ const S = {
         align-items: flex-start;
       }
 
-      picast-player ~ & {
+      picast-player:not([hidden]) ~ & {
         padding-bottom: var(--player-height);
       }
     }
@@ -132,7 +132,7 @@ const S = {
     @media ${mobile} {
       z-index: 9001;
 
-      picast-player ~ & {
+      picast-player:not([hidden]) ~ & {
         box-shadow: unset;
       }
 

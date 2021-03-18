@@ -163,7 +163,7 @@ export default class Progress extends HTMLElement {
     delete this.afId
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
-    const progress =
+    let progress =
       this.dragX !== undefined
         ? this.dragProgress
         : !this.playing
@@ -171,6 +171,8 @@ export default class Progress extends HTMLElement {
         : (this.progress * this.duration! +
             (performance.now() - this.playStart!) / 1000) /
           this.duration!
+
+    progress = Math.min(Math.max(progress, 0), 1)
 
     this.labelProg = progress * this.duration!
     this.labelRemains = this.duration! * (1 - progress)
@@ -264,6 +266,7 @@ export default class Progress extends HTMLElement {
   }
 
   private onDragStart(e: MouseEvent) {
+    if (!this.duration || !isFinite(this.duration)) return
     document.documentElement.style.userSelect = 'none'
     document.documentElement.style.cursor = 'grabbing'
     this.canvas.style.cursor = 'inherit'

@@ -9,12 +9,15 @@ export function Player() {
   const [podcast, episode] = usePlaying()
   const theme = useTheme()
 
-  if (!podcast || !episode) return null
   return (
     <picast-player theme={theme}>
-      <Controls slot="controls" />
-      <Info podcast={podcast} />
-      <Fullscreen slot="fullscreen" {...{ podcast, episode }} />
+      {podcast && episode && (
+        <>
+          <Controls slot="controls" />
+          <Info podcast={podcast} />
+          <Fullscreen slot="fullscreen" {...{ podcast, episode }} />
+        </>
+      )}
     </picast-player>
   )
 }

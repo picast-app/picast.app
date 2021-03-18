@@ -61,7 +61,7 @@ export default class Player extends HTMLElement {
     })
     this.audio.addEventListener('progress', this.onProgress)
 
-    this.audio.addEventListener('play', () => {
+    this.audio.addEventListener('playing', () => {
       this.setProgressAttr('current', this.audio.currentTime)
       this.setProgressAttr('playing', true)
     })
@@ -98,6 +98,7 @@ export default class Player extends HTMLElement {
     this.progressBars.forEach(bar =>
       bar.addEventListener('jump', this.onBarJump as any)
     )
+    this.setAttribute('hidden', '')
 
     if (this.isFullscreen) {
       this.style.transform = transitionStates[1].bar.transform as string
@@ -144,9 +145,13 @@ export default class Player extends HTMLElement {
     if (this.episode?.id === episode?.id) return
     this.podcast = podcast
     this.episode = episode
-    this.title = episode.title
 
-    if (!episode) return
+    if (!episode) {
+      this.setAttribute('hidden', '')
+      return
+    }
+    this.title = episode.title
+    this.removeAttribute('hidden')
 
     const current = (episode.relProg ?? 0) >= 1 ? 0 : episode.currentTime ?? 0
     this.setProgressAttr('current', current)

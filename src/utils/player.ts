@@ -10,7 +10,7 @@ export const usePlaying = (): [podcast?: Podcast, episode?: EpisodeMin] => {
   return episode ? [podcast, episode] : []
 }
 
-export const playerSub = subscription<Player>()
+export const playerSub = subscription<Player | undefined>()
 export const usePlayer = () => useSubscription(playerSub)[0]
 
 export const isPlayingSub = subscription(false)
@@ -70,9 +70,11 @@ export function useEpisodeProgress(id: EpisodeId, initialProgress = 0) {
   const epId = id[1]
 
   useEffect(() => {
+    if (!playerSub.state) return
     if (!isActive) return update({ playing: false })
 
     const audio = playerSub.state.audio
+    if (!audio) return
 
     const playUpdate = () => ({
       duration: audio.duration,

@@ -11,7 +11,7 @@ export default function PlayControls(props: { slot?: string }) {
 
   return (
     <SC {...props}>
-      <Skip ms={-15000} onJump={n => player.jump(n, true)} />
+      <Skip ms={-15000} onJump={n => player?.jump(n, true)} />
       <Icon
         icon={playing ? 'pause' : 'play'}
         label={playing ? 'pause' : 'play'}
@@ -19,7 +19,7 @@ export default function PlayControls(props: { slot?: string }) {
         tabIndex={0}
         autoFocus
       />
-      <Skip ms={30000} onJump={n => player.jump(n, true)} />
+      <Skip ms={30000} onJump={n => player?.jump(n, true)} />
     </SC>
   )
 }
