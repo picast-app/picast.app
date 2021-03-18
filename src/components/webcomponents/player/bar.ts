@@ -440,7 +440,8 @@ export default class Player extends HTMLElement {
     if (!this.episode || !this.podcast) return
     const params = new URLSearchParams(location.search)
     params.set('info', `${this.podcast.id}-${this.episode.id}`)
-    history.push(`${location.pathname}?${params.toString()}`)
+    const path = `${location.pathname}?${params.toString()}`
+    if (location.pathname + location.search !== path) history.push(path)
   }
 }
 

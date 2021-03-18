@@ -13,10 +13,9 @@ export function EpisodeInfo() {
     else history.push(location.pathname)
   }
 
-  if (!info) return null
   return (
-    <S.Shade onClick={close}>
-      <S.Container></S.Container>
+    <S.Shade onClick={close} hidden={!info}>
+      <S.Container onClick={e => e.stopPropagation()}></S.Container>
     </S.Shade>
   )
 }
@@ -32,6 +31,13 @@ const S = {
     height: 25rem;
     border-radius: 0.5rem;
     background-color: var(--cl-surface);
+    transition: transform var(--td) ease-out;
+    transform-origin: left top;
+
+    *[hidden] > & {
+      transform: scale(0.8) translateX(-50%) translateY(-50%);
+      transition-timing-function: ease-in;
+    }
   `,
 
   Shade: styled.div`
@@ -39,11 +45,32 @@ const S = {
     z-index: 1000;
     width: 100vw;
     height: 100vh;
-    backdrop-filter: blur(2px) saturate(80%);
-    background-color: #0005;
+
+    --td: 0.2s;
 
     picast-player:not([hidden]) ~ & {
       height: calc(100vh - var(--player-height));
+    }
+
+    &[hidden] {
+      display: initial;
+      visibility: hidden;
+      transition: visibility 0s var(--td);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      backdrop-filter: blur(1px) saturate(0.5) brightness(0.8);
+      transition: backdrop-filter var(--td) ease;
+    }
+
+    &[hidden]::before {
+      backdrop-filter: blur(0) saturate(1) brightness(1);
     }
   `,
 }

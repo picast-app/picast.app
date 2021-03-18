@@ -166,6 +166,10 @@ const S = {
     padding: 0 1rem;
     overflow: hidden;
 
+    &:hover * {
+      color: var(--cl-primary);
+    }
+
     @media (pointer: coarse) {
       user-select: none;
     }
@@ -230,9 +234,10 @@ const S = {
     flex-shrink: 0;
     opacity: 0.9;
     text-align: right;
-    min-width: 3rem;
-    width: 5vw;
+    width: 7vw;
+    min-width: 5rem;
     margin-right: 3vw;
+    white-space: nowrap;
 
     @media ${mobile} {
       position: absolute;
@@ -317,10 +322,6 @@ const S = {
 
   InfoLink: styled(Link)`
     transition: color 0.1s ease;
-
-    &:hover {
-      color: var(--cl-primary);
-    }
 
     &::after {
       content: '';
