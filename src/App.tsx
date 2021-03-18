@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import Routes from 'Routes'
 import Mainnav from 'components/Mainnav'
-import { Player } from 'components/composite'
+import { Player, EpisodeInfo } from 'components/composite'
 import { SnackTray } from 'components/structure'
 import { Theme } from 'styles'
 import { desktop } from 'styles/responsive'
@@ -36,6 +36,7 @@ export default function App() {
           <Routes />
           <SnackTray />
           <Mainnav />
+          <EpisodeInfo />
         </S.App>
       </Theme.Provider>
     </HelmetProvider>

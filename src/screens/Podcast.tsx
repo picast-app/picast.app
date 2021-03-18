@@ -10,7 +10,10 @@ import Feed from './podcast/Episodes'
 export default function Podcast({
   match,
 }: RouteComponentProps<{ id: string }>) {
-  const [podcast, _loading] = useAPICall('podcast', match.params.id)
+  const [podcast, _loading] = useAPICall(
+    'podcast',
+    match.params.id.split('?')[0]
+  )
   const [loading, setLoading] = useState(_loading)
 
   useEffect(() => {

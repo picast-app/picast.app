@@ -13,6 +13,7 @@ import { animateTo } from 'utils/animate'
 import { transitionStates } from './animation'
 import { setQueryParam, removeQueryParam } from 'utils/url'
 import { desktop } from 'styles/responsive'
+import history from 'utils/history'
 
 const tmpl = document.createElement('template')
 tmpl.innerHTML = html
@@ -44,6 +45,7 @@ export default class Player extends HTMLElement {
     this.onPopState = this.onPopState.bind(this)
     this.onProgress = this.onProgress.bind(this)
     this.onBarJump = this.onBarJump.bind(this)
+    this.onTitleClick = this.onTitleClick.bind(this)
 
     this.fullscreen = this.shadowRoot!.querySelector<HTMLElement>(
       '.fullscreen'
@@ -83,6 +85,10 @@ export default class Player extends HTMLElement {
       this.removeEventListener('click', this.onClick)
       if (!this.isDesktop) this.addEventListener('click', this.onClick)
     }
+
+    this.shadowRoot
+      ?.querySelectorAll('.title')
+      .forEach(title => title.addEventListener('click', this.onTitleClick))
 
     playerSub.setState(this)
   }
@@ -428,6 +434,13 @@ export default class Player extends HTMLElement {
 
   private onBarJump(e: CustomEvent<number>) {
     this.jump((e as CustomEvent<number>).detail)
+  }
+
+  private onTitleClick() {
+    if (!this.episode || !this.podcast) return
+    const params = new URLSearchParams(location.search)
+    params.set('info', `${this.podcast.id}-${this.episode.id}`)
+    history.push(`${location.pathname}?${params.toString()}`)
   }
 }
 

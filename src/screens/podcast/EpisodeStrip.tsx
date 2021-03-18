@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
-import { Icon } from 'components/atoms'
+import { Icon, Link } from 'components/atoms'
 import { main } from 'workers'
 import type { EpisodeBase } from 'main/store/types'
 import { proxy } from 'comlink'
@@ -19,7 +19,11 @@ export default function EpisodeStrip({ feed, index }: Props) {
   if (!episode) return null
   return (
     <S.Strip index={index}>
-      <S.Title>{episode.title}</S.Title>
+      <S.Title>
+        <S.InfoLink to={`?info=${episode.podcast}-${episode.id}`}>
+          {episode.title}
+        </S.InfoLink>
+      </S.Title>
       <Published>{episode.published}</Published>
       <Duration>{episode.duration}</Duration>
       <S.Actions>
@@ -193,6 +197,10 @@ const S = {
     min-height: 1.15em;
     line-height: 1.15em;
 
+    a {
+      text-decoration: none;
+    }
+
     @media ${mobile} {
       white-space: unset;
       /* stylelint-disable */
@@ -304,6 +312,23 @@ const S = {
       to {
         stroke-dashoffset: ${circ};
       }
+    }
+  `,
+
+  InfoLink: styled(Link)`
+    transition: color 0.1s ease;
+
+    &:hover {
+      color: var(--cl-primary);
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
     }
   `,
 }

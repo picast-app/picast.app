@@ -11,6 +11,7 @@ type Props = {
 
 export const Link = ({ children, to, append, wrap, nav, ...props }: Props) => {
   const isExternal = /^https?:\/\//.test(to)
+  if (to.startsWith('?')) to = location.pathname + to
 
   const link = (
     <SLink
