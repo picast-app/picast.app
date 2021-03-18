@@ -18,6 +18,10 @@ export default interface Schema extends DBSchema {
       check?: string
       lastMetaCheck?: number
       episodeCount?: number
+      palette?: {
+        lightVibrant: string
+        darkVibrant: string
+      }
     }
   }
   episodes: {

@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { useAPICall } from 'utils/hooks'
+import { useAPICall, useTheme } from 'utils/hooks'
 import { Screen } from 'components/structure'
 import Appbar from 'components/Appbar'
 import type { RouteComponentProps } from 'react-router'
 import Info from './podcast/Info'
 import Feed from './podcast/Episodes'
+import type { Podcast as PodType } from 'main/store/types'
 
 export default function Podcast({
   match,
 }: RouteComponentProps<{ id: string }>) {
-  const [podcast, _loading] = useAPICall(
-    'podcast',
-    match.params.id.split('?')[0]
-  )
+  const id = match.params.id.split('?')[0]
+  const [podcast, _loading] = useAPICall('podcast', id)
   const [loading, setLoading] = useState(_loading)
+  useCustomTheme(podcast?.palette)
 
   useEffect(() => {
     if (_loading) return setLoading(true)
@@ -27,13 +27,35 @@ export default function Podcast({
       <S.Inner>
         <Info {...podcast} />
         <Feed
-          id={match.params.id}
+          id={id}
           total={podcast ? podcast.episodeCount : -1}
           onLoading={setLoading}
         />
       </S.Inner>
     </Screen>
   )
+}
+
+function useCustomTheme(
+  {
+    darkVibrant: dark,
+    lightVibrant: light,
+  }: Exclude<PodType['palette'], undefined> = {} as any
+) {
+  const theme = useTheme()
+
+  useEffect(() => {
+    if (!dark || !light) return
+
+    document.body.style.setProperty(
+      '--cl-primary',
+      theme === 'light' ? dark : light
+    )
+
+    return () => {
+      document.body.style.removeProperty('--cl-primary')
+    }
+  }, [dark, light, theme])
 }
 
 const S = {

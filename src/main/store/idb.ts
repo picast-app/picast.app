@@ -36,8 +36,11 @@ const podcast = (
   gql: PickOpt<GQL.PodcastPage_podcast, 'episodes'>
 ): Schema['subscriptions']['value'] =>
   filterEmpty({
-    ...omit(gql, '__typename', 'episodes'),
+    ...omit(gql, '__typename', 'episodes', 'palette'),
     episodeCount: gql.episodes?.pageInfo.total,
+    ...(gql.palette && {
+      palette: filterEmpty(omit(gql.palette, '__typename')),
+    }),
   })
 
 const episode = <T extends GQL.EpisodeFull | null>(

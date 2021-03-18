@@ -7,9 +7,9 @@ import { desktop, mobile } from 'styles/responsive'
 import { useMatchMedia, useSubscriptions, useAppState } from 'utils/hooks'
 import ContextMenu from './ContextMenu'
 import { main } from 'workers'
-import type * as T from 'types/gql'
+import type { Podcast } from 'main/store/types'
 
-export default function Info(podcast: Partial<T.PodcastPage_podcast>) {
+export default function Info(podcast: Partial<Podcast>) {
   const [showDescription, setShowDescription] = useState(false)
   const isDesktop = useMatchMedia(desktop)
   const [subscriptions, subscribe, unsubscribe] = useSubscriptions()
@@ -35,7 +35,7 @@ export default function Info(podcast: Partial<T.PodcastPage_podcast>) {
       ) : (
         <Button onClick={() => subscribe(podcast.id!)}>Subscribe</Button>
       )}
-      <ContextMenu id={podcast.id} feed={podcast.feed} />
+      <ContextMenu id={podcast.id} feed={(podcast as any).feed} />
       <Icon
         icon={
           `bell_${
