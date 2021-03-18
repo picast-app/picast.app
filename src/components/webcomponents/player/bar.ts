@@ -22,7 +22,7 @@ export default class Player extends HTMLElement {
   public episode?: EpisodeMin
   public readonly audio: HTMLAudioElement
   private readonly fullscreen: HTMLElement
-  private readonly mainnav = document.getElementById('mainnav')!
+  private mainnav = document.getElementById('mainnav')!
   private gesture?: GestureController<UpwardSwipe | DownwardSwipe>
   private isFullscreen = location.search.includes('view=player')
   private touchBoxes: HTMLElement[] = []
@@ -99,6 +99,7 @@ export default class Player extends HTMLElement {
       bar.addEventListener('jump', this.onBarJump as any)
     )
     this.setAttribute('hidden', '')
+    this.mainnav = document.getElementById('mainnav')!
 
     if (this.isFullscreen) {
       this.style.transform = transitionStates[1].bar.transform as string
