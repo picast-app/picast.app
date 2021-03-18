@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import styled, { AnyStyledComponent } from 'styled-components'
 import { desktop, mobile } from 'styles/responsive'
-import Appbar from 'components/Appbar'
+import Appbar, { AppbarSC } from 'components/Appbar'
 import { Progress, ProgressSC, Icon } from 'components/atoms'
 import { animateTo } from 'utils/animate'
 
@@ -59,7 +59,9 @@ export const Screen: React.FC<Props> = ({
 function usePullEffect(node: HTMLElement | null, action?: () => void) {
   useEffect(() => {
     if (!node || !action) return
-    const content = node
+    const content = node.querySelector<HTMLElement>(
+      `:scope > *:not(.${AppbarSC.Wrap.styledComponentId})`
+    )!
 
     let startY: number
     let lastOff = 0
@@ -91,7 +93,7 @@ function usePullEffect(node: HTMLElement | null, action?: () => void) {
 
     const onDrag = ({ touches: [{ screenY }] }: TouchEvent) => {
       let off = screenY - startY
-      if (content.scrollTop > 0) {
+      if (node.scrollTop > 0) {
         off = 0
         startY = screenY
       }
