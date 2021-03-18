@@ -67,6 +67,10 @@ const S = {
       li & {
         width: 100%;
       }
+
+      html[data-theme='light'] & {
+        box-shadow: 0 0 0.2rem #0004;
+      }
     }
 
     &[data-style~='loading'] {

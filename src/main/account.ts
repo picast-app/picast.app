@@ -4,6 +4,7 @@ import dbProm from './store/idb'
 import stateProm from './appState'
 import * as sync from './sync'
 import { wsApi } from './ws'
+import { setPlaying } from './playback'
 import type * as T from 'types/gql'
 
 export async function signIn(creds: SignInCreds, wpSub?: string | null) {
@@ -77,7 +78,7 @@ async function storeSignIn(me: T.Me_me | null, action = false) {
     await wsApi.notify('identify', me.wsAuth)
     if (!me.currentEpisode?.id) return
     const { podcast, episode } = me.currentEpisode.id
-    state.playing.set([podcast, episode])
+    await setPlaying([podcast, episode], true)
   }
 }
 

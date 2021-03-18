@@ -80,7 +80,7 @@ function Background({ src }: { src: string }) {
     ctx.fillStyle = theme === 'light' ? '#fff' : '#000'
 
     ctx.fillRect(0, 0, canvas.width, canvas.height)
-    ctx.globalAlpha = 0.3
+    ctx.globalAlpha = theme === 'light' ? 0.15 : 0.3
     ctx.filter = `blur(${120 * devicePixelRatio}px) brightness(${
       theme === 'dark' ? 50 : 150
     }%) saturate(150%)`
