@@ -8,6 +8,9 @@ import Info from './podcast/Info'
 import Feed from './podcast/Episodes'
 import ContextMenu from './podcast/ContextMenu'
 import type { Podcast as PodType } from 'main/store/types'
+import { main } from 'workers'
+
+const checked: string[] = []
 
 export default function Podcast({
   match,
@@ -16,7 +19,14 @@ export default function Podcast({
   const [podcast, _loading] = useAPICall('podcast', id)
   const [feedLoading, setFeedLoading] = useState(false)
   useCustomTheme(podcast?.palette)
-  const [, fetching] = useAPICall('fetchEpisodes', id)
+  const [fetching, setFetching] = useState(false)
+
+  useEffect(() => {
+    if (checked.includes(id) || _loading) return
+    setFetching(true)
+    checked.push(id)
+    main.fetchEpisodes(id).then(() => setFetching(false))
+  }, [id, _loading])
 
   const loading =
     _loading || feedLoading || fetching || (podcast?.incomplete ?? false)

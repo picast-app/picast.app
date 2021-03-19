@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import styled, { AnyStyledComponent } from 'styled-components'
 import { desktop, mobile } from 'styles/responsive'
 import Appbar, { AppbarSC } from 'components/Appbar'
@@ -12,6 +12,8 @@ type Props = {
   refreshAction?: () => void
 }
 
+const LOADER_DELAY = 20
+
 export const Screen: React.FC<Props> = ({
   style,
   padd,
@@ -21,8 +23,21 @@ export const Screen: React.FC<Props> = ({
 }) => {
   const [el, setEl] = useState<HTMLElement | null>(null)
   usePullEffect(el, refreshAction)
+  const [showLoad, setShowLoad] = useState(false)
+  const loadToId = useRef<number>()
 
-  const progress = <Progress active={loading} />
+  useEffect(() => {
+    clearTimeout(loadToId.current!)
+    if (!loading) {
+      setShowLoad(false)
+      return
+    }
+    loadToId.current = setTimeout(() => {
+      setShowLoad(true)
+    }, LOADER_DELAY)
+  }, [loading])
+
+  const progress = <Progress active={showLoad} />
 
   const children = React.Children.toArray(props.children)
 

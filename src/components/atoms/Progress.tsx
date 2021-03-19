@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import * as cl from 'utils/css/color'
 
@@ -8,10 +8,12 @@ type Props = {
 
 export const Progress = ({ active = true }: Props) => {
   const [visible, setVisible] = useState(active)
+  const toId = useRef<number>()
 
   useEffect(() => {
+    clearTimeout(toId.current)
     if (active) setVisible(true)
-    else setTimeout(() => setVisible(false), 500)
+    else toId.current = setTimeout(() => setVisible(false), 500)
   }, [active])
 
   if (!visible) return null

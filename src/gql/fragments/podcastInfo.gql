@@ -8,6 +8,7 @@ fragment PodcastInfo on Podcast {
   feed
   check
   palette {
+    vibrant
     lightVibrant
     darkVibrant
   }
