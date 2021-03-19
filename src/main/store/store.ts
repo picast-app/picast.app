@@ -144,6 +144,7 @@ export default class Store {
   }
 
   public async fetchEpisodes(...ids: string[]) {
+    ids = ids.filter(id => this.subscriptions.includes(id))
     logger.info('fetch episodes', ...ids)
 
     const podcasts = Object.fromEntries(

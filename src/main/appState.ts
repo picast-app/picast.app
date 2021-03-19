@@ -2,6 +2,7 @@ import { observable, autorun } from 'mobx'
 import dbProm from './store/idb'
 import store from './store'
 import { Podcast } from './store/types'
+import { titleSort } from './utils'
 
 export type State = {
   subscriptions: Podcast[]
@@ -86,7 +87,7 @@ async function init(): Promise<{
       const newSubs = podcasts.filter(
         ({ id }) => !this.subscriptions.find(v => v.id === id)
       )
-      this.subscriptions = [...this.subscriptions, ...newSubs]
+      this.subscriptions = titleSort([...this.subscriptions, ...newSubs])
     },
     removeSubscription(...ids) {
       this.subscriptions = this.subscriptions.filter(
@@ -113,13 +114,7 @@ async function init(): Promise<{
   const signin = await db.get('meta', 'signin')
   if (signin) state.signIn(signin)
   const subs = await db.getAll('subscriptions')
-  const sorted = subs
-    .map(v => ({
-      ...v,
-      sortName: v.title.replace(/^(the|a|an)\s/i, '').toLowerCase(),
-    }))
-    .sort(({ sortName: a }, { sortName: b }) => a.localeCompare(b))
-  state.subscriptions = sorted
+  state.subscriptions = titleSort(subs)
 
   const playing = await db.get('meta', 'playing')
   if (playing) {
