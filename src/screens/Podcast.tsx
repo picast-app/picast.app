@@ -6,6 +6,7 @@ import Appbar from 'components/Appbar'
 import type { RouteComponentProps } from 'react-router'
 import Info from './podcast/Info'
 import Feed from './podcast/Episodes'
+import ContextMenu from './podcast/ContextMenu'
 import type { Podcast as PodType } from 'main/store/types'
 
 export default function Podcast({
@@ -23,7 +24,11 @@ export default function Podcast({
 
   return (
     <Screen loading={loading}>
-      <Appbar title={podcast?.title} back="/" />
+      <Appbar title={podcast?.title} back="/">
+        {podcast ? (
+          <ContextMenu id={podcast?.id} feed={(podcast as any).feed} />
+        ) : undefined}
+      </Appbar>
       <S.Inner>
         <Info {...podcast} />
         <Feed

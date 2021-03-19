@@ -5,7 +5,7 @@ import { ArtworkShowcase } from 'components/composite'
 import { lineClamp } from 'styles/mixin'
 import { desktop, mobile } from 'styles/responsive'
 import { useMatchMedia, useSubscriptions, useAppState } from 'utils/hooks'
-import ContextMenu from './ContextMenu'
+import ContextMenu, { SC as CM } from './ContextMenu'
 import { main } from 'workers'
 import type { Podcast } from 'main/store/types'
 
@@ -184,6 +184,14 @@ const S = {
       margin-right: 1.5rem;
 
       & > :last-child {
+        display: none;
+      }
+    }
+
+    & > ${CM} {
+      margin: 0 1rem;
+
+      @media ${mobile} {
         display: none;
       }
     }

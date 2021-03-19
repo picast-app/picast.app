@@ -49,6 +49,7 @@ export async function meta(episodes = true) {
   const updates = await api.metaSync(sums)
 
   const metaChanges = updates.map(({ podcast }) => podcast!).filter(Boolean)
+  if (metaChanges.length) logger.info({ metaChanges })
   await Promise.all(metaChanges.map(podcast => store.writePodcastMeta(podcast)))
 
   const episodeChanges = updates

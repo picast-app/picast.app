@@ -166,8 +166,10 @@ const S = {
     padding: 0 1rem;
     overflow: hidden;
 
-    &:hover * {
-      color: var(--cl-primary);
+    @media (hover: hover) {
+      &:hover * {
+        color: var(--cl-primary);
+      }
     }
 
     @media (pointer: coarse) {
@@ -181,12 +183,13 @@ const S = {
 
       & > *:not(div) {
         flex-grow: unset;
-        width: 100%;
+        width: calc(100% - 5rem);
         text-align: left;
         margin: 0;
       }
 
-      span {
+      span,
+      time {
         font-size: 0.8rem;
       }
     }
@@ -200,9 +203,11 @@ const S = {
     color: var(--cl-text-strong);
     min-height: 1.15em;
     line-height: 1.15em;
+    margin-right: 1rem;
 
     a {
       text-decoration: none;
+      color: inherit;
     }
 
     @media ${mobile} {

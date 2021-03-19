@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Icon, Link } from 'components/atoms'
 import { Dropdown } from 'components/composite'
-import { mobile } from 'styles/responsive'
 import { main } from 'workers'
 
 type Props = {
@@ -27,11 +26,8 @@ export default function ContextMenu({ id, feed }: Props) {
 
 const S = {
   Wrap: styled.div`
-    margin: 0 1rem;
     position: relative;
-
-    @media ${mobile} {
-      display: none;
-    }
   `,
 }
+
+export const SC = S.Wrap
