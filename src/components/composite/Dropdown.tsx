@@ -24,7 +24,14 @@ export const Dropdown: React.FC<Props> = ({
 
   if (!visible) return null
   return (
-    <Surface sc={S.Menu} el={10} onClick={(e: any) => e.stopPropagation()}>
+    <Surface
+      sc={S.Menu}
+      el={10}
+      onClick={(e: any) => {
+        e.stopPropagation()
+        onToggle?.(false)
+      }}
+    >
       {React.Children.map(children, v => (
         <S.Item>{v}</S.Item>
       ))}

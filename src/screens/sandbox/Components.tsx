@@ -16,6 +16,7 @@ export default function Components() {
     title: 'The Changelog: Software Dev & Open Source',
     author: 'Changelog Media',
     artwork,
+    covers: [],
   }))
 
   return (

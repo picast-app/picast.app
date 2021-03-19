@@ -14,13 +14,12 @@ export default function Podcast({
 }: RouteComponentProps<{ id: string }>) {
   const id = match.params.id.split('?')[0]
   const [podcast, _loading] = useAPICall('podcast', id)
-  const [loading, setLoading] = useState(_loading)
+  const [feedLoading, setFeedLoading] = useState(false)
   useCustomTheme(podcast?.palette)
+  const [, fetching] = useAPICall('fetchEpisodes', id)
 
-  useEffect(() => {
-    if (_loading) return setLoading(true)
-    setLoading(podcast?.incomplete ?? false)
-  }, [_loading, podcast?.incomplete])
+  const loading =
+    _loading || feedLoading || fetching || (podcast?.incomplete ?? false)
 
   return (
     <Screen loading={loading}>
@@ -34,7 +33,7 @@ export default function Podcast({
         <Feed
           id={id}
           total={podcast ? podcast.episodeCount : -1}
-          onLoading={setLoading}
+          onLoading={setFeedLoading}
         />
       </S.Inner>
     </Screen>

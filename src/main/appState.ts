@@ -4,8 +4,8 @@ import store from './store'
 import { Podcast } from './store/types'
 
 export type State = {
-  subscriptions: string[]
-  addSubscription(...ids: string[]): void
+  subscriptions: Podcast[]
+  addSubscription(...podcasts: Podcast[]): void
   removeSubscription(...ids: string[]): void
   wpSubs: string[]
   addWPSub(...ids: string[]): Promise<void>
@@ -82,11 +82,16 @@ async function init(): Promise<{
       },
     },
 
-    addSubscription(...ids) {
-      this.subscriptions = Array.from(new Set([...this.subscriptions, ...ids]))
+    addSubscription(...podcasts) {
+      const newSubs = podcasts.filter(
+        ({ id }) => !this.subscriptions.find(v => v.id === id)
+      )
+      this.subscriptions = [...this.subscriptions, ...newSubs]
     },
     removeSubscription(...ids) {
-      this.subscriptions = this.subscriptions.filter(id => !ids.includes(id))
+      this.subscriptions = this.subscriptions.filter(
+        ({ id }) => !ids.includes(id)
+      )
     },
     async addWPSub(...ids) {
       this.wpSubs = Array.from(new Set([...this.wpSubs, ...ids]))
@@ -114,7 +119,7 @@ async function init(): Promise<{
       sortName: v.title.replace(/^(the|a|an)\s/i, '').toLowerCase(),
     }))
     .sort(({ sortName: a }, { sortName: b }) => a.localeCompare(b))
-  state.subscriptions = sorted.map(({ id }) => id)
+  state.subscriptions = sorted
 
   const playing = await db.get('meta', 'playing')
   if (playing) {

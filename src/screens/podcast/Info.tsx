@@ -28,12 +28,12 @@ export default function Info(podcast: Partial<Podcast>) {
 
   const actions = (
     <S.Actions>
-      {subscriptions?.includes(podcast.id) ? (
+      {podcast.id && subscriptions?.some(({ id }) => id === podcast.id) ? (
         <Button onClick={() => unsubscribe(podcast.id!)} text>
           subscribed
         </Button>
       ) : (
-        <Button onClick={() => subscribe(podcast.id!)}>Subscribe</Button>
+        <Button onClick={() => subscribe(podcast as any)}>Subscribe</Button>
       )}
       <ContextMenu id={podcast.id} feed={(podcast as any).feed} />
       <Icon

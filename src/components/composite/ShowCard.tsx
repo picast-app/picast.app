@@ -2,12 +2,10 @@ import React from 'react'
 import styled from 'styled-components'
 import { Artwork, Link } from 'components/atoms'
 import { lineClamp } from 'styles/mixin'
-import { useAPICall } from 'utils/hooks'
 import type { Podcast } from 'main/store/types'
 
 type Props = {
-  podcast?: Partial<Podcast>
-  id?: string
+  podcast: Podcast
   card?: boolean
   strip?: boolean
   title?: boolean
@@ -15,20 +13,14 @@ type Props = {
 }
 
 export function ShowCard({
-  podcast: _pod,
-  id,
+  podcast,
   strip,
   card = !strip,
   title = false,
   author = title,
 }: Props) {
-  logger.assert(!!card !== !!strip && !!_pod !== !!id)
-  const data = useAPICall('podcast', id)
-  const podcast = _pod ?? data?.[0]
-  const style = card ? ['card'] : ['strip']
-  if (!podcast) style.push('loading')
   const container = (
-    <S.Container data-style={style.join(' ')}>
+    <S.Container data-style={card ? 'card' : 'strip'}>
       <Artwork
         src={podcast?.artwork}
         title={podcast?.title}
@@ -71,11 +63,6 @@ const S = {
       html[data-theme='light'] & {
         box-shadow: 0 0 0.2rem #0004;
       }
-    }
-
-    &[data-style~='loading'] {
-      background-color: var(--cl-text);
-      opacity: 0.1;
     }
 
     &[data-style~='strip'] {

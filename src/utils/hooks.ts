@@ -11,6 +11,7 @@ import subscription, { Subscription } from './subscription'
 import throttle from 'lodash/throttle'
 import { main, subscriptionSub, proxy } from 'workers'
 import type { API } from 'main/main.worker'
+import type { Podcast } from 'main/store/types'
 
 export { useHistory, useLocation } from 'react-router-dom'
 export const useTheme = () => useContext(Theme)
@@ -310,21 +311,21 @@ export function useFeed(...podcasts: string[]) {
 }
 
 export function useSubscriptions(): [
-  subscriptions: string[],
-  subscribe: (v: string) => void,
+  subscriptions: Podcast[],
+  subscribe: (v: Podcast) => void,
   unsubscribe: (v: string) => void
 ] {
   const [subs, set] = useSubscription(subscriptionSub)
 
-  function subscribe(id: string) {
-    if (subs.includes(id)) return
-    set([...subs, id])
-    main.addSubscription(id, false)
+  function subscribe(podcast: Podcast) {
+    if (subs.find(({ id }) => id === podcast.id)) return
+    set([...subs, podcast])
+    main.addSubscription(podcast.id, false)
   }
 
   function unsubscribe(id: string) {
-    if (!subs.includes(id)) return
-    set(subs.filter(v => v !== id))
+    if (!subs.find(pod => pod.id === id)) return
+    set(subs.filter(v => v.id !== id))
     main.removeSubscription(id, false)
   }
 

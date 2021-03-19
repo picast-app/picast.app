@@ -4,6 +4,7 @@ import createSub from 'utils/subscription'
 import type { API } from 'main/main.worker'
 import { proxy, createEndpoint } from 'comlink'
 import { snack } from 'utils/notification'
+import type { Podcast } from 'main/store/types'
 
 export { proxy }
 
@@ -23,12 +24,12 @@ async function init() {
 }
 init()
 
-export const subscriptionSub = createSub<string[]>([])
+export const subscriptionSub = createSub<Podcast[]>([])
 
 main.state(
   'subscriptions',
   // @ts-ignore
-  proxy((subs: string[]) => {
+  proxy((subs: Podcast[]) => {
     subscriptionSub.setState(subs)
   })
 )

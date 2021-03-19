@@ -219,9 +219,10 @@ export default class Store {
     logger.info('subscribe to', id)
     if (this.subscriptions.includes(id)) return
     this.subscriptions.push(id)
-    if (!(await this.podcast(id))) throw Error(`can't subscribe to ${id}`)
+    const podcast = await this.podcast(id)
+    if (!podcast) throw Error(`can't subscribe to ${id}`)
     const { state } = await appState
-    state.addSubscription(id)
+    state.addSubscription(podcast)
     await this.storeSubscription(id)
     await this.epStore.subscribe(id)
     if (!existing) await api.subscribe(id)
