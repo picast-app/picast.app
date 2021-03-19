@@ -49,6 +49,15 @@ export default class Store {
         listener({ total: store.total, complete: true })
       )
     })
+
+    ws.on('hasCovers', async ({ id, covers, palette }) => {
+      logger.info('got covers for ' + id, { covers, palette })
+      const podcast = this.podcasts[id]
+      if (!this.subscriptions.includes(id) || !podcast) return
+      if (covers) podcast.covers = covers
+      if (palette) podcast.palette = palette
+      await this.db.put('subscriptions', podcast)
+    })
   }
 
   public static async create(): Promise<Store> {

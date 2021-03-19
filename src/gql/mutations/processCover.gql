@@ -1,0 +1,3 @@
+mutation ProcessCover($id: ID!) {
+  processCover(podcast: $id)
+}

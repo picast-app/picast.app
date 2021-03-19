@@ -18,6 +18,7 @@ import addWpSubMutation from 'gql/mutations/wpSub.gql'
 import removeWpSubMutation from 'gql/mutations/wpUnsub.gql'
 import wpPodSubMutation from 'gql/mutations/wpPodSub.gql'
 import wpPodUnsubMutation from 'gql/mutations/wpPodUnsub.gql'
+import coverMutation from 'gql/mutations/processCover.gql'
 
 export const client = new GraphQLClient(process.env.REACT_APP_API as string, {
   headers: {},
@@ -142,4 +143,8 @@ export async function wpPodSub(id: string) {
 
 export async function wpPodUnsub(id: string) {
   await client.request(wpPodUnsubMutation, { id })
+}
+
+export async function processCover(id: string) {
+  await client.request(coverMutation, { id })
 }
