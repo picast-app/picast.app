@@ -36,6 +36,7 @@ export default class Player extends HTMLElement {
     shadow.appendChild(tmpl.content.cloneNode(true))
 
     this.syncProgress = this.syncProgress.bind(this)
+    this.forcedSync = this.forcedSync.bind(this)
     this.onStateChange = this.onStateChange.bind(this)
     this.play = this.play.bind(this)
     this.pause = this.pause.bind(this)
@@ -117,7 +118,7 @@ export default class Player extends HTMLElement {
     this.attachGesture()
     window.addEventListener('popstate', this.onPopState)
     this.audio.volume = 0.4
-    window.addEventListener('pagehide', this.syncProgress)
+    window.addEventListener('pagehide', this.forcedSync)
     this.progressBars.forEach(bar =>
       bar.addEventListener('jump', this.onBarJump as any)
     )
@@ -138,7 +139,7 @@ export default class Player extends HTMLElement {
     this.removeEventListener('click', this.onClick)
     this.removeMediaHandlers()
     window.removeEventListener('popstate', this.onPopState)
-    window.removeEventListener('pagehide', this.syncProgress)
+    window.removeEventListener('pagehide', this.forcedSync)
     this.progressBars.forEach(bar =>
       bar.removeEventListener('jump', this.onBarJump as any)
     )
@@ -288,6 +289,10 @@ export default class Player extends HTMLElement {
     await main.setProgress(this.audio.currentTime)
 
     if (this.playing) this.syncId = setTimeout(this.syncProgress, 5000)
+  }
+
+  private async forcedSync() {
+    await main.setProgress(this.audio.currentTime, true)
   }
 
   private onClick(e: MouseEvent) {

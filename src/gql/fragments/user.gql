@@ -16,5 +16,6 @@ fragment MeInitial on User {
       podcast
       episode
     }
+    position
   }
 }

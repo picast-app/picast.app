@@ -4,19 +4,45 @@ import store from './store'
 
 export async function setPlaying(
   id: EpisodeId | null,
-  passive = false
+  passive = false,
+  position?: number | null
 ): Promise<string | undefined> {
   const { state } = await stateProm
   if (state.playing.id?.[1] === id?.[1]) return
   await store.setPlaying(id)
+  if (id) syncTimes[id[1]] = Date.now()
+  if (position && id) await store.setEpisodeProgress(id[1], position)
   const episode = await state.playing.set(id)
   if (!passive && id && state.user.wsAuth)
-    await wsApi.notify('setCurrent', id[0], id[1], 0, state.user.wsAuth)
+    await wsApi.notify(
+      'setCurrent',
+      id[0],
+      id[1],
+      position ?? 0,
+      state.user.wsAuth
+    )
   return episode?.file
 }
 
-export async function setProgress(progress: number) {
+const syncTimes: Record<string, number> = {}
+
+export async function setProgress(progress: number, forceSync = false) {
   const { state } = await stateProm
-  if (!state.playing.episode) return
-  await store.setEpisodeProgress(state.playing.episode.id, progress)
+  const id = state.playing.episode?.id
+  if (!id) return
+  await store.setEpisodeProgress(id, progress)
+
+  if (!state.playing.podcast || !state.user.wsAuth) return
+  if (!(id in syncTimes)) syncTimes[id] = Date.now()
+  const dt = Date.now() - syncTimes[id]
+  if (dt < 58000 && !forceSync) return
+
+  syncTimes[id] += dt
+  await wsApi.notify(
+    'setCurrent',
+    state.playing.podcast.id,
+    id,
+    progress,
+    state.user.wsAuth
+  )
 }
