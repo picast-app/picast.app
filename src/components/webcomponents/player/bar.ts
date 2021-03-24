@@ -104,8 +104,10 @@ export default class Player extends HTMLElement {
             ...((v as any).querySelectorAll?.('player-progress') ?? []),
           ])
       )
-      for (const bar of addedBars)
+      for (const bar of addedBars) {
         bar.addEventListener('jump', this.onBarJump as any)
+        bar.setAttribute('current', this.audio.currentTime)
+      }
       for (const bar of removedBars)
         bar.removeEventListener('jump', this.onBarJump as any)
     }).observe(this, { childList: true, subtree: true })
