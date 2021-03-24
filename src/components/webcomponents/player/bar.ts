@@ -91,6 +91,23 @@ export default class Player extends HTMLElement {
       .forEach(title => title.addEventListener('click', this.onTitleClick))
 
     playerSub.setState(this)
+
+    new MutationObserver(records => {
+      const [addedBars, removedBars] = ([
+        'addedNodes',
+        'removedNodes',
+      ] as const).map(l =>
+        records
+          .flatMap(v => [...v[l]])
+          .flatMap(v => [
+            ...((v as any).querySelectorAll?.('player-progress') ?? []),
+          ])
+      )
+      for (const bar of addedBars)
+        bar.addEventListener('jump', this.onBarJump as any)
+      for (const bar of removedBars)
+        bar.removeEventListener('jump', this.onBarJump as any)
+    }).observe(this, { childList: true, subtree: true })
   }
 
   connectedCallback() {
