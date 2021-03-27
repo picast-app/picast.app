@@ -22,6 +22,9 @@ export default interface Schema extends DBSchema {
         vibrant: string
         lightVibrant: string
         darkVibrant: string
+        muted: string
+        lightMuted: string
+        darkMuted: string
       }
     }
   }

@@ -12,6 +12,7 @@
   --cl-primary: #f9a825;
   --cl-icon: var(--cl-text-strong);
   --cl-error: #c62828;
+  --cl-select: initial;
 }
 
 :root[data-theme='dark'] {

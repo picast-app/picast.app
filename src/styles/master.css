@@ -18,6 +18,10 @@ body {
   overscroll-behavior: none;
 }
 
+*::selection {
+  background-color: var(--cl-select);
+}
+
 html, body, #root {
   height: 100%;
   margin: 0;

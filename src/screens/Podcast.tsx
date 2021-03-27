@@ -38,7 +38,7 @@ export default function Podcast({
           <ContextMenu id={podcast?.id} feed={(podcast as any).feed} />
         ) : undefined}
       </Appbar>
-      <S.Inner>
+      <S.Inner selectColor={podcast?.palette?.muted}>
         <Info {...podcast} />
         <Feed
           id={id}
@@ -51,31 +51,34 @@ export default function Podcast({
 }
 
 function useCustomTheme(
-  {
-    darkVibrant: dark,
-    lightVibrant: light,
-  }: Exclude<PodType['palette'], undefined> = {} as any
+  colors: Exclude<PodType['palette'], undefined> = {} as any
 ) {
   const theme = useTheme()
 
   useEffect(() => {
-    if (!dark || !light) return
+    if (!colors.darkVibrant || !colors.lightVibrant) return
 
     document.body.style.setProperty(
       '--cl-primary',
-      theme === 'light' ? dark : light
+      theme === 'light' ? colors.darkVibrant : colors.lightVibrant
     )
+    const select = theme === 'light' ? colors.lightMuted : colors.darkMuted
+    if (select) document.body.style.setProperty('--cl-select', select)
 
     return () => {
       document.body.style.removeProperty('--cl-primary')
     }
-  }, [dark, light, theme])
+  }, [colors, theme])
 }
 
 const S = {
-  Inner: styled.div`
+  Inner: styled.div<{ selectColor?: string }>`
     --inner-width: 70rem;
     max-width: var(--inner-width);
     margin: auto;
+
+    /* *::selection {
+      background-color: ${p => p.selectColor ?? 'initial'};
+    } */
   `,
 }

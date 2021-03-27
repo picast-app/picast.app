@@ -11,5 +11,8 @@ fragment PodcastInfo on Podcast {
     vibrant
     lightVibrant
     darkVibrant
+    muted
+    lightMuted
+    darkMuted
   }
 }
