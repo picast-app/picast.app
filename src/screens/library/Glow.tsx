@@ -61,6 +61,9 @@ export default function Glow() {
     const { x, y } = ref!.getBoundingClientRect()
     let rfId: number
 
+    if (ref && ref!.previousElementSibling!.clientHeight > ref.clientHeight)
+      ref.style.height = `${ref.previousElementSibling!.clientHeight}px`
+
     const renderFrame = () => {
       if (cursor)
         render(
