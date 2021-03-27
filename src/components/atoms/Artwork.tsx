@@ -75,6 +75,8 @@ export function Artwork({
   const sources = useComputed(byType, v => {
     if (!sizes || !byType) return
     return typePrio.flatMap(type => {
+      if (!byType[type]?.length) return []
+
       const list = sizes.map(
         v =>
           [
