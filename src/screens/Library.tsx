@@ -113,6 +113,10 @@ const S = {
 
       html[data-theme='light'] & {
         --shadow-cl: #0008;
+
+        &:not(:hover) {
+          box-shadow: 0 0 0.2rem #0004;
+        }
       }
     }
 
