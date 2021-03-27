@@ -4,7 +4,7 @@ import type { Schema as WSAPI } from 'types/ws'
 
 const endpoint = new Endpoint({
   episodeAdded: { params: { podcast: String, episodes: Object } },
-  hasAllEpisodes: { params: String },
+  hasAllEpisodes: { params: { podcast: String, total: Number } },
   hasCovers: { params: { id: String, covers: Object, palette: Object } },
 })
 

@@ -55,7 +55,9 @@ export default function Episodes({ id, total: _total, onLoading }: Props) {
           if (complete) onLoading(false)
         })
       )
-      .then(v => (cancel = v))
+      .then(v => {
+        cancel = v
+      })
 
     return cancel
   }, [_total, onLoading, id])

@@ -42,12 +42,11 @@ export default class Store {
       )
     })
 
-    ws.on('hasAllEpisodes', async id => {
-      const store = await this.epStore.getPodcast(id)
-      store.hasFeedStart = true
-      this.totalListeners[id]?.forEach(listener =>
-        listener({ total: store.total, complete: true })
+    ws.on('hasAllEpisodes', async ({ podcast, total }) => {
+      this.totalListeners[podcast]?.forEach(listener =>
+        listener({ total, complete: true })
       )
+      ;(await this.epStore.getPodcast(podcast)).hasFeedStart = true
     })
 
     ws.on('hasCovers', async ({ id, covers, palette }) => {
