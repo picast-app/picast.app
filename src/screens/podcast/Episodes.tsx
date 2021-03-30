@@ -45,7 +45,7 @@ export default function Episodes({ id, total: _total, onLoading }: Props) {
   )
 
   useEffect(() => {
-    if (_total) return
+    if ((_total ?? -1) > -1) return
     let cancel: (() => void) | undefined = undefined
     main
       .onTotalChange(

@@ -17,9 +17,13 @@ export default function Podcast({
 }: RouteComponentProps<{ id: string }>) {
   const id = match.params.id.split('?')[0]
   const [podcast, _loading] = useAPICall('podcast', id)
-  const [feedLoading, setFeedLoading] = useState(false)
+  const [feedLoading, setFeedLoading] = useState(podcast?.incomplete ?? false)
   useCustomTheme(podcast?.palette)
   const [fetching, setFetching] = useState(false)
+
+  useEffect(() => {
+    if (podcast?.incomplete !== undefined) setFeedLoading(podcast?.incomplete)
+  }, [podcast?.incomplete])
 
   useEffect(() => {
     if (checked.includes(id) || _loading) return
@@ -28,8 +32,7 @@ export default function Podcast({
     main.fetchEpisodes(id).then(() => setFetching(false))
   }, [id, _loading])
 
-  const loading =
-    _loading || feedLoading || fetching || (podcast?.incomplete ?? false)
+  const loading = _loading || feedLoading || fetching
 
   return (
     <Screen loading={loading}>
