@@ -1,3 +1,5 @@
+import history from 'utils/history'
+
 export const setQueryParam = (
   key: string,
   value: string | number,
@@ -36,6 +38,6 @@ export const setUrl = ({ path, query, hash }: UrlComps, replace = false) => {
   if (query !== null && (query ?? location.search))
     newUrl += query ?? location.search
 
-  if (replace) history.replaceState(null, document.title, newUrl)
-  else history.pushState(null, document.title, newUrl)
+  if (replace) history.replace(newUrl)
+  else history.push(newUrl)
 }
