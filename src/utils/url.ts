@@ -5,18 +5,37 @@ export const setQueryParam = (
 ) => {
   const params = new URLSearchParams(location.search)
   params.set(key, value.toString())
-  setQueryString(params.toString(), replace)
+  setUrl({ query: params.toString() }, replace)
 }
 
 export const removeQueryParam = (key: string, replace = false) => {
   const params = new URLSearchParams(location.search)
   params.delete(key)
-  setQueryString(params.toString(), replace)
+  setUrl({ query: params.toString() }, replace)
 }
 
-export const setQueryString = (query?: string, replace = false) => {
-  if (query === location.search.slice(1)) return
-  const newUrl = location.pathname + (query ? `?${query}` : '')
+type UrlComps = {
+  path?: string
+  query?: string | null
+  hash?: string | null
+}
+
+export const setUrl = ({ path, query, hash }: UrlComps, replace = false) => {
+  if (query && !query.startsWith('?')) query = '?' + query
+  if (hash && !hash.startsWith('#')) hash = '#' + hash
+
+  if (
+    (path === undefined || path === location.pathname) &&
+    (query === undefined || query === location.search) &&
+    (hash === undefined || hash === location.hash)
+  )
+    return
+
+  let newUrl = path ?? location.pathname
+  if (hash !== null && (hash ?? location.hash)) newUrl += hash ?? location.hash
+  if (query !== null && (query ?? location.search))
+    newUrl += query ?? location.search
+
   if (replace) history.replaceState(null, document.title, newUrl)
   else history.pushState(null, document.title, newUrl)
 }

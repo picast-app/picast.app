@@ -11,7 +11,7 @@ import {
 } from 'interaction/gesture/gestures'
 import { animateTo } from 'utils/animate'
 import { transitionStates } from './animation'
-import { setQueryParam, removeQueryParam } from 'utils/url'
+import { setUrl } from 'utils/url'
 import { desktop } from 'styles/responsive'
 import history from 'utils/history'
 
@@ -25,7 +25,9 @@ export default class Player extends HTMLElement {
   private readonly fullscreen: HTMLElement
   private mainnav = document.getElementById('mainnav')!
   private gesture?: GestureController<UpwardSwipe | DownwardSwipe>
-  private isFullscreen = location.search.includes('view=player')
+  private isFullscreen = ['notes', 'playing', 'queue'].includes(
+    location.hash?.slice(1)?.toLowerCase()
+  )
   private touchBoxes: HTMLElement[] = []
   private session?: EpisodeId
   private isDesktop: boolean
@@ -356,8 +358,7 @@ export default class Player extends HTMLElement {
     this.detachGesture()
     this.isFullscreen = fullscreen
     this.attachGesture()
-    if (fullscreen) setQueryParam('view', 'player')
-    else removeQueryParam('view', true)
+    setUrl({ hash: fullscreen ? 'playing' : null })
   }
 
   private onPopState() {
