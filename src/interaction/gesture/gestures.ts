@@ -6,12 +6,28 @@ const registry = new Registry()
 
 // @ts-ignore
 abstract class Gesture<T extends EventDef = {}> extends EventManager<
-  { end: () => void } & T
+  { end: (cancelled?: boolean) => void } & T
 > {
   constructor(protected readonly touch: TouchRegistryEvent) {
     super()
+    this.onEnd = this.onEnd.bind(this)
+    touch.addEventListener('end', this.onEnd)
+  }
+
+  protected skipCheck?(e: TouchRegistryEvent): boolean
+  protected abstract onMove(e: TouchRegistryEvent): void
+
+  private onEnd() {
     // @ts-ignore
-    touch.addEventListener('end', () => this.call('end'))
+    this.call('end')
+  }
+
+  protected cancel(): true {
+    this.touch.removeEventListener('move', this.onMove)
+    this.touch.removeEventListener('end', this.onEnd)
+    // @ts-ignore
+    this.call('end', true)
+    return true
   }
 }
 
@@ -22,11 +38,15 @@ export class VerticalSwipe extends Gesture<{ move: (offY: number) => void }> {
     super(touch)
     this.anchor = touch.path[0][1]
 
-    touch.addEventListener('move', () => {
-      const y = this.touch.path.slice(-1)[0][1]
-      this.anchorCheck(y)
-      this.call('move', this.anchor - y)
-    })
+    this.onMove = this.onMove.bind(this)
+    touch.addEventListener('move', this.onMove)
+  }
+
+  protected onMove(e: TouchRegistryEvent) {
+    const y = this.touch.path.slice(-1)[0][1]
+    this.anchorCheck(y)
+    if (this.skipCheck?.(e)) return
+    this.call('move', this.anchor - y)
   }
 
   get lastY() {
@@ -50,6 +70,14 @@ export class UpwardSwipe extends VerticalSwipe {
 export class DownwardSwipe extends VerticalSwipe {
   anchorCheck(y: number) {
     if (y < this.anchor) this.anchor = y
+  }
+}
+
+export class ExclusiveDownwardSwipe extends DownwardSwipe {
+  skipCheck({ path: [[x0, y0], [x1, y1]] }: TouchRegistryEvent) {
+    if (Math.abs(x1 - x0) > Math.abs(y1 - y1)) return this.cancel()
+    this.skipCheck = undefined as any
+    return false
   }
 }
 

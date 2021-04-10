@@ -27,7 +27,7 @@ export default class TouchRegistry extends EventManager<{
     TouchRegistry.render?.(this)
 
     if (tn0 === 0 && Object.keys(this.active).length > 0) {
-      window.addEventListener('touchmove', this.onTouchMove)
+      window.addEventListener('touchmove', this.onTouchMove, { passive: true })
       window.addEventListener('touchend', this.onTouchEnd)
     }
   }

@@ -7,7 +7,7 @@ import {
   GestureController,
   VerticalSwipe,
   UpwardSwipe,
-  DownwardSwipe,
+  ExclusiveDownwardSwipe,
 } from 'interaction/gesture/gestures'
 import { animateTo } from 'utils/animate'
 import { transitionStates } from './animation'
@@ -24,7 +24,7 @@ export default class Player extends HTMLElement {
   public readonly audio: HTMLAudioElement
   private readonly fullscreen: HTMLElement
   private mainnav = document.getElementById('mainnav')!
-  private gesture?: GestureController<UpwardSwipe | DownwardSwipe>
+  private gesture?: GestureController<UpwardSwipe | ExclusiveDownwardSwipe>
   private isFullscreen = ['notes', 'playing', 'queue'].includes(
     location.hash?.slice(1)?.toLowerCase()
   )
@@ -336,8 +336,9 @@ export default class Player extends HTMLElement {
   private onSwipe(gesture: VerticalSwipe) {
     this.gesture!.removeEventListener('start', this.onSwipe)
 
-    gesture.addEventListener('end', () => {
+    gesture.addEventListener('end', cancelled => {
       this.gesture!.addEventListener('start', this.onSwipe)
+      if (cancelled) return
       let frac = gesture.lastY / (window.innerHeight - BAR_HEIGHT)
       if (frac < 0) frac += 1
       let vel = gesture.velocity
@@ -373,7 +374,7 @@ export default class Player extends HTMLElement {
 
   private attachGesture() {
     this.gesture = new GestureController(
-      this.isFullscreen ? DownwardSwipe : UpwardSwipe,
+      this.isFullscreen ? ExclusiveDownwardSwipe : UpwardSwipe,
       this.getTouchBox(this.isFullscreen ? 'extended' : 'closed')
     )
     this.gesture.start()
