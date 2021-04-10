@@ -185,8 +185,15 @@ export default class Progress extends HTMLElement {
   }
 
   private renderFull(progress: number) {
-    const height = this.canvas.height * Progress.BAR_HEIGHT
-    const padd = (this.canvas.height - height) / 2
+    let height = this.canvas.height * Progress.BAR_HEIGHT
+    let knobRadius = this.canvas.height / 2
+
+    if (!this.isDesktop) {
+      height /= 2
+      knobRadius /= 2
+    }
+
+    const padd = knobRadius - height / 2
     const width = this.canvas.width - padd * 2
     const knobX = padd + height / 2 + (width - height) * progress
 
@@ -200,7 +207,7 @@ export default class Progress extends HTMLElement {
 
     this.ctx.fillStyle = Progress.clProgress
     this.drawBar(padd, knobX, height)
-    this.drawKnob(knobX)
+    this.drawKnob(knobX, knobRadius)
   }
 
   private renderInline(progress: number) {
@@ -276,6 +283,7 @@ export default class Progress extends HTMLElement {
     this.bcr = this.getBoundingClientRect()
     this.dragX = e.pageX
     this.scheduleFrame()
+    e.preventDefault()
   }
 
   private onDrag(e: MouseEvent) {

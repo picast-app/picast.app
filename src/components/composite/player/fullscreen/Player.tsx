@@ -62,6 +62,7 @@ const S = {
 
   TitleWrap: styled.div`
     max-width: 90vw;
+    pointer-events: none;
 
     span {
       display: block;
@@ -90,6 +91,7 @@ const S = {
     player-progress {
       width: 90%;
       margin-bottom: 0;
+      z-index: 1000;
     }
 
     & > *:last-child {
