@@ -1,6 +1,6 @@
 import React from 'react'
 import Controls from './player/Controls'
-import Fullscreen from './player/Fullscreen'
+import Fullscreen from './player/fullscreen/Container'
 import { useTheme } from 'utils/hooks'
 import { usePlaying } from 'utils/player'
 import Info from './player/Info'
