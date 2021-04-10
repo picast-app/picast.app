@@ -6,6 +6,7 @@ import Player from './Player'
 import { useLocation, useEvent } from 'utils/hooks'
 import { scrollTo } from 'utils/animate'
 import { setUrl } from 'utils/url'
+import { memoize } from 'utils/cache'
 import {
   Container,
   TabWrap,
@@ -32,6 +33,7 @@ export default function FullscreenContainer({
   const [sectionRef, setSecRef] = useState<HTMLElement | null>()
   const lineRef = useRef<HTMLDivElement>(null)
   const [linkTransit, setLinkTransit] = useState(false)
+  const swipeRef = useRef<(n: number) => void>()
 
   useEffect(() => {
     if (!sectionRef) return
@@ -45,6 +47,7 @@ export default function FullscreenContainer({
     if (linkTransit || Math.round(offset) === activeTab) return
     setUrl({ hash: hashes[Math.round(offset)] })
   }
+  swipeRef.current = onSwipe
 
   function onTabClick() {
     const active = hashes.indexOf(location.hash)
@@ -63,7 +66,7 @@ export default function FullscreenContainer({
     sectionRef,
     'scroll',
     ({ currentTarget: { scrollLeft, offsetWidth } }) => {
-      onSwipe(scrollLeft / offsetWidth)
+      swipeRef.current?.(scrollLeft / offsetWidth)
     },
     { passive: true }
   )
@@ -146,12 +149,12 @@ function getLineTransform(ref: HTMLElement, n: number) {
   })`
 }
 
-function transformStep(
-  ref: HTMLElement,
-  i: number
-): [offset: number, scale: number] {
-  const ul = ref.parentElement!.querySelector<HTMLUListElement>('ul')!
-  const associate = (ul.children[i] as HTMLElement)
-    .firstElementChild! as HTMLElement
-  return [associate.offsetLeft - ul.offsetLeft, associate.offsetWidth / 100]
-}
+const transformStep = memoize(
+  (ref: HTMLElement, i: number): [offset: number, scale: number] => {
+    const ul = ref.parentElement!.querySelector<HTMLUListElement>('ul')!
+    const associate = (ul.children[i] as HTMLElement)
+      .firstElementChild! as HTMLElement
+    return [associate.offsetLeft - ul.offsetLeft, associate.offsetWidth / 100]
+  },
+  (_, i) => window.innerWidth + i / 10
+)
