@@ -46,7 +46,6 @@ export const ActiveTabLine = styled.div`
   --lw: 0.1rem;
   top: calc(100% - var(--lw));
   height: var(--lw);
-  border-radius: calc(var(--lw) / 2);
   background-color: var(--cl-text-strong);
   transform-origin: left;
 `

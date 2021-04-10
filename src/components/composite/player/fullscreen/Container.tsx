@@ -28,24 +28,32 @@ export default function FullscreenContainer({
   ...props
 }: Props) {
   useLocation()
-  const activeTab = hashes.indexOf(location.hash || '#playing')
-  const [lastTab, setLastTab] = useState(-1)
+  const [activeTab, setActiveTab] = useState(activeTabIndex)
+  const lastTab = useRef(-1)
   const [sectionRef, setSecRef] = useState<HTMLElement | null>()
   const lineRef = useRef<HTMLDivElement>(null)
-  const [linkTransit, setLinkTransit] = useState(false)
+  const linkTransit = useRef(false)
   const swipeRef = useRef<(n: number) => void>()
+
+  const _tab = activeTabIndex()
+  useEffect(() => {
+    setActiveTab(_tab)
+  }, [_tab])
 
   useEffect(() => {
     if (!sectionRef) return
-    if (lastTab !== activeTab) setLastTab(activeTab)
-    if (lastTab < 0) sectionRef.scrollLeft = activeTab * sectionRef.offsetWidth
+    if (lastTab.current !== activeTab) lastTab.current = activeTab
+    if (lastTab.current < 0)
+      sectionRef.scrollLeft = activeTab * sectionRef.offsetWidth
   }, [activeTab, lastTab, sectionRef])
 
   function onSwipe(offset: number) {
     if (!lineRef.current) return
     lineRef.current.style.transform = getLineTransform(lineRef.current, offset)
-    if (linkTransit || Math.round(offset) === activeTab) return
-    setUrl({ hash: hashes[Math.round(offset)] })
+    if (!linkTransit.current && Math.round(offset) !== activeTab)
+      setActiveTab(Math.round(offset))
+    if (Number.isInteger(offset) && offset !== activeTabIndex())
+      setUrl({ hash: hashes[Math.round(offset)] })
   }
   swipeRef.current = onSwipe
 
@@ -56,9 +64,9 @@ export default function FullscreenContainer({
       left: active * sectionRef.offsetWidth,
       behavior: 'smooth',
     })
-    setLinkTransit(true)
+    linkTransit.current = true
     setTimeout(() => {
-      setLinkTransit(false)
+      linkTransit.current = false
     }, 500)
   }
 
@@ -98,6 +106,7 @@ export default function FullscreenContainer({
 export const tabs = ['notes', 'now playing', 'queue']
 const getHash = (title: string) => `#${title.split(' ').pop()?.toLowerCase()}`
 export const hashes = tabs.map(getHash)
+const activeTabIndex = () => hashes.indexOf(location.hash || '#playing')
 
 function Tab({
   children,
