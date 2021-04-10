@@ -3,7 +3,7 @@ import type { Podcast } from 'main/store/types'
 import { Link } from 'components/atoms'
 import Background from './Background'
 import Player from './Player'
-import { useLocation } from 'utils/hooks'
+import { useLocation, useEvent } from 'utils/hooks'
 import { scrollTo } from 'utils/animate'
 import { setUrl } from 'utils/url'
 import {
@@ -59,6 +59,15 @@ export default function FullscreenContainer({
     }, 500)
   }
 
+  useEvent(
+    sectionRef,
+    'scroll',
+    ({ currentTarget: { scrollLeft, offsetWidth } }) => {
+      onSwipe(scrollLeft / offsetWidth)
+    },
+    { passive: true }
+  )
+
   return (
     <Container {...props}>
       <Background podcast={podcast} />
@@ -72,12 +81,7 @@ export default function FullscreenContainer({
         </TabContainer>
         <TabLine active={activeTab} ref={lineRef} />
       </TabWrap>
-      <SectionWrap
-        ref={setSecRef}
-        onScroll={({ currentTarget: { scrollLeft, offsetWidth } }) =>
-          onSwipe(scrollLeft / offsetWidth)
-        }
-      >
+      <SectionWrap ref={setSecRef}>
         <Section />
         <Section>
           <Player podcast={podcast} episode={episode} />

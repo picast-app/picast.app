@@ -393,3 +393,20 @@ export function useAppState<T = unknown>(path: string) {
 
   return [state, loading] as const
 }
+
+export function useEvent<
+  T extends HTMLElement,
+  E extends keyof HTMLElementEventMap
+>(
+  ref: T | null | undefined,
+  event: E,
+  handler: (e: HTMLElementEventMap[E] & { currentTarget: T }) => any,
+  opts?: AddEventListenerOptions
+) {
+  useEffect(() => {
+    if (!ref) return
+    ref.addEventListener(event, handler as any, opts)
+    return () => ref.removeEventListener(event, handler as any)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ref])
+}
