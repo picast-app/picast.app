@@ -75,7 +75,7 @@ export class DownwardSwipe extends VerticalSwipe {
 
 export class ExclusiveDownwardSwipe extends DownwardSwipe {
   skipCheck({ path: [[x0, y0], [x1, y1]] }: TouchRegistryEvent) {
-    if (Math.abs(x1 - x0) > Math.abs(y1 - y1)) return this.cancel()
+    if (Math.abs(x1 - x0) > Math.abs(y1 - y0)) return this.cancel()
     this.skipCheck = undefined as any
     return false
   }
