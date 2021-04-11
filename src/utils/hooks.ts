@@ -410,3 +410,25 @@ export function useEvent<
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ref])
 }
+
+export function useCustomTheme(
+  colors: Exclude<Podcast['palette'], undefined> = {} as any,
+  target: HTMLElement | null = document.body
+) {
+  const theme = useTheme()
+
+  useEffect(() => {
+    if (!colors.darkVibrant || !colors.lightVibrant || !target) return
+
+    target.style.setProperty(
+      '--cl-primary',
+      theme === 'light' ? colors.darkVibrant : colors.lightVibrant
+    )
+    const select = theme === 'light' ? colors.lightMuted : colors.darkMuted
+    if (select) target.style.setProperty('--cl-select', select)
+
+    return () => {
+      target.style.removeProperty('--cl-primary')
+    }
+  }, [colors, theme, target])
+}

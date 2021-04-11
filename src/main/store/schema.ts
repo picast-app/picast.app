@@ -39,6 +39,7 @@ export default interface Schema extends DBSchema {
       duration: number
       currentTime: number
       relProg: number
+      shownotes: string
     }
     indexes: { published: string; podcast: string }
   }

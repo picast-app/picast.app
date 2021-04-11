@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { useAPICall, useTheme } from 'utils/hooks'
+import { useAPICall, useCustomTheme } from 'utils/hooks'
 import { Screen } from 'components/structure'
 import Appbar from 'components/Appbar'
 import type { RouteComponentProps } from 'react-router'
 import Info from './podcast/Info'
 import Feed from './podcast/Episodes'
 import ContextMenu from './podcast/ContextMenu'
-import type { Podcast as PodType } from 'main/store/types'
 import { main } from 'workers'
 
 const checked: string[] = []
@@ -53,35 +52,10 @@ export default function Podcast({
   )
 }
 
-function useCustomTheme(
-  colors: Exclude<PodType['palette'], undefined> = {} as any
-) {
-  const theme = useTheme()
-
-  useEffect(() => {
-    if (!colors.darkVibrant || !colors.lightVibrant) return
-
-    document.body.style.setProperty(
-      '--cl-primary',
-      theme === 'light' ? colors.darkVibrant : colors.lightVibrant
-    )
-    const select = theme === 'light' ? colors.lightMuted : colors.darkMuted
-    if (select) document.body.style.setProperty('--cl-select', select)
-
-    return () => {
-      document.body.style.removeProperty('--cl-primary')
-    }
-  }, [colors, theme])
-}
-
 const S = {
   Inner: styled.div<{ selectColor?: string }>`
     --inner-width: 70rem;
     max-width: var(--inner-width);
     margin: auto;
-
-    /* *::selection {
-      background-color: ${p => p.selectColor ?? 'initial'};
-    } */
   `,
 }

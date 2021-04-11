@@ -193,10 +193,14 @@ export default class Store {
     )
   }
 
-  public async episodeInfo([podId, epId]: EpisodeId): Promise<Episode | null> {
+  public async episodeInfo([podId, epId]: EpisodeId): Promise<
+    (Episode & { podcast: Podcast }) | null
+  > {
     const remote = await api.episode([podId, epId])
     if (!remote) return null
-    return convert.episode(remote, podId)
+    const episode: any = convert.episode(remote, podId)
+    if (episode?.podcast) episode.podcast = await this.podcast(episode.podcast)
+    return episode
   }
 
   public async feedSubscription(...podcasts: string[]): Promise<string> {
