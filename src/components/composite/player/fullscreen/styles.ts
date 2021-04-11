@@ -50,7 +50,7 @@ export const ActiveTabLine = styled.div`
   transform-origin: left;
 `
 
-export const SectionWrap = styled.div`
+export const SectionWrap = styled.div.attrs({ className: 'fs-sec-wrap' })`
   width: 100%;
   display: flex;
   flex-grow: 1;

@@ -18,6 +18,7 @@ export default class Progress extends HTMLElement {
   private playing = false
   private playStart?: number
   private dragX?: number
+  private dragging = false
   private bcr?: DOMRect
   private duration?: number
   private theme?: 'light' | 'dark'
@@ -27,6 +28,7 @@ export default class Progress extends HTMLElement {
   private static clBuffered = '#888'
   private static clProgress = '#ff0'
   private static clKnob = '#fff'
+  private static clDragKnob = '#fff4'
 
   private get inline() {
     return this.isInline && !this.isDesktop
@@ -207,6 +209,8 @@ export default class Progress extends HTMLElement {
 
     this.ctx.fillStyle = Progress.clProgress
     this.drawBar(padd, knobX, height)
+    if (this.dragging)
+      this.drawKnob(knobX, this.canvas.height / 2, Progress.clDragKnob)
     this.drawKnob(knobX, knobRadius)
   }
 
@@ -261,8 +265,12 @@ export default class Progress extends HTMLElement {
     }
   }
 
-  private drawKnob(x: number, rad = this.canvas.height / 2) {
-    this.ctx.fillStyle = Progress.clKnob
+  private drawKnob(
+    x: number,
+    rad = this.canvas.height / 2,
+    color = Progress.clKnob
+  ) {
+    this.ctx.fillStyle = color
     this.ctx.beginPath()
     this.ctx.arc(x, this.canvas.height / 2, rad, 0, Math.PI * 2)
     this.ctx.fill()
@@ -274,6 +282,14 @@ export default class Progress extends HTMLElement {
 
   private onDragStart(e: MouseEvent) {
     if (!this.duration || !isFinite(this.duration)) return
+
+    const fsWrap = this.closest<HTMLElement>('.fs-sec-wrap')
+    if (fsWrap) {
+      fsWrap.style.touchAction = 'none'
+      fsWrap.style.overflowX = 'hidden'
+    }
+
+    this.dragging = true
     document.documentElement.style.userSelect = 'none'
     document.documentElement.style.cursor = 'grabbing'
     this.canvas.style.cursor = 'inherit'
@@ -283,7 +299,6 @@ export default class Progress extends HTMLElement {
     this.bcr = this.getBoundingClientRect()
     this.dragX = e.pageX
     this.scheduleFrame()
-    e.preventDefault()
   }
 
   private onDrag(e: MouseEvent) {
@@ -291,9 +306,16 @@ export default class Progress extends HTMLElement {
   }
 
   private onDragStop() {
+    this.dragging = false
     const progress = this.dragProgress * this.duration!
     this.onDragCancel()
     this.dispatchEvent(new CustomEvent('jump', { detail: progress }))
+
+    const fsWrap = this.closest<HTMLElement>('.fs-sec-wrap')
+    if (fsWrap) {
+      fsWrap.style.touchAction = 'initial'
+      fsWrap.style.overflowX = 'scroll'
+    }
   }
 
   private onDragCancel(e?: KeyboardEvent) {

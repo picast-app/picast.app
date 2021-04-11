@@ -20,22 +20,7 @@ export default function Player({ podcast, episode }: Props) {
         <span>{podcast.title}</span>
       </S.TitleWrap>
       <S.CtrlWrap>
-        <player-progress
-          onPointerDown={({ currentTarget }: any) => {
-            const wrap = (currentTarget as HTMLElement).parentElement
-              ?.parentElement?.parentElement?.parentElement
-            if (!wrap) return
-            wrap.style.overflowX = 'hidden'
-            wrap.addEventListener(
-              'pointerup',
-              () => {
-                logger.info('up')
-                wrap.style.overflowX = 'scroll'
-              },
-              { once: true }
-            )
-          }}
-        />
+        <player-progress />
         <Controls />
       </S.CtrlWrap>
     </S.Player>
