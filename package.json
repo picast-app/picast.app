@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/start.js",
-    "build": "npm run types && node scripts/build.js",
+    "build": "npm run types && node scripts/build.js && node scripts/csp/hash.js",
     "test": "node scripts/test.js",
     "lint:check": "eslint . --cache",
     "lint:fix": "eslint . --fix --cache",
@@ -116,7 +116,6 @@
     "ts-jest": "^26.1.1",
     "ts-pnp": "1.2.0",
     "typescript": "^4.1.2",
-    "uglify-js": "^3.13.3",
     "url-loader": "4.1.1",
     "webpack": "4.44.2",
     "webpack-dev-server": "3.11.0",
