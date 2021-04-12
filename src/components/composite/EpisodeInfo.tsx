@@ -2,17 +2,19 @@ import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { Link } from 'components/atoms'
 import { Shownotes } from 'components/composite'
-import { useHistory, useLocation, useCustomTheme } from 'utils/hooks'
+import { useHistory, useLocation, useCustomTheme, useCSP } from 'utils/hooks'
 import { main } from 'workers'
 
 export function EpisodeInfo() {
-  const history = useHistory()
-  useLocation()
-  const [ref, setRef] = useState<HTMLElement | null>(null)
-
   const id = new URLSearchParams(location.search).get('info')?.split('-') as
     | EpisodeId
     | undefined
+
+  useCSP("img-src 'self' *.picast.app blob", id !== undefined)
+
+  const history = useHistory()
+  useLocation()
+  const [ref, setRef] = useState<HTMLElement | null>(null)
 
   const info = useInfo(id)
 
