@@ -1,0 +1,4 @@
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  X-Frame-Options: DENY
+  Accept-CH: DPR, Width, Viewport-Width

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/start.js",
-    "build": "npm run types && node scripts/build.js && node scripts/csp/hash.js",
+    "build": "npm run types && node scripts/build.js && node scripts/http",
     "test": "node scripts/test.js",
     "lint:check": "eslint . --cache",
     "lint:fix": "eslint . --fix --cache",
