@@ -1,16 +1,31 @@
-default-src 'self'
-style-src   'unsafe-inline' 
-            'self' 
-            https://fonts.googleapis.com
-font-src    https://fonts.gstatic.com
-img-src     'self' 
-            *.picast.app 
-            data:
-media-src   * 
-            blob:
-script-src  'self' 
-            {{ SCRIPT_HASHES }}
-connect-src 'self' 
-            https://*.picast.app 
-            wss://*.picast.app 
-            https://fonts.googleapis.com
+default-src
+  'self'
+
+style-src
+  'unsafe-inline' 
+  'self' 
+  https://fonts.googleapis.com
+
+font-src
+  https://fonts.gstatic.com
+
+img-src
+  'self' 
+  *.picast.app 
+  data:
+
+media-src
+  *
+  blob:
+
+script-src
+  'self'
+  {{ SCRIPT_HASHES }}
+
+connect-src
+  'self'
+  https://*.picast.app 
+  wss://*.picast.app 
+
+object-src
+  'none'
