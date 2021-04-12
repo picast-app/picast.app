@@ -10,10 +10,9 @@ const VERSION = 1
 const CACHE_PREFIX = `${self.location.hostname}.v${VERSION}.`
 const STATIC_CACHE = CACHE_PREFIX + 'static'
 const PHOTO_CACHE = CACHE_PREFIX + 'photo'
-
 const expectedCaches = [STATIC_CACHE, PHOTO_CACHE]
-
 const IS_LOCAL = ['localhost', '127.0.0.1'].includes(self.location.hostname)
+const IMG_HOST = /^https:\/\/(img|photon)\.picast\.app/
 
 let setMainWorker: (v: Remote<MainAPI>) => void
 const mainWorker: Promise<Remote<MainAPI>> = new Promise(res => {
@@ -129,6 +128,13 @@ const handleFetch = async (e: FetchEvent): Promise<Response> =>
 
 self.addEventListener('fetch', event => {
   if (['audio', 'font', 'style'].includes(event.request.destination)) return
+  if (
+    event.request.destination === 'image' &&
+    !event.request.url.startsWith(self.location.origin) &&
+    !IMG_HOST.test(event.request.url)
+  )
+    return
+
   // https://bugs.chromium.org/p/chromium/issues/detail?id=823392
   if (
     event.request.cache === 'only-if-cached' &&
