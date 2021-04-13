@@ -11,7 +11,7 @@ interface Props {
 export default function Info({ podcast }: Props) {
   return (
     <S.Container slot="info">
-      <Icon icon="list" label="queue" onClick={() => {}} />
+      <Icon icon="list" label="queue" linkTo="#queue" />
       <S.Thumbnail to={`/show/${podcast?.id}`} slot="info">
         <Artwork
           src={podcast.artwork}

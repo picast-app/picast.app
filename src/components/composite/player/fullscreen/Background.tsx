@@ -51,8 +51,8 @@ export default function Background({ podcast }: { podcast: Podcast }) {
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     ctx.globalAlpha = theme === 'light' ? 0.15 : 0.3
     ctx.filter = `blur(${120 * devicePixelRatio}px) brightness(${
-      theme === 'dark' ? 50 : 150
-    }%) saturate(150%)`
+      theme === 'dark' ? 50 : 170
+    }%) saturate(${theme === 'dark' ? 150 : 200}%)`
 
     ctx.drawImage(
       img,

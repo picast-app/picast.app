@@ -25,9 +25,7 @@ export default class Player extends HTMLElement {
   private readonly fullscreen: HTMLElement
   private mainnav = document.getElementById('mainnav')!
   private gesture?: GestureController<UpwardSwipe | ExclusiveDownwardSwipe>
-  private isFullscreen = ['notes', 'playing', 'queue'].includes(
-    location.hash?.slice(1)?.toLowerCase()
-  )
+  private isFullscreen = isFullscreen()
   private touchBoxes: HTMLElement[] = []
   private session?: EpisodeId
   private isDesktop: boolean
@@ -113,6 +111,13 @@ export default class Player extends HTMLElement {
       for (const bar of removedBars)
         bar.removeEventListener('jump', this.onBarJump as any)
     }).observe(this, { childList: true, subtree: true })
+
+    history.listen(() => {
+      if (isFullscreen() !== this.isFullscreen) {
+        logger.info('player fullscreen transition')
+        this.transition(this.isFullscreen ? 'close' : 'extend')
+      }
+    })
   }
 
   connectedCallback() {
@@ -359,7 +364,8 @@ export default class Player extends HTMLElement {
     this.detachGesture()
     this.isFullscreen = fullscreen
     this.attachGesture()
-    setUrl({ hash: fullscreen ? 'playing' : null })
+    if (this.isFullscreen !== isFullscreen())
+      setUrl({ hash: fullscreen ? 'playing' : null })
   }
 
   private onPopState() {
@@ -475,3 +481,9 @@ customElements.define('picast-player', Player)
 
 const PLAYER_HEIGHT = 4 * 16
 const BAR_HEIGHT = 4 * 16
+
+function isFullscreen() {
+  return ['notes', 'playing', 'queue'].includes(
+    location.hash?.slice(1)?.toLowerCase()
+  )
+}

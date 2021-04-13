@@ -3,6 +3,7 @@ import type { Podcast } from 'main/store/types'
 import { Link } from 'components/atoms'
 import Background from './Background'
 import Player from './Player'
+import { Queue } from 'components/composite'
 import { EpisodeInfo } from 'components/composite'
 import { useLocation, useEvent } from 'utils/hooks'
 import { scrollTo } from 'utils/animate'
@@ -30,11 +31,12 @@ export default function FullscreenContainer({
 }: Props) {
   useLocation()
   const [activeTab, setActiveTab] = useState(activeTabIndex)
-  const lastTab = useRef(-1)
   const [sectionRef, setSecRef] = useState<HTMLElement | null>()
   const lineRef = useRef<HTMLDivElement>(null)
   const linkTransit = useRef(false)
   const swipeRef = useRef<(n: number) => void>()
+  const [isExtended, setExtended] = useState(activeTabIndex(false) >= 0)
+  const wasExtended = useRef<boolean | null>(null)
 
   const _tab = activeTabIndex()
   useEffect(() => {
@@ -43,12 +45,19 @@ export default function FullscreenContainer({
 
   useEffect(() => {
     if (!sectionRef) return
-    if (lastTab.current !== activeTab) lastTab.current = activeTab
-    if (lastTab.current < 0)
-      sectionRef.scrollLeft = activeTab * sectionRef.offsetWidth
-  }, [activeTab, lastTab, sectionRef])
+    if (isExtended === wasExtended.current) return
+    sectionRef.scrollLeft = activeTab * sectionRef.offsetWidth
+  }, [activeTab, sectionRef, isExtended])
+
+  const _atab = activeTabIndex(false)
+  useEffect(() => {
+    setExtended(activeTabIndex(false) >= 0)
+    wasExtended.current = wasExtended.current === null ? false : isExtended
+  }, [isExtended, _atab])
 
   function onSwipe(offset: number) {
+    if (!wasExtended.current && Number.isInteger(offset)) return
+    wasExtended.current = true
     if (!lineRef.current) return
     lineRef.current.style.transform = getLineTransform(lineRef.current, offset)
     if (!linkTransit.current && Math.round(offset) !== activeTab)
@@ -74,7 +83,7 @@ export default function FullscreenContainer({
   useEvent(
     sectionRef,
     'scroll',
-    ({ currentTarget: { scrollLeft, offsetWidth } }) => {
+    ({ currentTarget: { scrollLeft, offsetWidth }, ...e }) => {
       swipeRef.current?.(scrollLeft / offsetWidth)
     },
     { passive: true }
@@ -102,7 +111,9 @@ export default function FullscreenContainer({
         <Section>
           <Player podcast={podcast} episode={episode} />
         </Section>
-        <Section />
+        <Section>
+          <Queue />
+        </Section>
       </SectionWrap>
     </Container>
   )
@@ -111,7 +122,8 @@ export default function FullscreenContainer({
 export const tabs = ['notes', 'now playing', 'queue']
 const getHash = (title: string) => `#${title.split(' ').pop()?.toLowerCase()}`
 export const hashes = tabs.map(getHash)
-const activeTabIndex = () => hashes.indexOf(location.hash || '#playing')
+const activeTabIndex = (def: any = '#playing') =>
+  hashes.indexOf(location.hash || def)
 
 function Tab({
   children,
