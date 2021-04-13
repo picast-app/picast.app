@@ -246,6 +246,7 @@ export default class Progress extends HTMLElement {
     let right = end
     if (roundLeft) left += height / 2
     if (roundRight) right -= height / 2
+    if (right < left) return
     this.ctx.fillRect(
       left,
       this.canvas.height / 2 - height / 2,
