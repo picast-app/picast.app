@@ -3,6 +3,7 @@ import type { Podcast } from 'main/store/types'
 import { Link } from 'components/atoms'
 import Background from './Background'
 import Player from './Player'
+import { EpisodeInfo } from 'components/composite'
 import { useLocation, useEvent } from 'utils/hooks'
 import { scrollTo } from 'utils/animate'
 import { setUrl } from 'utils/url'
@@ -93,7 +94,11 @@ export default function FullscreenContainer({
         <TabLine active={activeTab} ref={lineRef} />
       </TabWrap>
       <SectionWrap ref={setSecRef}>
-        <Section />
+        <Section>
+          {podcast && (
+            <EpisodeInfo podcast={podcast} episode={episode as any} />
+          )}
+        </Section>
         <Section>
           <Player podcast={podcast} episode={episode} />
         </Section>

@@ -10,7 +10,8 @@ font-src
   https://fonts.gstatic.com
 
 img-src
-  *
+  'self'
+  *.picast.app
   data:
 
 media-src

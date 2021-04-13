@@ -141,6 +141,7 @@ self.addEventListener('fetch', event => {
     event.request.mode !== 'same-origin'
   )
     return
+
   event.respondWith(handleFetch(event))
 })
 

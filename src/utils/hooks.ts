@@ -432,27 +432,3 @@ export function useCustomTheme(
     }
   }, [colors, theme, target])
 }
-
-export function useCSP(policy: string, condition = true) {
-  const [meta, setMeta] = useState<HTMLMetaElement>()
-  const [initial] = useState(policy)
-
-  useEffect(() => {
-    if (!condition) return
-    const meta = document.createElement('meta')
-    meta.setAttribute('http-equiv', 'Content-Security-Policy')
-    meta.setAttribute('content', initial)
-    document.head.appendChild(meta)
-    setMeta(meta)
-
-    return () => {
-      document.head.removeChild(meta)
-      setMeta(undefined)
-    }
-  }, [initial, condition])
-
-  useEffect(() => {
-    if (meta && meta.getAttribute('content') !== policy)
-      meta.setAttribute('content', policy)
-  }, [meta, policy])
-}
