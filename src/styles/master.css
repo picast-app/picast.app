@@ -37,3 +37,7 @@ html, body, #root {
 nav {
   user-select: none;
 }
+
+a {
+  color: var(--cl-text);
+}
