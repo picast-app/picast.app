@@ -18,9 +18,9 @@ export default function EpisodeStrip({ feed, index }: Props) {
 
   if (!episode) return null
   return (
-    <S.Strip index={index}>
+    <S.Strip>
       <S.Title>
-        <S.InfoLink to={`?info=${episode.podcast}-${episode.id}`}>
+        <S.InfoLink to={`?info=${episode.podcast}-${episode.id}`} independent>
           {episode.title}
         </S.InfoLink>
       </S.Title>
@@ -40,11 +40,21 @@ function useEpisode(feed: string, index: number) {
   const [episode, setEpisode] = useState<EpisodeBase>()
 
   useEffect(() => {
-    let cancel: (() => void) | undefined = undefined
-    ;(main.feedItem(feed, index, proxy(setEpisode)) as any).then((v: any) => {
-      cancel = v
+    let unsub: (() => void) | undefined = undefined
+    let cancelled = false
+    ;(main.feedItem(
+      feed,
+      index,
+      proxy(v => {
+        if (!cancelled) setEpisode(v)
+      })
+    ) as any).then((v: any) => {
+      unsub = v
     })
-    return () => cancel?.()
+    return () => {
+      cancelled = true
+      unsub?.()
+    }
   }, [feed, index])
 
   return episode
@@ -151,20 +161,13 @@ function formatDate(raw: number) {
 }
 
 const S = {
-  Strip: styled.article.attrs<{ index: number }>(({ index }) => ({
-    style: { top: `calc(${index} * var(--item-height))` },
-  }))<{
-    index: number
-  }>`
-    position: absolute;
+  Strip: styled.article`
     display: flex;
     justify-content: flex-end;
     align-items: center;
-
-    width: 100%;
-    height: var(--item-height);
     padding: 0 1rem;
     overflow: hidden;
+    height: 100%;
 
     @media (hover: hover) {
       &:hover * {
@@ -219,6 +222,7 @@ const S = {
 
       position: absolute;
       top: 50%;
+      left: 1rem;
       transform: translateY(-50%);
       max-width: calc(100% - 4rem);
       font-size: 0.95rem;

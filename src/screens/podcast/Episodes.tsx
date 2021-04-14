@@ -1,104 +1,40 @@
-import React, { useEffect, useState } from 'react'
-import ReactDOMServer from 'react-dom/server'
-import styled from 'styled-components'
+import React, { useState, useEffect, useCallback } from 'react'
+import { VirtualList } from 'components/structure'
+import { useFeed, useValueRef } from 'utils/hooks'
 import Episode from './EpisodeStrip'
-import { desktop, mobile } from 'styles/responsive'
-import { useFeed, useComputed, useScrollPos, useMatchMedia } from 'utils/hooks'
 import { main, proxy } from 'workers'
-import * as cl from 'utils/css/color'
 
 type Props = {
-  id: string
+  podcast: string
   total?: number
   onLoading(v: boolean): void
 }
 
-const desktopItemHeight = 3.8 * 16
-const mobileItemHeight = 4.8 * 16
-
-export default function Episodes({ id, total: _total, onLoading }: Props) {
-  const [ref, setRef] = useState<HTMLOListElement | null>(null)
-  const scrollTarget = useComputed(
-    ref,
-    el => el?.parentElement?.parentElement?.parentElement
-  )
-  const scrollPos = useScrollPos(scrollTarget)
-  const feed = useFeed(id)
-  const [total, setTotal] = useState(Math.max(_total ?? 100, 100))
-  const isMobile = useMatchMedia(mobile)
-  const itemHeight = isMobile ? mobileItemHeight : desktopItemHeight
+export default function Episodes({ podcast, total, onLoading }: Props) {
+  const feed = useFeed(podcast)
+  const setLoading = useValueRef(onLoading)
+  const [length, setLength] = useState(total ?? 100)
 
   useEffect(() => {
-    if (!_total || _total < 0) return
-    setTotal(_total)
-  }, [_total])
-
-  const ep = useComputed(total, n =>
-    Array(n)
-      .fill(0)
-      .map((_, i) => i)
-  )
-  const num = (window.innerHeight / itemHeight) * 3
-  const off = Math.max(
-    scrollPos / itemHeight - window.innerHeight / itemHeight / 2,
-    0
-  )
-
-  useEffect(() => {
-    if ((_total ?? -1) > -1) return
-    let cancel: (() => void) | undefined = undefined
-    main
-      .onTotalChange(
-        id,
-        proxy(({ complete, total }) => {
-          setTotal(total)
-          if (complete) onLoading(false)
-        })
-      )
-      .then(v => {
-        cancel = v
+    main.onTotalChange(
+      podcast,
+      proxy(({ complete, total }) => {
+        if (complete) setLoading.current(false)
+        setLength(total)
       })
+    )
+  }, [podcast, setLoading])
 
-    return cancel
-  }, [_total, onLoading, id])
+  useEffect(() => {
+    if (total) setLength(total)
+  }, [total])
+
+  const props = useCallback((index: number) => ({ index, feed: feed! }), [feed])
 
   if (!feed) return null
   return (
-    <S.Feed episodes={total ?? 10} ref={setRef}>
-      {ep.slice(off, num + off).map(i => (
-        <Episode key={i} feed={feed} index={i} />
-      ))}
-    </S.Feed>
+    <VirtualList length={length} itemProps={props}>
+      {Episode}
+    </VirtualList>
   )
-}
-
-const bdCl = cl.format.hex(cl.read('border'))
-
-const backSvg = encodeURIComponent(
-  ReactDOMServer.renderToString(
-    <svg xmlns="http://www.w3.org/2000/svg" width={10} height={30}>
-      <line x1={0} y1={0} x2={10} y2={0} stroke={bdCl} strokeWidth={1}></line>
-    </svg>
-  )
-)
-
-const S = {
-  Feed: styled.ol<{ episodes: number }>`
-    position: relative;
-
-    --item-height: ${desktopItemHeight}px;
-    height: calc(var(--item-height) * ${({ episodes }) => episodes});
-    overflow: hidden;
-
-    @media ${desktop} {
-      margin: 1rem 1.5rem;
-    }
-
-    @media ${mobile} {
-      --item-height: ${mobileItemHeight}px;
-    }
-
-    background-image: url('data:image/svg+xml,${backSvg}');
-    background-size: 100% var(--item-height);
-  `,
 }

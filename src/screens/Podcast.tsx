@@ -25,7 +25,12 @@ export default function Podcast({
   }, [podcast?.incomplete])
 
   useEffect(() => {
-    if (checked.includes(id) || _loading) return
+    if (
+      checked.includes(id) ||
+      _loading ||
+      process.env.NODE_ENV === 'development'
+    )
+      return
     setFetching(true)
     checked.push(id)
     main.fetchEpisodes(id).then(() => setFetching(false))
@@ -43,8 +48,8 @@ export default function Podcast({
       <S.Inner selectColor={podcast?.palette?.muted}>
         <Info {...podcast} />
         <Feed
-          id={id}
-          total={podcast ? podcast.episodeCount : -1}
+          podcast={id}
+          total={podcast?.episodeCount}
           onLoading={setFeedLoading}
         />
       </S.Inner>

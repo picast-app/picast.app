@@ -85,10 +85,9 @@ function usePullEffect(node: HTMLElement | null, action?: () => void) {
     let cancelled = false
 
     const onTouchEnd = async () => {
-      await new Promise(res =>
-        requestAnimationFrame(() => requestAnimationFrame(res))
-      )
+      await new Promise(res => setTimeout(res, 100))
       if (cancelled) return
+
       if (lastOff > actionOff && content.scrollTop === 0) action()
       lastOff = 0
       delete content.dataset.action

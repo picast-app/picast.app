@@ -34,7 +34,7 @@ const S = {
     --icon-size: 2.5rem;
     --size: calc(var(--player-height) - 2.5rem);
 
-    & > button {
+    & > a:first-of-type {
       margin-right: 2rem;
     }
 

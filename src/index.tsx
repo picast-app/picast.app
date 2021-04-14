@@ -20,14 +20,17 @@ matchMedia('(prefers-color-scheme: dark)').onchange = ({ matches }) => {
   document.documentElement.dataset.theme = matches ? 'dark' : 'light'
 }
 
-ReactDOM.render(
-  <React.StrictMode>
-    <Router history={history}>
-      <App />
-    </Router>
-  </React.StrictMode>,
-  document.getElementById('root')
+logger.info(`running in ${process.env.NODE_ENV} env`)
+const strictMode = process.env.NODE_ENV === 'development' && false
+
+let app = (
+  <Router history={history}>
+    <App />
+  </Router>
 )
+if (strictMode) app = <React.StrictMode>{app}</React.StrictMode>
+
+ReactDOM.render(app, document.getElementById('root'))
 
 window.addEventListener('storage', ({ key, newValue }) => {
   if (key !== 'custom-theme') return
