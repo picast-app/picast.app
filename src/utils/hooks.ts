@@ -105,17 +105,13 @@ export function useComputed<T, K>(
 ): K {
   const [computed, setComputed] = useState<K>(() => compute(v))
   const comp = strategy === 'shallow' ? v : JSON.stringify(v)
-  const [initialized, setInitialized] = useState(false)
+  const init = useRef(false)
 
   useEffect(() => {
-    if (!initialized) return
-    setComputed(compute(v))
+    if (init.current) setComputed(compute(v))
+    init.current = true
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comp])
-
-  useEffect(() => {
-    setInitialized(true)
-  }, [])
 
   return computed
 }
@@ -431,4 +427,70 @@ export function useCustomTheme(
       target.style.removeProperty('--cl-primary')
     }
   }, [colors, theme, target])
+}
+
+type Dimensions<T = true> = [
+  width: number | (T extends true ? null : number),
+  height: number | (T extends true ? null : number)
+]
+const nullDim: Dimensions = [null, null]
+
+export function useDimensions(element: HTMLElement | null): Dimensions {
+  let initial: Dimensions = nullDim
+  const [observer] = useState(
+    new ResizeObserver(
+      ([
+        {
+          contentRect: { width, height },
+        },
+      ]) => {
+        if (!initial) initial = [width, height]
+        else setDimensions([width, height])
+      }
+    )
+  )
+
+  useEffect(() => {
+    if (!element) return
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [element, observer])
+
+  const [dimensions, setDimensions] = useState(initial!)
+
+  return element ? dimensions : nullDim
+}
+
+export function useWindowDimensions(): Dimensions<false> {
+  const [dimensions, setDimensions] = useState<Dimensions<false>>([
+    window.innerWidth,
+    window.innerHeight,
+  ])
+
+  useEffect(() => {
+    const onResize = () => {
+      setDimensions([window.innerWidth, window.innerHeight])
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  return dimensions
+}
+
+export function useValueRef<T>(value: T) {
+  const ref = useRef(value)
+  ref.current = value
+  return ref
+}
+
+export function useCallbackRef(cb: (el: HTMLElement) => () => void) {
+  const cleanup = useRef<ReturnType<typeof cb> | null>(null)
+  return useCallback(
+    (node: HTMLElement | null) => {
+      cleanup.current?.()
+      cleanup.current = node ? cb(node) : null
+    },
+    [cb]
+  )
 }
