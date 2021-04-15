@@ -12,6 +12,7 @@ import Appearance from './settings/Appearance'
 import Debug from './settings/Debug'
 import Storage from './settings/Storage'
 import Notifications from './settings/Notifications'
+import location from 'routing/location'
 
 type SettingsRoute = {
   name: string
@@ -34,26 +35,6 @@ let routes: SettingsRoute[] = [
   { name: 'About', icon: 'info', component: About },
 ]
 routes = routes.filter(({ cond }) => cond !== false)
-
-const switchComp = (
-  <Switch>
-    {routes.map(
-      ({
-        name,
-        path = name.toLowerCase(),
-        component = () => <div>{name}</div>,
-      }) => (
-        <Route
-          key={path}
-          exact
-          path={`/settings/${path}`}
-          component={component}
-        />
-      )
-    )}
-    <Redirect to="/settings" />
-  </Switch>
-)
 
 const animation = { duration: 200, easing: 'ease' }
 
@@ -102,12 +83,37 @@ export default function Settings() {
       <S.Container>
         <S.Page ref={ref}>
           <Main isDesktop={isDesktop} />
-          <S.SubWrap>{switchComp}</S.SubWrap>
+          <S.SubWrap>
+            <Routes />
+          </S.SubWrap>
         </S.Page>
       </S.Container>
     </Screen>
   )
 }
+
+const Routes = () => (
+  logger.info('route settings'),
+  (
+    <Switch location={location}>
+      {routes.map(
+        ({
+          name,
+          path = name.toLowerCase(),
+          component = () => <div>{name}</div>,
+        }) => (
+          <Route
+            key={path}
+            exact
+            path={`/settings/${path}`}
+            component={component}
+          />
+        )
+      )}
+      <Redirect to="/settings" />
+    </Switch>
+  )
+)
 
 function Main({ isDesktop }: { isDesktop: boolean }) {
   return (

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link as RouterLink } from 'react-router-dom'
-import { setUrl } from 'utils/url'
+import { setUrl } from 'routing/url'
 import { useComputed } from 'utils/hooks'
 
 type Props = {

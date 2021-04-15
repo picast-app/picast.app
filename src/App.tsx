@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import Routes from 'Routes'
+import Routes from 'routing/Routes'
 import Mainnav from 'components/Mainnav'
 import { Player, DesktopEpisodeInfo } from 'components/composite'
 import { SnackTray } from 'components/structure'

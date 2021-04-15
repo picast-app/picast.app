@@ -1,4 +1,4 @@
-import history from 'utils/history'
+import history from 'routing/history'
 
 export const setQueryParam = (
   key: string,

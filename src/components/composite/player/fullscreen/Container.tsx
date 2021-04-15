@@ -7,7 +7,7 @@ import { Queue } from 'components/composite'
 import { EpisodeInfo } from 'components/composite'
 import { useLocation, useEvent } from 'utils/hooks'
 import { scrollTo } from 'utils/animate'
-import { setUrl } from 'utils/url'
+import { setUrl } from 'routing/url'
 import { memoize } from 'utils/cache'
 import {
   Container,

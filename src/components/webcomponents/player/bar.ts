@@ -11,9 +11,9 @@ import {
 } from 'interaction/gesture/gestures'
 import { animateTo } from 'utils/animate'
 import { transitionStates } from './animation'
-import { setUrl } from 'utils/url'
+import { setUrl } from 'routing/url'
 import { desktop } from 'styles/responsive'
-import history from 'utils/history'
+import history from 'routing/history'
 
 const tmpl = document.createElement('template')
 tmpl.innerHTML = html
