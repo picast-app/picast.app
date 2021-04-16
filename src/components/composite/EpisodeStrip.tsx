@@ -1,24 +1,27 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
-import { Icon, Link } from 'components/atoms'
+import { Icon, Link, Artwork } from 'components/atoms'
 import { main } from 'workers'
 import type { EpisodeBase } from 'main/store/types'
 import { proxy } from 'comlink'
 import { playerSub, useEpisodePlaying, useEpisodeProgress } from 'utils/player'
 import { mobile } from 'styles/responsive'
 import { center, transition } from 'styles/mixin'
+import { useArtwork } from 'utils/hooks'
 
 type Props = {
   feed: string
   index: number
+  artwork?: boolean
 }
 
-export default function EpisodeStrip({ feed, index }: Props) {
+export function EpisodeStrip({ feed, index, artwork }: Props) {
   const episode = useEpisode(feed, index)
 
   if (!episode) return null
   return (
     <S.Strip>
+      {artwork && episode?.podcast && <Thumbnail podcast={episode.podcast} />}
       <S.Title>
         <S.InfoLink to={`?info=${episode.podcast}-${episode.id}`} independent>
           {episode.title}
@@ -34,6 +37,11 @@ export default function EpisodeStrip({ feed, index }: Props) {
       </S.Actions>
     </S.Strip>
   )
+}
+
+function Thumbnail({ podcast }: { podcast: string }) {
+  const covers = useArtwork(podcast)
+  return <Artwork covers={covers} />
 }
 
 function useEpisode(feed: string, index: number) {
@@ -169,6 +177,20 @@ const S = {
     overflow: hidden;
     height: 100%;
 
+    picture {
+      width: 3rem;
+      height: 3rem;
+      background-color: var(--cl-text-disabled);
+      border-radius: 0.2rem;
+      margin-right: 1rem;
+      overflow: hidden;
+
+      & > * {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
     @media (hover: hover) {
       &:hover * {
         color: var(--cl-primary);
@@ -184,16 +206,27 @@ const S = {
       padding-right: 3rem;
       overflow-x: hidden;
 
-      & > *:not(div) {
+      & > *:not(div, picture) {
         flex-grow: unset;
         width: calc(100% - 5rem);
         text-align: left;
         margin: 0;
+        max-width: calc(100% - 7.5rem);
       }
 
       span,
       time {
         font-size: 0.8rem;
+      }
+
+      picture {
+        position: absolute;
+        left: 1rem;
+        top: calc(50% - 1.5rem);
+      }
+
+      picture ~ :is(h1, time, span) {
+        left: 4.5rem;
       }
     }
   `,

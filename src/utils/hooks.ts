@@ -10,6 +10,7 @@ import { Theme } from 'styles'
 import subscription, { Subscription } from './subscription'
 import throttle from 'lodash/throttle'
 import { main, subscriptionSub, proxy } from 'workers'
+import { isPromise } from 'utils/promise'
 import type { API } from 'main/main.worker'
 import type { Podcast } from 'main/store/types'
 
@@ -493,4 +494,22 @@ export function useCallbackRef(cb: (el: HTMLElement) => () => void) {
     },
     [cb]
   )
+}
+
+const artCache: Record<string, Promise<string[]> | string[]> = {}
+const artworks = (podcast: string) => {
+  return (artCache[podcast] ??= fetchArt(podcast))
+}
+const fetchArt = async (id: string) =>
+  (artCache[id] = (await main.podcast(id))?.covers ?? [])
+export const useArtwork = (podcast: string) => {
+  const [covers, setCovers] = useState<string[]>(
+    isPromise(artCache[podcast]) ? [] : (artCache[podcast] as string[])
+  )
+
+  useEffect(() => {
+    const v = artworks(podcast)
+    if (isPromise(v)) v.then(setCovers)
+  }, [podcast])
+  return covers
 }

@@ -1,13 +1,16 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import styled from 'styled-components'
 import { Link } from 'components/atoms'
-import { Screen } from 'components/structure'
+import { Screen, VirtualList } from 'components/structure'
+import { EpisodeStrip } from 'components/composite'
+import Appbar from 'components/Appbar'
 import { center } from 'styles/mixin'
-import { useAppState } from 'utils/hooks'
+import { useAppState, useFeed } from 'utils/hooks'
 
 export default function Wrap() {
   return (
     <Screen>
+      <Appbar title="Subscriptions"></Appbar>
       <Main />
     </Screen>
   )
@@ -21,7 +24,19 @@ function Main() {
 }
 
 function Feed() {
-  return null
+  const feed = useFeed('*')
+
+  const props = useCallback(
+    (index: number) => ({ index, feed: feed!, artwork: true }),
+    [feed]
+  )
+
+  if (!feed) return null
+  return (
+    <VirtualList length={10000} itemProps={props}>
+      {EpisodeStrip}
+    </VirtualList>
+  )
 }
 
 function Intro() {
