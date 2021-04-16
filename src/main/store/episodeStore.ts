@@ -38,8 +38,12 @@ export class Podcast {
     this.keys = Podcast.keys(ids)
   }
 
-  get total() {
+  public get total() {
     return this.keys.length
+  }
+
+  public get isSubscribed() {
+    return this.subscribed
   }
 
   public async subscribe() {
@@ -84,7 +88,7 @@ export class Podcast {
     })
   }
 
-  private async read(index: number) {
+  public async read(index: number) {
     const id = this.keys[index]?.[0]
     if (!id) return
     if (!this.subscribed) return this.cache![id]
