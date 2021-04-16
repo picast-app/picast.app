@@ -3,7 +3,7 @@ import dbProm, { gql as convert } from './idb'
 import * as api from 'main/api'
 import { proxy } from 'comlink'
 import { Podcast, Episode, EpisodeBase } from './types'
-import * as Feed from './feed'
+import * as Feed from '../feed'
 import EpisodeStore from './episodeStore'
 import ws, { wsApi } from 'main/ws'
 import appState from '../appState'
@@ -204,8 +204,13 @@ export default class Store {
   }
 
   public async feedSubscription(...podcasts: string[]): Promise<string> {
-    if (podcasts.length !== 1) throw Error('multi podcast sub not implemented')
-    const sub = new Feed.Podcast(await this.epStore.getPodcast(podcasts[0]))
+    podcasts = Array.from(
+      new Set(podcasts.flatMap(v => (v === '*' ? this.subscriptions : [v])))
+    )
+    const sub: Feed.Base =
+      podcasts.length === 1
+        ? new Feed.Podcast(await this.epStore.getPodcast(podcasts[0]))
+        : await Feed.MultiPodcast.create(this.epStore, podcasts)
     logger.info(`add feed sub ${sub.id} for`, ...podcasts)
     this.feedSubs.push(sub)
     return sub.id

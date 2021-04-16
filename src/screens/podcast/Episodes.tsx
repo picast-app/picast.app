@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import { EpisodeStrip } from 'components/composite'
 import { VirtualList } from 'components/structure'
 import { useFeed, useValueRef } from 'utils/hooks'
-import Episode from './EpisodeStrip'
 import { main, proxy } from 'workers'
 
 type Props = {
@@ -34,7 +34,7 @@ export default function Episodes({ podcast, total, onLoading }: Props) {
   if (!feed) return null
   return (
     <VirtualList length={length} itemProps={props}>
-      {Episode}
+      {EpisodeStrip}
     </VirtualList>
   )
 }

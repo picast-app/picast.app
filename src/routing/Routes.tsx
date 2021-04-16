@@ -4,8 +4,9 @@ import { Progress } from 'components/atoms'
 import location from 'routing/location'
 
 const Library = React.lazy(() => import('screens/Library'))
-const Profile = React.lazy(() => import('screens/Profile'))
+const Feed = React.lazy(() => import('screens/Feed'))
 const Discover = React.lazy(() => import('screens/Discover'))
+const Profile = React.lazy(() => import('screens/Profile'))
 const Search = React.lazy(() => import('screens/Search'))
 const Podcast = React.lazy(() => import('screens/Podcast'))
 const Sandbox = React.lazy(() => import('screens/Sandbox'))
@@ -20,6 +21,7 @@ export default () => (
   <Suspense fallback={<Progress />}>
     <Switch location={location}>
       <Route exact path="/" component={Library} />
+      <Route exact path="/feed" component={Feed} />
       <Route exact path="/profile" component={Profile} />
       <Route exact path="/discover" component={Discover} />
       <Route exact path="/search" component={Search} />
