@@ -1,3 +1,5 @@
+import { isPromise } from 'utils/promise'
+
 type Methods<T> = {
   [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never
 }[keyof T]
@@ -48,8 +50,7 @@ export default <T extends new (...args: any) => any>(
     for (const [method, invs] of Object.entries(invocations)) {
       for (const { args, callback } of invs) {
         const res = inst[method](...args)
-        if (typeof res === 'object' && typeof res.then === 'function')
-          res.then((v: any) => callback(v))
+        if (isPromise(res)) res.then((v: any) => callback(v))
         else callback(res)
       }
     }
