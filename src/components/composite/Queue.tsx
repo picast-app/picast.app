@@ -1,22 +1,30 @@
 import React from 'react'
 import styled from 'styled-components'
+import { useAppState } from 'utils/hooks'
+import { EpisodeStrip } from 'components/composite'
 
 export function Queue() {
-  const list = Array(10)
-    .fill(0)
-    .map((_, i) => i + 1)
+  const [queue] = useAppState<EpisodeId[]>('queue')
 
+  if (!queue) return null
   return (
     <S.Queue>
-      {list.map(v => (
-        <S.Entry key={v}>{v}</S.Entry>
+      {queue.map(id => (
+        <S.Entry key={id[1]}>
+          <EpisodeStrip id={id} artwork clamp />
+        </S.Entry>
       ))}
     </S.Queue>
   )
 }
 
 const S = {
-  Queue: styled.ol``,
+  Queue: styled.ol`
+    padding-top: 1rem;
+  `,
 
-  Entry: styled.li``,
+  Entry: styled.li`
+    width: 100%;
+    height: 3.8rem;
+  `,
 }

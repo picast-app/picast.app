@@ -9,20 +9,22 @@ import { mobile } from 'styles/responsive'
 import { center, transition } from 'styles/mixin'
 import { useArtwork } from 'utils/hooks'
 
-type Props = {
-  feed: string
-  index: number
-  artwork?: boolean
-}
+type Props = (
+  | {
+      feed: string
+      index: number
+    }
+  | { id: EpisodeId }
+) & { artwork?: boolean; clamp?: boolean }
 
-export function EpisodeStrip({ feed, index, artwork }: Props) {
-  const episode = useEpisode(feed, index)
+export function EpisodeStrip({ artwork, clamp, ...props }: Props) {
+  const episode = useEpisode(props)
 
   if (!episode) return null
   return (
     <S.Strip>
       {artwork && episode?.podcast && <Thumbnail podcast={episode.podcast} />}
-      <S.Title>
+      <S.Title data-style={clamp ? 'clamp' : undefined}>
         <S.InfoLink to={`?info=${episode.podcast}-${episode.id}`} independent>
           {episode.title}
         </S.InfoLink>
@@ -44,29 +46,47 @@ function Thumbnail({ podcast }: { podcast: string }) {
   return <Artwork covers={covers} />
 }
 
-function useEpisode(feed: string, index: number) {
+function useEpisode(
+  props: { feed: string; index: number } | { id: EpisodeId }
+) {
   const [episode, setEpisode] = useState<EpisodeBase>()
 
+  const { feed, index, id: [pod, ep] = [] } = props as any
   useEffect(() => {
-    let unsub: (() => void) | undefined = undefined
     let cancelled = false
-    ;(main.feedItem(
-      feed,
-      index,
-      proxy(v => {
-        if (!cancelled) setEpisode(v)
-      })
-    ) as any).then((v: any) => {
-      unsub = v
-    })
+    const cb = (v: EpisodeBase | null) => {
+      if (!cancelled && v) setEpisode(v)
+    }
+
+    const cancel =
+      'feed' in props
+        ? getEpisodeFromFeed(props, cb)
+        : getEpisodeFromId(props, cb)
+
     return () => {
       cancelled = true
-      unsub?.()
+      cancel?.()
     }
-  }, [feed, index])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [feed, index, pod, ep])
 
   return episode
 }
+
+type EpGetter<T> = (props: T, cb: (v: EpisodeBase | null) => void) => any
+
+const getEpisodeFromFeed: EpGetter<{ feed: string; index: number }> = (
+  { feed, index },
+  cb
+) => {
+  const unsub = new Promise<() => void>(async res => {
+    res((await main.feedItem(feed, index, proxy(cb))) as any)
+  })
+  return async () => (await unsub)?.()
+}
+
+const getEpisodeFromId: EpGetter<{ id: EpisodeId }> = async ({ id }, cb) =>
+  cb(await main.episode(id))
 
 const toggle = ([pod, ep]: EpisodeId) => async () => {
   const player = playerSub.state
@@ -202,9 +222,10 @@ const S = {
     }
 
     @media ${mobile} {
-      display: unset;
+      display: block;
       padding-right: 3rem;
       overflow-x: hidden;
+      position: relative;
 
       & > *:not(div, picture) {
         flex-grow: unset;
@@ -247,11 +268,13 @@ const S = {
     }
 
     @media ${mobile} {
-      white-space: unset;
-      /* stylelint-disable */
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
+      &:not([data-style='clamp']) {
+        white-space: unset;
+        /* stylelint-disable */
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+      }
 
       position: absolute;
       top: 50%;
