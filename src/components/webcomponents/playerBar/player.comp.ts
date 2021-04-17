@@ -16,6 +16,7 @@ import { setUrl } from 'routing/url'
 import { desktop } from 'styles/responsive'
 import history from 'routing/history'
 import { bindThis } from 'utils/proto'
+import MediaSession from './components/mediaSession'
 
 export default class Player extends Component {
   public podcast?: Podcast
@@ -26,8 +27,8 @@ export default class Player extends Component {
   private gesture?: GestureController<UpwardSwipe | ExclusiveDownwardSwipe>
   private isFullscreen = isFullscreen()
   private touchBoxes: HTMLElement[] = []
-  private session?: EpisodeId
   private isDesktop: boolean
+  private mediaSession = new MediaSession(this)
 
   static tagName = 'picast-player'
   static template = Player.createTemplate(content)
@@ -73,6 +74,7 @@ export default class Player extends Component {
       this.isDesktop = v.matches
       this.removeEventListener('click', this.onClick)
       if (!this.isDesktop) this.addEventListener('click', this.onClick)
+      if (v.matches && this.isFullscreen) this.setFullscreenTransform(false)
     }
 
     this.shadowRoot
@@ -107,15 +109,10 @@ export default class Player extends Component {
         this.transition(this.isFullscreen ? 'close' : 'extend')
       }
     })
-
-    window.matchMedia(desktop).onchange = v => {
-      if (v.matches && this.isFullscreen) this.setFullscreenTransform(false)
-    }
   }
 
   connectedCallback() {
     logger.info('player connected')
-    this.initMediaHandlers()
     if (!this.isDesktop) this.addEventListener('click', this.onClick)
     this.attachGesture()
     window.addEventListener('popstate', this.onPopState)
@@ -134,7 +131,7 @@ export default class Player extends Component {
     logger.info('player disconnected')
     this.detachGesture()
     this.removeEventListener('click', this.onClick)
-    this.removeMediaHandlers()
+    this.mediaSession.stop()
     window.removeEventListener('popstate', this.onPopState)
     window.removeEventListener('pagehide', this.forcedSync)
     this.progressBars.forEach(bar =>
@@ -252,14 +249,12 @@ export default class Player extends Component {
     }
 
     await this.audio.play()
-    if (navigator.mediaSession) navigator.mediaSession.playbackState = 'playing'
-    this.setMediaMeta()
     this.syncProgress()
+    this.mediaSession.showInfo()
   }
 
   public async pause() {
     this.audio.pause()
-    if (navigator.mediaSession) navigator.mediaSession.playbackState = 'paused'
     await this.syncProgress()
     this.dispatchEvent(new Event('pause'))
   }
@@ -387,57 +382,6 @@ export default class Player extends Component {
     this.gesture.removeEventListener('start', this.onSwipe)
     this.gesture.stop()
     delete this.gesture
-  }
-
-  private setMediaMeta() {
-    if (!navigator.mediaSession || !this.podcast || !this.episode) return
-    if (
-      this.session?.[0] === this.podcast.id &&
-      this.session?.[1] === this.episode.id
-    )
-      return
-    this.session = [this.podcast.id, this.episode.id]
-
-    const meta: MediaMetadata = new MediaMetadata({
-      title: this.episode.title,
-      artist: this.podcast.author!,
-      album: this.podcast.title,
-      artwork: this.podcast.covers.map(src => ({
-        src: `${process.env.IMG_HOST}/${src}`,
-        type: `image/${src.split('.').pop()}`,
-        sizes: Array(2).fill(src.split('.')[0].split('-').pop()).join('x'),
-      })),
-    })
-    navigator.mediaSession.metadata = meta
-
-    navigator.mediaSession.setPositionState?.({
-      duration: this.audio.duration,
-      playbackRate: 1,
-      position: this.audio.currentTime,
-    })
-  }
-
-  private initMediaHandlers() {
-    if (!navigator.mediaSession) return
-    navigator.mediaSession.setActionHandler('play', () => this.play())
-    navigator.mediaSession.setActionHandler('pause', this.pause)
-    navigator.mediaSession.setActionHandler('stop', this.pause)
-    navigator.mediaSession.setActionHandler('nexttrack', () =>
-      this.jump(30, true)
-    )
-    navigator.mediaSession.setActionHandler('previoustrack', () =>
-      this.jump(-15, true)
-    )
-  }
-
-  private removeMediaHandlers() {
-    if (!navigator.mediaSession) return
-    navigator.mediaSession.setActionHandler('play', null)
-    navigator.mediaSession.setActionHandler('pause', null)
-    navigator.mediaSession.setActionHandler('stop', null)
-    navigator.mediaSession.setActionHandler('nexttrack', null)
-    navigator.mediaSession.setActionHandler('previoustrack', null)
-    navigator.mediaSession.setPositionState?.()
   }
 
   private onProgress() {
