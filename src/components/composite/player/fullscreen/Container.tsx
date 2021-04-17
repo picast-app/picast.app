@@ -5,7 +5,8 @@ import Background from './Background'
 import Player from './Player'
 import { Queue } from 'components/composite'
 import { EpisodeInfo } from 'components/composite'
-import { useLocation, useEvent } from 'utils/hooks'
+import { useLocation, useEvent, useMatchMedia } from 'utils/hooks'
+import { desktop } from 'styles/responsive'
 import { scrollTo } from 'utils/animate'
 import { setUrl } from 'routing/url'
 import { memoize } from 'utils/cache'
@@ -24,11 +25,10 @@ interface Props {
   slot?: string
 }
 
-export default function FullscreenContainer({
-  podcast,
-  episode,
-  ...props
-}: Props) {
+export default (props: Props) =>
+  useMatchMedia(desktop) ? null : <FullscreenContainer {...props} />
+
+function FullscreenContainer({ podcast, episode, ...props }: Props) {
   useLocation()
   const [activeTab, setActiveTab] = useState(activeTabIndex)
   const [sectionRef, setSecRef] = useState<HTMLElement | null>()

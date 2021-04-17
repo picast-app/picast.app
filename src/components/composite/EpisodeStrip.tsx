@@ -65,7 +65,7 @@ function useEpisode(
 
     return () => {
       cancelled = true
-      cancel?.()
+      if (typeof cancel === 'function') cancel()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feed, index, pod, ep])

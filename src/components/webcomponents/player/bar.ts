@@ -113,11 +113,16 @@ export default class Player extends HTMLElement {
     }).observe(this, { childList: true, subtree: true })
 
     history.listen(() => {
+      if (this.isDesktop) return
       if (isFullscreen() !== this.isFullscreen) {
         logger.info('player fullscreen transition')
         this.transition(this.isFullscreen ? 'close' : 'extend')
       }
     })
+
+    window.matchMedia(desktop).onchange = v => {
+      if (v.matches && this.isFullscreen) this.setFullscreenTransform(false)
+    }
   }
 
   connectedCallback() {
@@ -134,12 +139,7 @@ export default class Player extends HTMLElement {
     this.setAttribute('hidden', '')
     this.mainnav = document.getElementById('mainnav')!
 
-    if (this.isFullscreen) {
-      this.style.transform = transitionStates[1].bar.transform as string
-      this.mainnav.style.transform = transitionStates[1].nav.transform as string
-      this.fullscreen.style.transform = transitionStates[1].fullscreen
-        .transform as string
-    }
+    if (this.isFullscreen && !this.isDesktop) this.setFullscreenTransform(true)
   }
 
   disconnectedCallback() {
@@ -307,6 +307,13 @@ export default class Player extends HTMLElement {
   private onClick(e: MouseEvent) {
     if (e.target !== this && (e.target as any).slot !== 'info') return
     this.transition('extend')
+  }
+
+  private setFullscreenTransform(fs: boolean) {
+    this.style.transform = transitionStates[+fs].bar.transform as string
+    this.mainnav.style.transform = transitionStates[+fs].nav.transform as string
+    this.fullscreen.style.transform = transitionStates[+fs].fullscreen
+      .transform as string
   }
 
   private transition(dir: 'extend' | 'close') {

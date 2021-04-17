@@ -14,7 +14,7 @@ const checked: string[] = []
 export default function Podcast({
   match,
 }: RouteComponentProps<{ id: string }>) {
-  const id = match.params.id.split('?')[0]
+  const id = match.params.id.split(/[?#]/)[0]
   const [podcast, _loading] = useAPICall('podcast', id)
   const [feedLoading, setFeedLoading] = useState(podcast?.incomplete ?? false)
   useCustomTheme(podcast?.palette)
