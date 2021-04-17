@@ -1,13 +1,13 @@
-import html from './progress.html'
+import content from './template.html'
+import Component from '../base.comp'
 import debounce from 'lodash/debounce'
 import { durAttr, formatDuration } from 'utils/time'
 import { desktop } from 'styles/responsive'
+import { bindThis } from 'utils/proto'
 import * as cl from 'utils/css/color'
+import { clamp } from 'utils/math'
 
-const tmpl = document.createElement('template')
-tmpl.innerHTML = html
-
-export default class Progress extends HTMLElement {
+export default class Progress extends Component {
   private readonly canvas: HTMLCanvasElement
   private readonly ctx: CanvasRenderingContext2D
   private readonly tsCurrent: HTMLTimeElement
@@ -23,6 +23,9 @@ export default class Progress extends HTMLElement {
   private duration?: number
   private theme?: 'light' | 'dark'
   public buffered: [start: number, end: number][] = []
+
+  static tagName = 'player-progress'
+  static template = Progress.createTemplate(content)
 
   private static clBar = '#444'
   private static clBuffered = '#888'
@@ -49,18 +52,9 @@ export default class Progress extends HTMLElement {
 
   constructor() {
     super()
-    const shadow = this.attachShadow({ mode: 'open' })
-    shadow.appendChild(tmpl.content.cloneNode(true))
-
     this.canvas = this.shadowRoot!.querySelector('canvas')!
     this.ctx = this.canvas.getContext('2d')!
-    this.render = this.render.bind(this)
-    this.onDragStart = this.onDragStart.bind(this)
-    this.onDragStop = this.onDragStop.bind(this)
-    this.onDrag = this.onDrag.bind(this)
-    this.onDragCancel = this.onDragCancel.bind(this)
-    this.onVisibilityChange = this.onVisibilityChange.bind(this)
-    this.onTouchStart = this.onTouchStart.bind(this)
+    bindThis(this)
 
     this.tsCurrent = this.shadowRoot!.getElementById('current') as any
     this.tsRemains = this.shadowRoot!.getElementById('remaining') as any
@@ -174,7 +168,7 @@ export default class Progress extends HTMLElement {
             (performance.now() - this.playStart!) / 1000) /
           this.duration!
 
-    progress = Math.min(Math.max(progress, 0), 1)
+    progress = clamp(0, progress, 1)
 
     this.labelProg = progress * this.duration!
     this.labelRemains = this.duration! * (1 - progress)
@@ -334,11 +328,7 @@ export default class Progress extends HTMLElement {
     const padd = this.inline ? 0 : this.canvas.height / 2 / devicePixelRatio
     const width = this.canvas.width / devicePixelRatio - padd * 2
     return (
-      (Math.min(
-        Math.max((this.dragX ?? 0) - this.bcr!.left, padd),
-        width + padd
-      ) -
-        padd) /
+      (clamp(padd, (this.dragX ?? 0) - this.bcr!.left, width + padd) - padd) /
       width
     )
   }
@@ -361,5 +351,3 @@ export default class Progress extends HTMLElement {
     this.tsRemains.setAttribute('datetime', durAttr(n))
   }
 }
-
-customElements.define('player-progress', Progress)

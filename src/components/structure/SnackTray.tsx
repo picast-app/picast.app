@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { SnackBar } from 'components/composite'
 import { desktop } from 'styles/responsive'
 import { animateTo } from 'utils/animate'
+import { clamp } from 'utils/math'
 
 export type Snack = {
   text: string
@@ -28,7 +29,7 @@ export function SnackTray() {
       const { text, action, actionEvent, lvl, ...snack } = e.detail
       let timeout: number | undefined = 4000
       if (typeof snack.timeout === 'number')
-        timeout = Math.min(Math.max(snack.timeout, 4), 10) * 1000
+        timeout = clamp(4, snack.timeout, 10)
       if (snack.timeout === 'never') timeout = undefined
       set({ type: 'push', snack: { text, action, actionEvent, timeout, lvl } })
     }

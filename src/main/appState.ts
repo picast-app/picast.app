@@ -25,6 +25,7 @@ export type State = {
     podcast: Podcast | null
     set(id: EpisodeId | null): Promise<EpisodeMin | undefined>
   }
+  queue: EpisodeId[]
   debug: {
     touch: boolean
     set(update: Omit<Partial<State['debug']>, 'set'>): void
@@ -72,6 +73,7 @@ async function init(): Promise<{
         }
       },
     },
+    queue: [],
     debug: {
       touch: !!(await db.get('meta', 'touch')),
       async set(update) {
@@ -121,6 +123,7 @@ async function init(): Promise<{
     state.playing.id = playing
     state.playing.podcast = await store.podcast(playing[0])
     state.playing.episode = await store.episode(playing)
+    state.queue = [playing]
   }
 
   const resolvePath = <T = unknown>(
