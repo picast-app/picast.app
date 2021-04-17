@@ -1,8 +1,9 @@
-import html from './bar.html'
+import content from './template.html'
+import Component from '../base.comp'
 import { main, proxy } from 'workers'
 import { playerSub } from 'utils/player'
 import type { Podcast } from 'main/store/types'
-import type Progress from './progress'
+import type Progress from 'components/webcomponents/progressBar/progress.comp'
 import {
   GestureController,
   VerticalSwipe,
@@ -15,10 +16,7 @@ import { setUrl } from 'routing/url'
 import { desktop } from 'styles/responsive'
 import history from 'routing/history'
 
-const tmpl = document.createElement('template')
-tmpl.innerHTML = html
-
-export default class Player extends HTMLElement {
+export default class Player extends Component {
   public podcast?: Podcast
   public episode?: EpisodeMin
   public readonly audio: HTMLAudioElement
@@ -30,11 +28,11 @@ export default class Player extends HTMLElement {
   private session?: EpisodeId
   private isDesktop: boolean
 
+  static tagName = 'picast-player'
+  static template = Player.createTemplate(content)
+
   constructor() {
     super()
-    const shadow = this.attachShadow({ mode: 'open' })
-    shadow.appendChild(tmpl.content.cloneNode(true))
-
     this.syncProgress = this.syncProgress.bind(this)
     this.forcedSync = this.forcedSync.bind(this)
     this.onStateChange = this.onStateChange.bind(this)
@@ -483,8 +481,6 @@ export default class Player extends HTMLElement {
     if (location.pathname + location.search !== path) history.push(path)
   }
 }
-
-customElements.define('picast-player', Player)
 
 const PLAYER_HEIGHT = 4 * 16
 const BAR_HEIGHT = 4 * 16

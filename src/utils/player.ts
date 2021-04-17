@@ -2,7 +2,7 @@ import { useState, useEffect, useReducer } from 'react'
 import { useAppState, useSubscription } from 'utils/hooks'
 import subscription from 'utils/subscription'
 import type { Podcast } from 'main/store/types'
-import type Player from 'components/webcomponents/player/bar'
+import type { Player } from 'components/webcomponents'
 import { main } from 'workers'
 
 export const usePlaying = (): [podcast?: Podcast, episode?: EpisodeMin] => {

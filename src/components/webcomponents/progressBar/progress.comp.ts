@@ -1,13 +1,11 @@
-import html from './progress.html'
+import content from './template.html'
+import Component from '../base.comp'
 import debounce from 'lodash/debounce'
 import { durAttr, formatDuration } from 'utils/time'
 import { desktop } from 'styles/responsive'
 import * as cl from 'utils/css/color'
 
-const tmpl = document.createElement('template')
-tmpl.innerHTML = html
-
-export default class Progress extends HTMLElement {
+export default class Progress extends Component {
   private readonly canvas: HTMLCanvasElement
   private readonly ctx: CanvasRenderingContext2D
   private readonly tsCurrent: HTMLTimeElement
@@ -23,6 +21,9 @@ export default class Progress extends HTMLElement {
   private duration?: number
   private theme?: 'light' | 'dark'
   public buffered: [start: number, end: number][] = []
+
+  static tagName = 'player-progress'
+  static template = Progress.createTemplate(content)
 
   private static clBar = '#444'
   private static clBuffered = '#888'
@@ -49,9 +50,6 @@ export default class Progress extends HTMLElement {
 
   constructor() {
     super()
-    const shadow = this.attachShadow({ mode: 'open' })
-    shadow.appendChild(tmpl.content.cloneNode(true))
-
     this.canvas = this.shadowRoot!.querySelector('canvas')!
     this.ctx = this.canvas.getContext('2d')!
     this.render = this.render.bind(this)
@@ -361,5 +359,3 @@ export default class Progress extends HTMLElement {
     this.tsRemains.setAttribute('datetime', durAttr(n))
   }
 }
-
-customElements.define('player-progress', Progress)
