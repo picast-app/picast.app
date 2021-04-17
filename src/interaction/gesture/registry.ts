@@ -1,15 +1,14 @@
 import * as debug from './debug'
 import { main, proxy } from 'workers'
 import EventManager from 'utils/event'
+import { bindThis } from 'utils/proto'
 
 export default class TouchRegistry extends EventManager<{
   start: (e: TouchRegistryEvent) => void
 }> {
   constructor() {
     super()
-    this.onTouchStart = this.onTouchStart.bind(this)
-    this.onTouchMove = this.onTouchMove.bind(this)
-    this.onTouchEnd = this.onTouchEnd.bind(this)
+    bindThis(this)
     window.addEventListener('touchstart', this.onTouchStart)
   }
 

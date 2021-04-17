@@ -15,6 +15,7 @@ import { transitionStates } from './animation'
 import { setUrl } from 'routing/url'
 import { desktop } from 'styles/responsive'
 import history from 'routing/history'
+import { bindThis } from 'utils/proto'
 
 export default class Player extends Component {
   public podcast?: Podcast
@@ -33,18 +34,7 @@ export default class Player extends Component {
 
   constructor() {
     super()
-    this.syncProgress = this.syncProgress.bind(this)
-    this.forcedSync = this.forcedSync.bind(this)
-    this.onStateChange = this.onStateChange.bind(this)
-    this.play = this.play.bind(this)
-    this.pause = this.pause.bind(this)
-    this.transition = this.transition.bind(this)
-    this.onSwipe = this.onSwipe.bind(this)
-    this.onClick = this.onClick.bind(this)
-    this.onPopState = this.onPopState.bind(this)
-    this.onProgress = this.onProgress.bind(this)
-    this.onBarJump = this.onBarJump.bind(this)
-    this.onTitleClick = this.onTitleClick.bind(this)
+    bindThis(this)
 
     this.fullscreen = this.shadowRoot!.querySelector<HTMLElement>(
       '.fullscreen'

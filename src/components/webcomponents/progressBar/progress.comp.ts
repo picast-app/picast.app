@@ -3,6 +3,7 @@ import Component from '../base.comp'
 import debounce from 'lodash/debounce'
 import { durAttr, formatDuration } from 'utils/time'
 import { desktop } from 'styles/responsive'
+import { bindThis } from 'utils/proto'
 import * as cl from 'utils/css/color'
 
 export default class Progress extends Component {
@@ -52,13 +53,7 @@ export default class Progress extends Component {
     super()
     this.canvas = this.shadowRoot!.querySelector('canvas')!
     this.ctx = this.canvas.getContext('2d')!
-    this.render = this.render.bind(this)
-    this.onDragStart = this.onDragStart.bind(this)
-    this.onDragStop = this.onDragStop.bind(this)
-    this.onDrag = this.onDrag.bind(this)
-    this.onDragCancel = this.onDragCancel.bind(this)
-    this.onVisibilityChange = this.onVisibilityChange.bind(this)
-    this.onTouchStart = this.onTouchStart.bind(this)
+    bindThis(this)
 
     this.tsCurrent = this.shadowRoot!.getElementById('current') as any
     this.tsRemains = this.shadowRoot!.getElementById('remaining') as any
