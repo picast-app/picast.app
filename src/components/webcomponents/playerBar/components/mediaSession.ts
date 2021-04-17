@@ -1,9 +1,9 @@
-import type Player from '../player.comp'
+import Service from './base'
 
 const ms = navigator.mediaSession
 
-export default class Session {
-  constructor(private readonly player: Player) {
+export default class Session extends Service {
+  public start() {
     if (!ms) return
     ms.setActionHandler('play', () => this.player.play())
     ms.setActionHandler('pause', () => this.player.pause())

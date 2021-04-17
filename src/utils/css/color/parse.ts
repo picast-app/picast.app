@@ -1,6 +1,7 @@
 import { expandHex } from './format'
 import named, { ColorName } from './named'
 import { compose, hsla } from './channels'
+import { clamp } from 'utils/math'
 
 export const parseHex = (v: string): RGBA => parseInt(v.slice(1), 16)
 
@@ -31,7 +32,7 @@ export const parse = (v: string): RGBA => {
             : parseFloat(v) / 255
         ),
         a.endsWith('%') ? parseFloat(v.slice(0, -1)) / 100 : parseFloat(a),
-      ].map(v => Math.min(Math.max(v * 255, 0), 255)) as RGBA_)
+      ].map(v => clamp(0, v * 255, 255)) as RGBA_)
     )
   }
   if (/hsla?/.test(func)) {

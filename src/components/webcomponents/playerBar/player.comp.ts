@@ -4,31 +4,17 @@ import { main, proxy } from 'workers'
 import { playerSub } from 'utils/player'
 import type { Podcast } from 'main/store/types'
 import type Progress from 'components/webcomponents/progressBar/progress.comp'
-import {
-  GestureController,
-  VerticalSwipe,
-  UpwardSwipe,
-  ExclusiveDownwardSwipe,
-} from 'interaction/gesture/gestures'
-import { animateTo } from 'utils/animate'
-import { transitionStates } from './animation'
-import { setUrl } from 'routing/url'
-import { desktop } from 'styles/responsive'
-import history from 'routing/history'
 import { bindThis } from 'utils/proto'
 import MediaSession from './components/mediaSession'
+import Interaction from './components/interaction'
 
 export default class Player extends Component {
   public podcast?: Podcast
   public episode?: EpisodeMin
   public readonly audio: HTMLAudioElement
-  private readonly fullscreen: HTMLElement
-  private mainnav = document.getElementById('mainnav')!
-  private gesture?: GestureController<UpwardSwipe | ExclusiveDownwardSwipe>
-  private isFullscreen = isFullscreen()
-  private touchBoxes: HTMLElement[] = []
-  private isDesktop: boolean
+
   private mediaSession = new MediaSession(this)
+  private interaction = new Interaction(this)
 
   static tagName = 'picast-player'
   static template = Player.createTemplate(content)
@@ -37,9 +23,6 @@ export default class Player extends Component {
     super()
     bindThis(this)
 
-    this.fullscreen = this.shadowRoot!.querySelector<HTMLElement>(
-      '.fullscreen'
-    )!
     this.audio = this.shadowRoot!.querySelector('audio')!
 
     main.state('playing', proxy(this.onStateChange as any))
@@ -62,25 +45,6 @@ export default class Player extends Component {
       this.setProgressAttr('playing', false)
     })
 
-    const container = (this.shadowRoot!.getElementById(
-      'touchbox'
-    ) as HTMLTemplateElement).content
-    this.touchBoxes.push(container.getElementById('closed')!)
-    this.touchBoxes.push(container.getElementById('extended')!)
-
-    const q = window.matchMedia(desktop)
-    this.isDesktop = q.matches
-    q.onchange = v => {
-      this.isDesktop = v.matches
-      this.removeEventListener('click', this.onClick)
-      if (!this.isDesktop) this.addEventListener('click', this.onClick)
-      if (v.matches && this.isFullscreen) this.setFullscreenTransform(false)
-    }
-
-    this.shadowRoot
-      ?.querySelectorAll('.title')
-      .forEach(title => title.addEventListener('click', this.onTitleClick))
-
     playerSub.setState(this)
 
     new MutationObserver(records => {
@@ -101,38 +65,24 @@ export default class Player extends Component {
       for (const bar of removedBars)
         bar.removeEventListener('jump', this.onBarJump as any)
     }).observe(this, { childList: true, subtree: true })
-
-    history.listen(() => {
-      if (this.isDesktop) return
-      if (isFullscreen() !== this.isFullscreen) {
-        logger.info('player fullscreen transition')
-        this.transition(this.isFullscreen ? 'close' : 'extend')
-      }
-    })
   }
 
   connectedCallback() {
-    logger.info('player connected')
-    if (!this.isDesktop) this.addEventListener('click', this.onClick)
-    this.attachGesture()
-    window.addEventListener('popstate', this.onPopState)
+    this.interaction.start()
+    this.mediaSession.start()
+
     this.audio.volume = 0.4
     window.addEventListener('pagehide', this.forcedSync)
     this.progressBars.forEach(bar =>
       bar.addEventListener('jump', this.onBarJump as any)
     )
     this.setAttribute('hidden', '')
-    this.mainnav = document.getElementById('mainnav')!
-
-    if (this.isFullscreen && !this.isDesktop) this.setFullscreenTransform(true)
   }
 
   disconnectedCallback() {
-    logger.info('player disconnected')
-    this.detachGesture()
-    this.removeEventListener('click', this.onClick)
+    this.interaction.stop()
     this.mediaSession.stop()
-    window.removeEventListener('popstate', this.onPopState)
+
     window.removeEventListener('pagehide', this.forcedSync)
     this.progressBars.forEach(bar =>
       bar.removeEventListener('jump', this.onBarJump as any)
@@ -287,103 +237,6 @@ export default class Player extends Component {
     await main.setProgress(this.audio.currentTime, true)
   }
 
-  private onClick(e: MouseEvent) {
-    if (e.target !== this && (e.target as any).slot !== 'info') return
-    this.transition('extend')
-  }
-
-  private setFullscreenTransform(fs: boolean) {
-    this.style.transform = transitionStates[+fs].bar.transform as string
-    this.mainnav.style.transform = transitionStates[+fs].nav.transform as string
-    this.fullscreen.style.transform = transitionStates[+fs].fullscreen
-      .transform as string
-  }
-
-  private transition(dir: 'extend' | 'close') {
-    const opts = {
-      duration: 350,
-      easing: 'ease',
-    } as const
-
-    const i = dir === 'extend' ? 1 : 0
-    animateTo(this, transitionStates[i].bar, opts, () =>
-      this.onFullscreenChange(dir === 'extend')
-    )
-    animateTo(this.fullscreen, transitionStates[i].fullscreen, opts)
-    animateTo(this.mainnav, transitionStates[i].nav, opts)
-  }
-
-  private setTransitionPos(y: number) {
-    const height = window.innerHeight - PLAYER_HEIGHT
-    if (y <= 0 && this.isFullscreen) y = height + y
-    const n = Math.max(Math.min(y / height, 1), 0)
-    y = n * height
-
-    const player = `-${Math.round(y)}px + ${(n * 100) | 0}%`
-    const full = `${-n} * var(--player-height)`
-    const nav = `${Math.min(y, BAR_HEIGHT)}px`
-
-    this.style.transform = n === 0 ? '' : `translateY(calc(${player}))`
-    this.fullscreen.style.transform = `translateY(calc(${full}))`
-    this.mainnav.style.transform = `translateY(${nav})`
-  }
-
-  private onSwipe(gesture: VerticalSwipe) {
-    this.gesture!.removeEventListener('start', this.onSwipe)
-
-    gesture.addEventListener('end', cancelled => {
-      this.gesture!.addEventListener('start', this.onSwipe)
-      if (cancelled) return
-      let frac = gesture.lastY / (window.innerHeight - BAR_HEIGHT)
-      if (frac < 0) frac += 1
-      let vel = gesture.velocity
-      if (Math.abs(vel) < 3) vel = 0
-      if (frac === 0) return
-      this.transition(
-        vel > 0 ? 'extend' : vel < 0 ? 'close' : frac < 0.5 ? 'close' : 'extend'
-      )
-    })
-
-    gesture.addEventListener('move', off => {
-      this.setTransitionPos(off)
-    })
-  }
-
-  private onFullscreenChange(fullscreen: boolean) {
-    if (fullscreen === this.isFullscreen) return
-    this.detachGesture()
-    this.isFullscreen = fullscreen
-    this.attachGesture()
-    if (this.isFullscreen !== isFullscreen())
-      setUrl({ hash: fullscreen ? 'playing' : null })
-  }
-
-  private onPopState() {
-    const fullscreen = location.search.includes('view=player')
-    if (fullscreen === this.isFullscreen) return
-    this.transition(fullscreen ? 'extend' : 'close')
-  }
-
-  private getTouchBox(full: 'extended' | 'closed'): HTMLElement {
-    return this.touchBoxes[full === 'closed' ? 0 : 1]
-  }
-
-  private attachGesture() {
-    this.gesture = new GestureController(
-      this.isFullscreen ? ExclusiveDownwardSwipe : UpwardSwipe,
-      this.getTouchBox(this.isFullscreen ? 'extended' : 'closed')
-    )
-    this.gesture.start()
-    this.gesture.addEventListener('start', this.onSwipe)
-  }
-
-  private detachGesture() {
-    if (!this.gesture) return
-    this.gesture.removeEventListener('start', this.onSwipe)
-    this.gesture.stop()
-    delete this.gesture
-  }
-
   private onProgress() {
     const ranges = this.bufferRanges()
     for (const bar of this.progressBars) {
@@ -406,21 +259,4 @@ export default class Player extends Component {
   private onBarJump(e: CustomEvent<number>) {
     this.jump((e as CustomEvent<number>).detail)
   }
-
-  private onTitleClick() {
-    if (!this.episode || !this.podcast) return
-    const params = new URLSearchParams(location.search)
-    params.set('info', `${this.podcast.id}-${this.episode.id}`)
-    const path = `${location.pathname}?${params.toString()}`
-    if (location.pathname + location.search !== path) history.push(path)
-  }
-}
-
-const PLAYER_HEIGHT = 4 * 16
-const BAR_HEIGHT = 4 * 16
-
-function isFullscreen() {
-  return ['notes', 'playing', 'queue'].includes(
-    location.hash?.slice(1)?.toLowerCase()
-  )
 }

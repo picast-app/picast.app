@@ -5,6 +5,7 @@ import { durAttr, formatDuration } from 'utils/time'
 import { desktop } from 'styles/responsive'
 import { bindThis } from 'utils/proto'
 import * as cl from 'utils/css/color'
+import { clamp } from 'utils/math'
 
 export default class Progress extends Component {
   private readonly canvas: HTMLCanvasElement
@@ -167,7 +168,7 @@ export default class Progress extends Component {
             (performance.now() - this.playStart!) / 1000) /
           this.duration!
 
-    progress = Math.min(Math.max(progress, 0), 1)
+    progress = clamp(0, progress, 1)
 
     this.labelProg = progress * this.duration!
     this.labelRemains = this.duration! * (1 - progress)
@@ -327,11 +328,7 @@ export default class Progress extends Component {
     const padd = this.inline ? 0 : this.canvas.height / 2 / devicePixelRatio
     const width = this.canvas.width / devicePixelRatio - padd * 2
     return (
-      (Math.min(
-        Math.max((this.dragX ?? 0) - this.bcr!.left, padd),
-        width + padd
-      ) -
-        padd) /
+      (clamp(padd, (this.dragX ?? 0) - this.bcr!.left, width + padd) - padd) /
       width
     )
   }
