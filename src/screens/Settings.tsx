@@ -93,26 +93,23 @@ export default function Settings() {
 }
 
 const Routes = () => (
-  logger.info('route settings'),
-  (
-    <Switch location={location}>
-      {routes.map(
-        ({
-          name,
-          path = name.toLowerCase(),
-          component = () => <div>{name}</div>,
-        }) => (
-          <Route
-            key={path}
-            exact
-            path={`/settings/${path}`}
-            component={component}
-          />
-        )
-      )}
-      <Redirect to="/settings" />
-    </Switch>
-  )
+  <Switch location={location}>
+    {routes.map(
+      ({
+        name,
+        path = name.toLowerCase(),
+        component = () => <div>{name}</div>,
+      }) => (
+        <Route
+          key={path}
+          exact
+          path={`/settings/${path}`}
+          component={component}
+        />
+      )
+    )}
+    <Redirect to="/settings" />
+  </Switch>
 )
 
 function Main({ isDesktop }: { isDesktop: boolean }) {
