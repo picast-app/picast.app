@@ -138,7 +138,7 @@ self.addEventListener('fetch', event => {
       creds: event.request.credentials,
     })
 
-  if (['audio', 'font', 'style'].includes(event.request.destination)) return
+  if (/audio|video|font|style/.test(event.request.destination)) return
   if (
     event.request.destination === 'image' &&
     !event.request.url.startsWith(self.location.origin) &&
