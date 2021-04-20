@@ -29,7 +29,8 @@ export function SnackTray() {
       const { text, action, actionEvent, lvl, ...snack } = e.detail
       let timeout: number | undefined = 4000
       if (typeof snack.timeout === 'number')
-        timeout = clamp(4, snack.timeout, 10)
+        timeout =
+          clamp(4, snack.timeout / (snack.timeout >= 500 ? 1000 : 1), 10) * 1000
       if (snack.timeout === 'never') timeout = undefined
       set({ type: 'push', snack: { text, action, actionEvent, timeout, lvl } })
     }
