@@ -28,11 +28,11 @@ const syncTimes: Record<string, number> = {}
 
 export async function setProgress(progress: number, forceSync = false) {
   const { state } = await stateProm
-  const id = state.playing.episode?.id
+  const id = state.playing.id?.[1]
   if (!id) return
   await store.setEpisodeProgress(id, progress)
 
-  if (!state.playing.podcast || !state.user.wsAuth) return
+  if (!state.user.wsAuth) return
   if (!(id in syncTimes)) syncTimes[id] = Date.now()
   const dt = Date.now() - syncTimes[id]
   if (dt < 58000 && !forceSync) return
@@ -40,7 +40,7 @@ export async function setProgress(progress: number, forceSync = false) {
   syncTimes[id] += dt
   await wsApi.notify(
     'setCurrent',
-    state.playing.podcast.id,
+    state.playing.id![0],
     id,
     progress,
     state.user.wsAuth

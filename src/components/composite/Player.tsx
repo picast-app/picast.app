@@ -2,20 +2,24 @@ import React from 'react'
 import Controls from './player/Controls'
 import Fullscreen from './player/fullscreen/Container'
 import { useTheme } from 'utils/hooks'
-import { usePlaying } from 'utils/player'
+import { useCurrent } from 'utils/playerHooks'
 import Info from './player/Info'
 
 export function Player() {
-  const [podcast, episode] = usePlaying()
+  const current = useCurrent()
   const theme = useTheme()
 
   return (
     <picast-player theme={theme}>
-      {podcast && episode && (
+      {current && (
         <>
           <Controls slot="controls" />
-          <Info podcast={podcast} />
-          <Fullscreen slot="fullscreen" {...{ podcast, episode }} />
+          <Info podcast={current[0]} />
+          <Fullscreen
+            slot="fullscreen"
+            podcast={current[0]}
+            episode={current[1]}
+          />
         </>
       )}
     </picast-player>

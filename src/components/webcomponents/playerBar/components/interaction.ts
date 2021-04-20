@@ -26,7 +26,7 @@ export default class Interaction extends Service {
   private gesture?: GestureController<UpwardSwipe | ExclusiveDownwardSwipe>
   private playerHeight: number = 4 * 16
 
-  start() {
+  enable() {
     this.playerHeight = this.player.offsetHeight
     this.mainnav = document.getElementById('mainnav')!
     this.fullscreen = this.player.shadowRoot!.querySelector<HTMLElement>(
@@ -61,7 +61,7 @@ export default class Interaction extends Service {
     this.startListenHistory()
   }
 
-  stop() {
+  disable() {
     this.removeFsListeners()
     this.stopListenHistory()
   }
@@ -83,12 +83,15 @@ export default class Interaction extends Service {
   }
 
   private addFsListeners() {
-    this.player.addEventListener('click', this.onPlayerClick)
+    this.player.shadowRoot!.addEventListener('click', this.onPlayerClick as any)
     this.attachGesture()
   }
 
   private removeFsListeners() {
-    this.player.removeEventListener('click', this.onPlayerClick)
+    this.player.shadowRoot!.removeEventListener(
+      'click',
+      this.onPlayerClick as any
+    )
     this.detachGesture()
   }
 
@@ -156,11 +159,14 @@ export default class Interaction extends Service {
   }
 
   private showEpisodeInfo() {
-    if (!this.player.podcast || !this.player.episode) return
-    setQueryParam('info', `${this.player.podcast.id}-${this.player.episode.id}`)
+    if (!this.player.current) return
+    setQueryParam(
+      'info',
+      `${this.player.current.map(({ id }) => id).join('-')}`
+    )
   }
 
-  private onPlayerClick(e: MouseEvent) {
+  private onPlayerClick(e: PointerEvent) {
     if (e.target === this.player || (e.target as any).slot === 'info')
       this.fsTransform(FsState.EXTENDED, true)
   }

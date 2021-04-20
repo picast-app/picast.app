@@ -5,6 +5,6 @@ export default abstract class ServiceBase {
   constructor(protected readonly player: Player) {
     bindThis(this)
   }
-  public abstract start(): void
-  public abstract stop(): void
+  public abstract enable(): void
+  public abstract disable(): void
 }

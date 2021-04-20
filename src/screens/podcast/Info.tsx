@@ -7,7 +7,6 @@ import { desktop, mobile } from 'styles/responsive'
 import { useMatchMedia, useSubscriptions, useAppState } from 'utils/hooks'
 import ContextMenu, { SC as CM } from './ContextMenu'
 import { main } from 'workers'
-import type { Podcast } from 'main/store/types'
 
 export default function Info(podcast: Partial<Podcast>) {
   const [showDescription, setShowDescription] = useState(false)

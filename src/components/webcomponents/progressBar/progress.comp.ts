@@ -95,6 +95,7 @@ export default class Progress extends Component {
       case 'current':
         this.current = parseFloat(current)
         this.labelProg = this.current
+        this.playStart = performance.now()
         break
       case 'duration':
         this.duration = parseFloat(current)
@@ -126,13 +127,6 @@ export default class Progress extends Component {
     Progress.clProgress = cl.format.hex(primary)
     Progress.clBar = cl.format.hex(cl.blend(back, cl.alpha(text, 0x44)))
     Progress.clBuffered = cl.format.hex(cl.blend(back, cl.alpha(text, 0x88)))
-  }
-
-  public jump(pos: number) {
-    logger.info(`jump to ${pos | 0}s (${pos / this.duration!})`)
-    this.current = pos
-    if (this.playing) this.playStart = performance.now()
-    this.scheduleFrame()
   }
 
   private resize([{ contentRect: box }]: readonly ResizeObserverEntry[]) {

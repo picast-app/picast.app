@@ -2,7 +2,6 @@ import React from 'react'
 import styled from 'styled-components'
 import { Artwork, Link } from 'components/atoms'
 import { lineClamp } from 'styles/mixin'
-import type { Podcast } from 'main/store/types'
 
 type Props = {
   podcast: Podcast

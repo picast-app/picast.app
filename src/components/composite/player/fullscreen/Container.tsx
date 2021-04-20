@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, forwardRef } from 'react'
-import type { Podcast } from 'main/store/types'
 import { Link } from 'components/atoms'
 import Background from './Background'
 import Player from './Player'

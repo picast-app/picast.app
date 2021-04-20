@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 import { useTheme } from 'utils/hooks'
-import type { Podcast } from 'main/store/types'
 
 export default function Background({ podcast }: { podcast: Podcast }) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)

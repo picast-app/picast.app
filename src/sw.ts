@@ -127,17 +127,6 @@ const handleFetch = async (e: FetchEvent): Promise<Response> =>
   await defaultHandler(e)
 
 self.addEventListener('fetch', event => {
-  // temporary csp violation debugging
-  if (!/picast\.app|localhost|gstatic|googleapis/.test(event.request.url))
-    // eslint-disable-next-line
-    console.log('fetch', {
-      url: event.request.url,
-      method: event.request.method,
-      destination: event.request.destination,
-      headers: Object.fromEntries(event.request.headers.entries()),
-      creds: event.request.credentials,
-    })
-
   if (/audio|video|font|style/.test(event.request.destination)) return
   if (
     event.request.destination === 'image' &&

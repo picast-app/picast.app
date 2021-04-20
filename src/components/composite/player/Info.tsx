@@ -2,7 +2,6 @@ import React from 'react'
 import styled from 'styled-components'
 import { Link, Artwork, Icon } from 'components/atoms'
 import { mobile } from 'styles/responsive'
-import type { Podcast } from 'main/store/types'
 
 interface Props {
   podcast: Podcast

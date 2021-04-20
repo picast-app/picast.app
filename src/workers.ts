@@ -4,7 +4,6 @@ import createSub from 'utils/subscription'
 import type { API } from 'main/main.worker'
 import { proxy, createEndpoint } from 'comlink'
 import { snack } from 'utils/notification'
-import type { Podcast } from 'main/store/types'
 
 export { proxy }
 

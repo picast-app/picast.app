@@ -4,7 +4,11 @@ import { Icon, Link, Artwork } from 'components/atoms'
 import { main } from 'workers'
 import type { EpisodeBase } from 'main/store/types'
 import { proxy } from 'comlink'
-import { playerSub, useEpisodePlaying, useEpisodeProgress } from 'utils/player'
+import {
+  playerSub,
+  useEpisodePlaying,
+  useEpisodeState,
+} from 'utils/playerHooks'
 import { mobile } from 'styles/responsive'
 import { center, transition } from 'styles/mixin'
 import { useArtwork } from 'utils/hooks'
@@ -91,20 +95,20 @@ const getEpisodeFromId: EpGetter<{ id: EpisodeId }> = async ({ id }, cb) =>
 const toggle = ([pod, ep]: EpisodeId) => async () => {
   const player = playerSub.state
 
-  if (pod !== player?.podcast?.id || ep !== player?.episode?.id) {
+  if (pod !== player?.current?.[0]?.id || ep !== player?.current?.[1]?.id) {
     if (player) {
       await player.play([pod, ep])
     } else {
       const unsub = playerSub.subscribe(player => {
         if (!player) return
-        player.play()
+        player.resume()
         unsub()
       })
       await main.setPlaying([pod, ep])
     }
   } else {
-    if (player.playing) player.pause()
-    else await player.play()
+    if (player.isPlaying()) player.pause()
+    else await player.resume()
   }
 }
 
@@ -112,7 +116,7 @@ function PlayButton({ id, progress }: { id: EpisodeId; progress: number }) {
   const playing = useEpisodePlaying(id)
   return (
     <S.Play>
-      <EpisodeProgress episode={id} initial={progress} />
+      <EpisodeProgress episode={id} initial={progress} playing={playing} />
       <Icon
         icon={playing ? 'pause' : 'play'}
         label={playing ? 'pause' : 'play'}
@@ -129,11 +133,13 @@ const circ = 2 * Math.PI * rad
 function EpisodeProgress({
   episode,
   initial,
+  playing,
 }: {
   episode: EpisodeId
   initial: number
+  playing: boolean
 }) {
-  const { progress, playing, duration } = useEpisodeProgress(episode, initial)
+  const { progress, duration } = useEpisodeState(episode, initial)
   return (
     <S.Progress
       viewBox="0 0 100 100"

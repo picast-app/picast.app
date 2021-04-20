@@ -21,7 +21,7 @@ type EchoSnackEvent = CustomEvent<{
 }>
 
 type EpisodeId = [podcast: string, episode: string]
-
+type Podcast = import('main/store/types').Podcast
 type EpisodeMin = {
   id: string
   title: string
@@ -30,6 +30,7 @@ type EpisodeMin = {
   currentTime?: number
   relProg?: number
 }
+type CurrentPlayback = [podcast: Podcast, episode: EpisodeMin] | null
 
 // eslint-disable-next-line no-var
 declare var logger: import('utils/logger').default

@@ -1,92 +1,55 @@
 import content from './template.html'
 import Component from '../base.comp'
 import { main, proxy } from 'workers'
-import { playerSub } from 'utils/player'
-import type { Podcast } from 'main/store/types'
+import { playerSub } from 'utils/playerHooks'
 import type Progress from 'components/webcomponents/progressBar/progress.comp'
 import { bindThis } from 'utils/proto'
 import MediaSession from './components/mediaSession'
 import Interaction from './components/interaction'
+import Audio from './components/audio'
+import EventDispatcher from './components/events'
 
 export default class Player extends Component {
-  public podcast?: Podcast
-  public episode?: EpisodeMin
-  public readonly audio: HTMLAudioElement
+  static tagName = 'picast-player'
+  static template = Player.createTemplate(content)
 
   private mediaSession = new MediaSession(this)
   private interaction = new Interaction(this)
+  private audioService = new Audio(this)
+  private events = new EventDispatcher()
 
-  static tagName = 'picast-player'
-  static template = Player.createTemplate(content)
+  private _current: CurrentPlayback = null
 
   constructor() {
     super()
     bindThis(this)
-
-    this.audio = this.shadowRoot!.querySelector('audio')!
-
-    main.state('playing', proxy(this.onStateChange as any))
-    this.audio.addEventListener('durationchange', () => {
-      this.setProgressAttr('duration', this.audio.duration)
-    })
-    this.audio.addEventListener('seek', this.syncProgress)
-    this.audio.addEventListener('ended', () => {
-      this.pause()
-      main.setPlaying(null)
-    })
-    this.audio.addEventListener('progress', this.onProgress)
-
-    this.audio.addEventListener('playing', () => {
-      this.setProgressAttr('current', this.audio.currentTime)
-      this.setProgressAttr('playing', true)
-    })
-    this.audio.addEventListener('pause', () => {
-      this.setProgressAttr('current', this.audio.currentTime)
-      this.setProgressAttr('playing', false)
-    })
-
+    main.state('playing.id', proxy(this.onStateChange as any))
     playerSub.setState(this)
-
-    new MutationObserver(records => {
-      const [addedBars, removedBars] = ([
-        'addedNodes',
-        'removedNodes',
-      ] as const).map(l =>
-        records
-          .flatMap(v => [...v[l]])
-          .flatMap(v => [
-            ...((v as any).querySelectorAll?.('player-progress') ?? []),
-          ])
-      )
-      for (const bar of addedBars) {
-        bar.addEventListener('jump', this.onBarJump as any)
-        bar.setAttribute('current', this.audio.currentTime)
-      }
-      for (const bar of removedBars)
-        bar.removeEventListener('jump', this.onBarJump as any)
-    }).observe(this, { childList: true, subtree: true })
   }
 
   connectedCallback() {
-    this.interaction.start()
-    this.mediaSession.start()
+    this.interaction.enable()
+    this.mediaSession.enable()
+    this.audioService.enable()
 
-    this.audio.volume = 0.4
+    this.audioService.volume = 0.4
     window.addEventListener('pagehide', this.forcedSync)
     this.progressBars.forEach(bar =>
       bar.addEventListener('jump', this.onBarJump as any)
     )
     this.setAttribute('hidden', '')
+    this.barObserver.observe(this, { childList: true, subtree: true })
   }
 
   disconnectedCallback() {
-    this.interaction.stop()
-    this.mediaSession.stop()
+    this.interaction.disable()
+    this.mediaSession.disable()
 
     window.removeEventListener('pagehide', this.forcedSync)
     this.progressBars.forEach(bar =>
       bar.removeEventListener('jump', this.onBarJump as any)
     )
+    this.barObserver.disconnect()
   }
 
   static get observedAttributes() {
@@ -100,69 +63,11 @@ export default class Player extends Component {
     }
   }
 
-  public get playing(): boolean {
-    return !this.audio.paused
-  }
-
-  private async onStateChange({
-    episode,
-    podcast,
-  }: {
-    episode: EpisodeMin
-    podcast: Podcast
-  }) {
-    if (this.episode?.id === episode?.id) return
-    this.podcast = podcast
-    this.episode = episode
-
-    if (!episode) {
-      this.setAttribute('hidden', '')
-      return
-    }
-    this.title = episode.title
-    this.removeAttribute('hidden')
-
-    const current = (episode.relProg ?? 0) >= 1 ? 0 : episode.currentTime ?? 0
-    this.setProgressAttr('current', current)
-    this.audio.src = episode.file
-    this.audio.currentTime = current
-    await this.waitForTrack(episode.file)
-    this.dispatchEvent(
-      new CustomEvent('episodeChange', { detail: [podcast.id, episode.id] })
-    )
-  }
-
-  async waitForTrack(track?: string) {
-    const isTrack = () =>
-      track ? this.audio.currentSrc === track : !!this.audio.currentSrc
-
-    if (isTrack()) return
-
-    await new Promise<void>(res => {
-      const handler = () => {
-        if (!isTrack) return
-        this.audio.removeEventListener('canplay', handler)
-        res()
-      }
-      this.audio.addEventListener('canplay', handler)
-    })
-  }
-
-  async waitForEpisode([pod, ep]: EpisodeId) {
-    await new Promise<void>(res => {
-      const listener = ({ detail }: CustomEvent<EpisodeId>) => {
-        if (detail[0] !== pod || detail[1] !== ep) return
-        this.removeEventListener('episodeChange', listener as any)
-        res()
-      }
-      this.addEventListener('episodeChange', listener as any)
-    })
-  }
-
-  set title(v: string) {
-    this.shadowRoot?.querySelectorAll('.title').forEach(node => {
-      node.textContent = v
-    })
+  private async onStateChange(id: EpisodeId) {
+    if (id[1] === this.current?.[1].id) return
+    const [podcast, episode] = await this.getInfo(id)
+    if (!podcast || !episode) throw Error("couldn't read current info")
+    this.setCurrent([podcast, episode])
   }
 
   get progressBars() {
@@ -180,80 +85,160 @@ export default class Player extends Component {
     ]
   }
 
-  private setProgressAttr(name: string, value: string | number | boolean) {
+  public setProgressAttr(name: string, value: string | number | boolean) {
     for (const bar of this.progressBars) {
       bar.setAttribute(name, value.toString())
     }
   }
 
-  public async play(id?: EpisodeId) {
-    this.dispatchEvent(new Event('play'))
+  public addEventListener = this.events.addEventListener.bind(this.events)
+  public removeEventListener = this.events.removeEventListener.bind(this.events)
 
-    if (id) {
-      if (id[0] !== this.podcast?.id || id[1] !== this.episode?.id) {
-        this.dispatchEvent(new CustomEvent('episodeChange', { detail: id }))
-        const changed = this.waitForEpisode(id)
-        main.setPlaying(id)
-        await changed
-      }
+  public pause = this.audioService.pause
+  public resume = this.audioService.resume
+  public isPlaying = this.audioService.isPlaying
+  public get time() {
+    return this.audioService.time
+  }
+  public get duration() {
+    return this.audioService.duration
+  }
+
+  public async play(id: EpisodeId) {
+    const [podcast, episode] = await this.getInfo(id)
+    if (!episode?.file)
+      throw Error(`can't find src for episode ${id.join('-')}`)
+    await this.setCurrent([podcast!, episode], this.audioService.play)
+    await main.setPlaying(id)
+  }
+
+  private async setCurrent(
+    [podcast, episode]: [Podcast, EpisodeMin],
+    set: (src: string, pos?: number) => any = this.audioService.setSrc
+  ) {
+    this.current = [podcast, episode]
+    await set(episode.file, episode.currentTime)
+    this.setProgressAttr('current', episode.currentTime ?? 0)
+    this.events.call('current', [podcast, episode])
+    this.events.call('jump', episode.currentTime ?? 0, this.currentId)
+  }
+
+  public get current(): CurrentPlayback {
+    return this._current
+  }
+
+  public set current(current: CurrentPlayback) {
+    if (
+      (!current && !this._current) ||
+      (current &&
+        this._current &&
+        current.every(({ id }, i) => this._current![i].id === id))
+    )
+      return
+    this._current = current
+    if (!current) {
+      this.setAttribute('hidden', '')
+      return
     }
-
-    await this.audio.play()
-    this.syncProgress()
+    this.removeAttribute('hidden')
+    for (const title of this.select('.title'))
+      title.textContent = current[1].title
     this.mediaSession.showInfo()
   }
 
-  public async pause() {
-    this.audio.pause()
-    await this.syncProgress()
-    this.dispatchEvent(new Event('pause'))
+  public get currentId(): EpisodeId | undefined {
+    return this._current
+      ? [this._current[0].id, this._current[1].id]
+      : undefined
   }
 
   public jump(pos: number, relative = false) {
-    if (relative) pos = this.audio.currentTime + pos
-    this.audio.currentTime = pos
+    if (relative) pos = this.audioService.time + pos
+    this.audioService.time = pos
+    logger.info('jump to', pos)
+    this.setProgressAttr('current', pos)
+    this.events.call('jump', pos, this.currentId)
     this.syncProgress()
-    this.progressBars.forEach(el => {
-      el.jump(pos)
-    })
   }
 
   private syncId?: number
 
-  private async syncProgress() {
+  public async syncProgress() {
     if (this.syncId) {
       clearTimeout(this.syncId)
       delete this.syncId
     }
 
-    if (this.episode?.file !== this.audio.currentSrc)
-      throw Error('episode mismatch')
-    await main.setProgress(this.audio.currentTime)
-
-    if (this.playing) this.syncId = setTimeout(this.syncProgress, 5000)
+    const { src, time } = this.audioService ?? {}
+    if (this.current?.[1].file !== src) throw Error('episode mismatch')
+    if (time) await main.setProgress(time)
+    if (this.isPlaying()) this.syncId = setTimeout(this.syncProgress, 5000)
   }
 
   private async forcedSync() {
-    await main.setProgress(this.audio.currentTime, true)
+    const time = this.audioService?.time
+    if (time !== undefined) await main.setProgress(time, true)
+    else throw Error("couldn't force sync (unknown time)")
   }
 
-  private onProgress() {
-    const ranges = this.bufferRanges()
+  private select<T extends HTMLElement>(selector: string): T[] {
+    return Array.from(this.shadowRoot!.querySelectorAll<T>(selector))
+  }
+
+  private barObserver = new MutationObserver(records => {
+    const [addedBars, removedBars] = ([
+      'addedNodes',
+      'removedNodes',
+    ] as const).map(l =>
+      records
+        .flatMap(v => [...v[l]])
+        .flatMap(v => [
+          ...((v as any).querySelectorAll?.('player-progress') ?? []),
+        ])
+    )
+    for (const bar of addedBars) {
+      bar.addEventListener('jump', this.onBarJump as any)
+      bar.setAttribute('current', this.audioService.time)
+    }
+    for (const bar of removedBars)
+      bar.removeEventListener('jump', this.onBarJump as any)
+  })
+
+  private async getInfo(
+    id: EpisodeId
+  ): Promise<[Podcast | null, EpisodeMin | null]> {
+    return await Promise.all([main.podcast(id[0]), main.episode(id)])
+  }
+
+  // events
+
+  onDurationChange(duration: number) {
+    this.setProgressAttr('duration', duration)
+    this.events.call('duration', duration, this.currentId)
+  }
+
+  onBufferedChange() {
+    const buffered = this.audioService.buffered
     for (const bar of this.progressBars) {
-      bar.buffered = ranges
+      bar.buffered = buffered
       bar.scheduleFrame()
     }
   }
 
-  private bufferRanges() {
-    const ranges: [number, number][] = []
-    for (let i = 0; i < this.audio.buffered.length; i++) {
-      ranges.push([
-        this.audio.buffered.start(i) / this.audio.duration,
-        this.audio.buffered.end(i) / this.audio.duration,
-      ])
-    }
-    return ranges
+  onPlaying() {
+    this.events.call('play')
+    this.setProgressAttr('current', this.audioService.time!)
+    this.setProgressAttr('playing', true)
+  }
+
+  onPaused() {
+    this.events.call('pause')
+    this.setProgressAttr('current', this.audioService.time!)
+    this.setProgressAttr('playing', false)
+  }
+
+  onLoading(loading: boolean) {
+    logger.info('loading', loading)
   }
 
   private onBarJump(e: CustomEvent<number>) {

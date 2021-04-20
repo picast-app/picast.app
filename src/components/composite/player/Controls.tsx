@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { Icon } from 'components/atoms'
 import { mobile } from 'styles/responsive'
 import Skip from './SkipControl'
-import { usePlayer, useIsPlaying } from 'utils/player'
+import { usePlayer, useIsPlaying } from 'utils/playerHooks'
 
 export default function PlayControls(props: { slot?: string }) {
   const player = usePlayer()
@@ -15,7 +15,7 @@ export default function PlayControls(props: { slot?: string }) {
       <Icon
         icon={playing ? 'pause' : 'play'}
         label={playing ? 'pause' : 'play'}
-        onClick={() => player?.[playing ? 'pause' : 'play']()}
+        onClick={() => player?.[playing ? 'pause' : 'resume']()}
         tabIndex={0}
         autoFocus
       />

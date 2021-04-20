@@ -1,6 +1,5 @@
 import store from './store'
 import * as api from './api'
-import type { Podcast } from './store/types'
 
 const hour = (n: number) => n * 60 ** 2 * 1000
 

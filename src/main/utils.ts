@@ -1,5 +1,3 @@
-import type { Podcast } from './store/types'
-
 export const titleSort = (podcasts: Podcast[]): Podcast[] =>
   podcasts
     .map(v => ({

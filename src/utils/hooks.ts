@@ -12,7 +12,6 @@ import throttle from 'lodash/throttle'
 import { main, subscriptionSub, proxy } from 'workers'
 import { isPromise } from 'utils/promise'
 import type { API } from 'main/main.worker'
-import type { Podcast } from 'main/store/types'
 
 export { useHistory, useLocation } from 'react-router-dom'
 export const useTheme = () => useContext(Theme)
@@ -181,13 +180,17 @@ export function useNavbarWidget(widget?: JSX.Element) {
   return widgets
 }
 
-export function useSubscription<T>(sub: Subscription<T>): [T, (v: T) => void] {
+export const useSubscription = <T>(
+  sub: Subscription<T>
+): [T, (v: T) => void] => [
+  useSubscriptionValue(sub),
+  useCallback((v: T) => sub.setState(v), [sub]),
+]
+
+export function useSubscriptionValue<T>(sub: Subscription<T>): T {
   const [v, setV] = useState<T>(sub.state)
   useEffect(() => (setV(sub.state), sub.subscribe(setV)), [sub])
-
-  const set = useCallback((v: T) => sub.setState(v), [sub])
-
-  return [v, set]
+  return v
 }
 
 export function useCanvas(

@@ -3,16 +3,16 @@ import Service from './base'
 const ms = navigator.mediaSession
 
 export default class Session extends Service {
-  public start() {
+  public enable() {
     if (!ms) return
-    ms.setActionHandler('play', () => this.player.play())
+    ms.setActionHandler('play', () => this.player.resume())
     ms.setActionHandler('pause', () => this.player.pause())
     ms.setActionHandler('stop', () => this.player.pause())
     ms.setActionHandler('nexttrack', () => this.player.jump(30, true))
     ms.setActionHandler('previoustrack', () => this.player.jump(-15, true))
   }
 
-  public stop() {
+  public disable() {
     if (!ms) return
     ms.setActionHandler('play', null)
     ms.setActionHandler('pause', null)
@@ -24,7 +24,7 @@ export default class Session extends Service {
 
   public showInfo() {
     if (!ms) return
-    const { podcast, episode } = this.player
+    const [podcast, episode] = this.player.current ?? []
     if (!podcast) throw Error("couldn't set ms info, podcast missing")
     if (!episode) throw Error("couldn't set ms info, episode missing")
     if (ms.metadata?.title === episode.title) return

@@ -21,8 +21,7 @@ export type State = {
   signIn(v: { provider: 'google' }): void
   playing: {
     id: EpisodeId | null
-    episode: EpisodeMin | null
-    podcast: Podcast | null
+    current: [Podcast | null, EpisodeMin | null]
     set(id: EpisodeId | null): Promise<EpisodeMin | undefined>
   }
   queue: EpisodeId[]
@@ -37,6 +36,7 @@ async function init(): Promise<{
   subscribe: <T = unknown>(path: string, handler: (v: T) => void) => () => void
 }> {
   const db = await dbProm
+  const playing = await db.get('meta', 'playing')
 
   const state = observable<State>({
     subscriptions: [],
@@ -52,14 +52,17 @@ async function init(): Promise<{
       Object.assign(this.user, data)
     },
     playing: {
-      id: null,
-      episode: null,
-      podcast: null,
+      id: playing ?? null,
+      current: !playing
+        ? [null, null]
+        : await Promise.all([
+            store.podcast(playing[0]),
+            store.episode(playing),
+          ]),
       async set(id) {
         if (!id) {
           this.id = null
-          this.podcast = null
-          this.episode = null
+          this.current = [null, null]
         } else {
           if (this.id?.[0] === id[0] && this.id?.[1] === id[1]) return
           const [podcast, episode] = await Promise.all([
@@ -67,8 +70,7 @@ async function init(): Promise<{
             store.episode(id as any),
           ])
           this.id = id
-          this.podcast = podcast
-          this.episode = episode
+          this.current = [podcast, episode]
           return episode as EpisodeMin
         }
       },
@@ -117,14 +119,6 @@ async function init(): Promise<{
   if (signin) state.signIn(signin)
   const subs = await db.getAll('subscriptions')
   state.subscriptions = titleSort(subs)
-
-  const playing = await db.get('meta', 'playing')
-  if (playing) {
-    state.playing.id = playing
-    state.playing.podcast = await store.podcast(playing[0])
-    state.playing.episode = await store.episode(playing)
-    state.queue = [playing]
-  }
 
   const resolvePath = <T = unknown>(
     path: string,
