@@ -74,16 +74,16 @@ const S = {
 
     player-progress {
       width: 90%;
-      margin-bottom: 0;
+      margin-bottom: 3vh;
       z-index: 1000;
     }
 
     & > *:last-child {
-      transform: scale(1.4);
+      transform: scale(1.5);
 
-      & > button {
-        transform: scale(1.1);
-        margin: 0 1rem;
+      & > *:nth-child(2) {
+        margin: 0 0.5rem;
+        transform: scale(0.9);
       }
     }
   `,

@@ -1,9 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Icon } from 'components/atoms'
 import { mobile } from 'styles/responsive'
 import Skip from './SkipControl'
 import { usePlayer, useIsPlaying } from 'utils/playerHooks'
+import PlayButton from './PlayButton'
 
 export default function PlayControls(props: { slot?: string }) {
   const player = usePlayer()
@@ -12,12 +12,9 @@ export default function PlayControls(props: { slot?: string }) {
   return (
     <SC {...props}>
       <Skip ms={-15000} onJump={n => player?.jump(n, true)} />
-      <Icon
-        icon={playing ? 'pause' : 'play'}
-        label={playing ? 'pause' : 'play'}
+      <PlayButton
+        playing={playing}
         onClick={() => player?.[playing ? 'pause' : 'resume']()}
-        tabIndex={0}
-        autoFocus
       />
       <Skip ms={30000} onJump={n => player?.jump(n, true)} />
     </SC>
