@@ -6,6 +6,7 @@ import { desktop } from 'styles/responsive'
 import { bindThis } from 'utils/proto'
 import * as cl from 'utils/css/color'
 import { clamp } from 'utils/math'
+import { easeOutSine, easeInOutCubic } from 'utils/ease'
 
 export default class Progress extends Component {
   private readonly canvas: HTMLCanvasElement
@@ -17,6 +18,9 @@ export default class Progress extends Component {
   private current?: number
   private playing = false
   private playStart?: number
+  private loading = false
+  private loadStart?: number
+  private loadToggle?: number
   private dragX?: number
   private dragging = false
   private bcr?: DOMRect
@@ -87,7 +91,7 @@ export default class Progress extends Component {
   }
 
   static get observedAttributes() {
-    return ['duration', 'current', 'playing', 'theme']
+    return ['duration', 'current', 'playing', 'theme', 'loading']
   }
 
   attributeChangedCallback(name: string, old: string, current: string) {
@@ -103,10 +107,13 @@ export default class Progress extends Component {
         break
       case 'playing':
         this.playing = current === 'true'
-        if (this.playing) {
-          this.playStart = performance.now()
-          this.scheduleFrame()
-        }
+        if (this.playing) this.playStart = performance.now()
+
+        break
+      case 'loading':
+        this.loading = /true/i.test(current)
+        this.loadToggle = performance.now()
+        if (this.loading) this.loadStart = this.loadToggle
         break
       case 'theme':
         this.setColors(current as any)
@@ -170,7 +177,7 @@ export default class Progress extends Component {
     if (this.inline) this.renderInline(progress)
     else this.renderFull(progress)
 
-    if (!this.playing && this.dragX === undefined) return
+    if (!this.playing && !this.loadToggle && this.dragX === undefined) return
     this.afId = requestAnimationFrame(this.render)
   }
 
@@ -187,16 +194,42 @@ export default class Progress extends Component {
     const width = this.canvas.width - padd * 2
     const knobX = padd + height / 2 + (width - height) * progress
 
-    this.ctx.fillStyle = Progress.clBar
-    this.drawBar(padd, padd + width, height)
+    let loadTrans = this.loadToggle
+      ? Math.min((performance.now() - this.loadToggle!) / 500, 1)
+      : 1
+    if (!this.loading) loadTrans = 1 - loadTrans
+    if (loadTrans > 0 && loadTrans < 1) loadTrans = easeInOutCubic(loadTrans)
+    if (!this.loading && loadTrans === 0) delete this.loadToggle
+
+    if (loadTrans < 1) {
+      this.ctx.globalAlpha = 1 - loadTrans
+      // background bar
+      this.ctx.fillStyle = Progress.clBar
+      this.drawBar(padd, padd + width, height)
+
+      // buffer bars
+      if (this.duration) {
+        this.ctx.fillStyle = Progress.clBuffered
+        for (const [start, end] of this.buffered)
+          this.drawBar(padd + start * width, padd + end * width, height)
+      }
+    }
+
+    // loading indicator
+    if (loadTrans > 0) {
+      this.ctx.globalAlpha = loadTrans
+      this.renderLoading(padd, width, height, knobX)
+    }
+
+    this.ctx.globalAlpha = 1
+
     if (!this.duration) return
 
-    this.ctx.fillStyle = Progress.clBuffered
-    for (const [start, end] of this.buffered)
-      this.drawBar(padd + start * width, padd + end * width, height)
-
+    // progress bar
     this.ctx.fillStyle = Progress.clProgress
     this.drawBar(padd, knobX, height)
+
+    // progress knob
     if (this.dragging)
       this.drawKnob(knobX, this.canvas.height / 2, Progress.clDragKnob)
     this.drawKnob(knobX, knobRadius)
@@ -205,10 +238,47 @@ export default class Progress extends Component {
   private renderInline(progress: number) {
     const height = this.canvas.height
     this.ctx.fillStyle = Progress.clBar
+    // background bar
     this.drawBar(0, this.canvas.width, height, false, false)
     if (!this.duration) return
+    // progress bar
     this.ctx.fillStyle = Progress.clProgress
+    // progress knob
     this.drawBar(0, progress * this.canvas.width, height, false, true)
+  }
+
+  private renderLoading(
+    padd: number,
+    width: number,
+    height: number,
+    knobX: number
+  ) {
+    const spacing = 3
+    const rad = height / 3
+
+    const velRadPerSec = 10
+    const step = rad * 2 * (1 + spacing)
+    const offset =
+      (((performance.now() - this.loadStart!) / 1000) * (velRadPerSec * rad)) %
+      step
+
+    const bMax = padd + width - rad
+    const bMin = Math.max(padd + rad, knobX)
+
+    const alphaBase = this.ctx.globalAlpha
+
+    for (let x = 0 - offset; x < width; x += step) {
+      const cx = x + padd + rad
+      if (cx < bMin || cx > bMax) continue
+      let r = rad
+      let alpha = (bMax - cx) / step
+      if (alpha < 1) {
+        alpha = easeOutSine(alpha)
+        this.ctx.globalAlpha = alphaBase * alpha
+        r *= alpha
+      }
+      this.drawKnob(cx, r, Progress.clBuffered)
+    }
   }
 
   private drawBar(
