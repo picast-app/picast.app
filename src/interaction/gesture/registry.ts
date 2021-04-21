@@ -1,5 +1,5 @@
 import * as debug from './debug'
-import { main, proxy } from 'workers'
+import { state } from 'workers'
 import EventManager from 'utils/event'
 import { bindThis } from 'utils/proto'
 
@@ -99,15 +99,12 @@ export class TouchRegistryEvent extends EventManager<
   }
 }
 
-main.state(
-  'debug.touch',
-  proxy(v => {
-    if (v) {
-      debug.createCanvas()
-      TouchRegistry.render = debug.render
-    } else {
-      debug.cleanup()
-      delete TouchRegistry.render
-    }
-  })
-)
+state<boolean>('debug.touch', v => {
+  if (v) {
+    debug.createCanvas()
+    TouchRegistry.render = debug.render
+  } else {
+    debug.cleanup()
+    delete TouchRegistry.render
+  }
+})

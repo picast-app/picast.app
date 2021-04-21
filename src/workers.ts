@@ -60,3 +60,6 @@ navigator.serviceWorker.onmessage = e => {
       })
   }
 }
+
+export const state = <T = any>(path: string, cb: (v: T) => any) =>
+  main.state(path, proxy(cb as any))

@@ -9,7 +9,7 @@ import {
 import { Theme } from 'styles'
 import subscription, { Subscription } from './subscription'
 import throttle from 'lodash/throttle'
-import { main, subscriptionSub, proxy } from 'workers'
+import { main, subscriptionSub, state as appState } from 'workers'
 import { isPromise } from 'utils/promise'
 import type { API } from 'main/main.worker'
 
@@ -380,7 +380,7 @@ export function useAppState<T = unknown>(path: string) {
         if (cancelled) return
         setState({ state: v as T, loading: false })
       }
-      cancel = await main.state(path, proxy(set))
+      cancel = await appState(path, set)
       if (cancelled) return cancel()
     }
     init()

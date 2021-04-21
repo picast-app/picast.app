@@ -1,4 +1,4 @@
-import { main, proxy } from 'workers'
+import { state } from 'workers'
 import Registry, { TouchRegistryEvent } from './registry'
 import EventManager, { EventDef } from 'utils/event'
 
@@ -142,10 +142,7 @@ export class GestureController<T extends Gesture> extends EventManager<{
 }
 
 let DEBUG = false
-main.state(
-  'debug.touch',
-  proxy(v => {
-    DEBUG = !!v
-    GestureController.active.forEach(v => v.style())
-  })
-)
+state<boolean>('debug.touch', v => {
+  DEBUG = !!v
+  GestureController.active.forEach(v => v.style())
+})

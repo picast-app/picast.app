@@ -26,12 +26,14 @@ async function deleteIDB() {
   })
 }
 
-dbProm.then(async idb => togglePrint(await idb.get('meta', 'print_logs')))
-
 const state = async <T = unknown>(p: string, f: (v: T) => void) => {
   const { subscribe } = await appState
   return proxy(subscribe(p, f))
 }
+
+appState.then(({ subscribe }) => {
+  subscribe('debug.print_logs', togglePrint)
+})
 
 const readState = async <T = any>(path: string): Promise<T> => {
   return await new Promise<T>(res => {

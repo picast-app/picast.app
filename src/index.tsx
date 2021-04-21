@@ -6,10 +6,11 @@ import reportWebVitals from './reportWebVitals'
 import { Router } from 'react-router-dom'
 import history from 'routing/history'
 import { togglePrint } from 'utils/logger'
+import 'utils/logger'
 import App from './App'
-import { main } from './workers'
+import { state } from './workers'
 
-main.idbGet('meta', 'print_logs').then(togglePrint)
+state<boolean>('debug.print_logs', togglePrint)
 
 window.addEventListener('echo_reload', () => {
   location.reload()

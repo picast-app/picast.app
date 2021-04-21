@@ -27,6 +27,7 @@ export type State = {
   queue: EpisodeId[]
   debug: {
     touch: boolean
+    print_logs: boolean
     set(update: Omit<Partial<State['debug']>, 'set'>): void
   }
 }
@@ -78,6 +79,7 @@ async function init(): Promise<{
     queue: [],
     debug: {
       touch: !!(await db.get('meta', 'touch')),
+      print_logs: (await db.get('meta', 'print_logs')) ?? false,
       async set(update) {
         for (const [k, v] of Object.entries(update)) {
           // @ts-ignore

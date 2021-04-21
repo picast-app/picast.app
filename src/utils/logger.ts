@@ -34,8 +34,9 @@ function defineMethods(shouldPrint: boolean) {
     )
   )
 }
+
 defineMethods(process.env.NODE_ENV === 'development')
 
 export const togglePrint = (v?: boolean) => {
-  if (typeof v === 'boolean' && v !== (logger.log !== noop)) defineMethods(v)
+  if (typeof v === 'boolean' && v !== (logger.info !== noop)) defineMethods(v)
 }

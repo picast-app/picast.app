@@ -1,6 +1,6 @@
 import content from './template.html'
 import Component from '../base.comp'
-import { main, proxy } from 'workers'
+import { main, state } from 'workers'
 import { playerSub } from 'utils/playerHooks'
 import type Progress from 'components/webcomponents/progressBar/progress.comp'
 import { bindThis } from 'utils/proto'
@@ -23,7 +23,7 @@ export default class Player extends Component {
   constructor() {
     super()
     bindThis(this)
-    main.state('playing.id', proxy(this.onStateChange as any))
+    state('playing.id', this.onStateChange)
     playerSub.setState(this)
   }
 
