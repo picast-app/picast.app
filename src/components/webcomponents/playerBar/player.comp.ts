@@ -169,10 +169,14 @@ export default class Player extends Component {
       delete this.syncId
     }
 
-    const { src, time } = this.audioService ?? {}
-    if (this.current?.[1].file !== src) throw Error('episode mismatch')
-    if (time) await main.setProgress(time)
-    if (this.isPlaying()) this.syncId = setTimeout(this.syncProgress, 5000)
+    if (!this.current) {
+      await main.playbackCompleted()
+    } else {
+      const { src, time } = this.audioService ?? {}
+      if (this.current?.[1].file !== src) throw Error('episode mismatch')
+      if (time) await main.setProgress(time)
+      if (this.isPlaying()) this.syncId = setTimeout(this.syncProgress, 5000)
+    }
   }
 
   private async forcedSync() {
@@ -235,6 +239,12 @@ export default class Player extends Component {
     this.events.call('pause')
     this.setProgressAttr('current', this.audioService.time!)
     this.setProgressAttr('playing', false)
+  }
+
+  async onEnded() {
+    this.current = null
+    this.audioService.setSrc(null)
+    await this.syncProgress()
   }
 
   onLoading(loading: boolean) {

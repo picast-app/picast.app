@@ -307,6 +307,15 @@ export default class Store {
     })
   }
 
+  public async setEpisodeCompleted(id: string) {
+    const episode = await this.db.get('episodes', id)
+    if (!episode) throw Error(`can't update unknown episode ${id}`)
+    delete episode.currentTime
+    delete episode.relProg
+    episode.completed = true
+    await this.db.put('episodes', episode)
+  }
+
   public async getEpisodeProgress(id: string): Promise<number> {
     const episode = await this.db.get('episodes', id)
     return episode?.relProg ?? 0

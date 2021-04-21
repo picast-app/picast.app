@@ -46,3 +46,14 @@ export async function setProgress(progress: number, forceSync = false) {
     state.user.wsAuth
   )
 }
+
+export async function playbackCompleted() {
+  const { state } = await stateProm
+  const id = state.playing.id?.[1]
+  if (!id) throw Error('no episode playing')
+  await Promise.all([
+    state.playing.set(null),
+    store.setPlaying(null),
+    store.setEpisodeCompleted(id),
+  ])
+}

@@ -51,10 +51,12 @@ export default class Audio extends Service implements PlaybackController {
 
   // common audio interface
 
-  public setSrc = this.audioGuard((src: string, pos = 0) => {
+  public setSrc = this.audioGuard((src: string | null, pos = 0) => {
     this.log?.('set src', src)
-    this.audio!.src = src
-    this.audio!.currentTime = pos
+    if (src) {
+      this.audio!.src = src
+      this.audio!.currentTime = pos
+    } else this.audio!.removeAttribute('src')
   })
 
   public play = this.audioGuard(async (src: string, pos = 0) => {
@@ -83,7 +85,7 @@ export default class Audio extends Service implements PlaybackController {
 
   private onEnd() {
     this.log?.('ended')
-    this.player?.onPaused()
+    this.player?.onEnded()
   }
 
   private onBufferedUpdate() {

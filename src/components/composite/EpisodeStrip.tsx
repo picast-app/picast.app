@@ -38,7 +38,7 @@ export function EpisodeStrip({ artwork, clamp, ...props }: Props) {
       <S.Actions>
         <PlayButton
           id={[episode.podcast, episode.id] as any}
-          progress={episode.relProg}
+          progress={episode.relProg ?? 0}
         />
       </S.Actions>
     </S.Strip>
