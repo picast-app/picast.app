@@ -24,7 +24,7 @@ function defineMethods(shouldPrint: boolean) {
   Object.defineProperties(
     logger,
     Object.fromEntries(
-      (['info', 'warn', 'error'] as const).map(m => [
+      (['info', 'warn', 'error', 'assert'] as const).map(m => [
         m,
         {
           ...(shouldPrint ? { get: () => print(m) } : { value: fallback(m) }),

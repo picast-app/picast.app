@@ -249,6 +249,7 @@ export default class Player extends Component {
 
   onLoading(loading: boolean) {
     logger.info('loading', loading)
+    this.setProgressAttr('loading', loading)
   }
 
   private onBarJump(e: CustomEvent<number>) {
