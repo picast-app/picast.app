@@ -233,12 +233,14 @@ export default class Player extends Component {
     this.events.call('play')
     this.setProgressAttr('current', this.audioService.time!)
     this.setProgressAttr('playing', true)
+    this.syncProgress()
   }
 
   onPaused() {
     this.events.call('pause')
     this.setProgressAttr('current', this.audioService.time!)
     this.setProgressAttr('playing', false)
+    this.syncProgress()
   }
 
   async onEnded() {
