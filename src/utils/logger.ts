@@ -1,6 +1,6 @@
 import * as ts from 'utils/time'
 
-export default globalThis.logger = {}
+export default globalThis.logger = { assert: console.assert }
 
 const noop = () => {}
 const print = (method: keyof typeof console, prefix: string = method) =>
@@ -12,22 +12,14 @@ const print = (method: keyof typeof console, prefix: string = method) =>
     `<${ts.log()}>`
   )
 
-const fallback = (method: keyof typeof console) => {
-  if (method !== 'assert') return noop
-  return (cond: any, ...msg: string[]) => {
-    if (cond) return
-    throw Error('Assertion failed' + (msg.length ? `: ${msg.join(' ')}` : ''))
-  }
-}
-
 function defineMethods(shouldPrint: boolean) {
   Object.defineProperties(
     logger,
     Object.fromEntries(
-      (['info', 'warn', 'error', 'assert'] as const).map(m => [
+      (['info', 'warn', 'error'] as const).map(m => [
         m,
         {
-          ...(shouldPrint ? { get: () => print(m) } : { value: fallback(m) }),
+          ...(shouldPrint ? { get: () => print(m) } : { value: noop }),
           configurable: true,
         },
       ])

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Screen } from 'components/structure'
-import { Title, Input, Artwork, Switch } from 'components/atoms'
+import { Title, Input, Artwork, Switch, PlayButton } from 'components/atoms'
 import { ShowCard } from 'components/composite'
 import { useComputed } from 'utils/hooks'
 
@@ -18,6 +18,7 @@ export default function Components() {
     artwork,
     covers: [],
   }))
+  const [playing, setPlaying] = useState(true)
 
   return (
     <Screen padd style={S.Page}>
@@ -25,7 +26,6 @@ export default function Components() {
       <S.Podcast>
         <Title h2>Podcast Card</Title>
         <Input value={src} onChange={setSrc} />
-        <Artwork src={src} />
         <ShowCard podcast={podcast} card title />
       </S.Podcast>
       <section>
@@ -71,6 +71,11 @@ export default function Components() {
         >
           snack
         </button>
+      </section>
+
+      <section>
+        <Title h2>Play Button</Title>
+        <PlayButton playing={playing} onPress={() => setPlaying(!playing)} />
       </section>
     </Screen>
   )

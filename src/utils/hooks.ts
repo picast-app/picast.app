@@ -516,3 +516,15 @@ export const useArtwork = (podcast: string) => {
   }, [podcast])
   return covers
 }
+
+export function useChanged(cb: Parameters<typeof useEffect>[0], deps?: any[]) {
+  const init = useRef(false)
+  useEffect(() => {
+    if (!init.current) {
+      init.current = true
+      return
+    }
+    return cb()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps)
+}

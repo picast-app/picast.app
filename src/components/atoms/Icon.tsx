@@ -22,6 +22,7 @@ export const Icon: React.FC<Props> = ({
   label,
   autoFocus,
   tabIndex,
+  children,
   ...props
 }) => {
   const theme = useTheme()
@@ -29,6 +30,7 @@ export const Icon: React.FC<Props> = ({
     <S.Icon viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       {icons[icon][style ?? (theme === 'dark' ? 'outlined' : 'filled')] ??
         icons[icon].filled}
+      {children}
     </S.Icon>
   )
   if (linkTo)
