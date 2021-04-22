@@ -1,5 +1,6 @@
 import * as ts from 'utils/time'
 
+// eslint-disable-next-line no-console
 export default globalThis.logger = { assert: console.assert }
 
 const noop = () => {}
