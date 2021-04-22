@@ -82,7 +82,6 @@ const S = {
       transform: scale(1.5);
 
       & > *:nth-child(2) {
-        margin: 0 0.5rem;
         transform: scale(0.9);
       }
     }

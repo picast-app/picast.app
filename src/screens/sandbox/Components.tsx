@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Screen } from 'components/structure'
-import { Title, Input, Artwork, Switch, PlayButton } from 'components/atoms'
+import { Title, Input, Switch, PlayButton } from 'components/atoms'
 import { ShowCard } from 'components/composite'
 import { useComputed } from 'utils/hooks'
 
@@ -18,7 +18,7 @@ export default function Components() {
     artwork,
     covers: [],
   }))
-  const [playing, setPlaying] = useState(true)
+  const [playing, setPlaying] = useState(false)
 
   return (
     <Screen padd style={S.Page}>
@@ -73,7 +73,7 @@ export default function Components() {
         </button>
       </section>
 
-      <section>
+      <section className="pb">
         <Title h2>Play Button</Title>
         <PlayButton playing={playing} onPress={() => setPlaying(!playing)} />
       </section>
@@ -93,6 +93,11 @@ const S = {
 
     section:first-of-type {
       padding-top: 0;
+    }
+
+    .pb > button {
+      width: 20rem;
+      height: 20rem;
     }
   `,
 

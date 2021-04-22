@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { mobile } from 'styles/responsive'
 import Skip from './SkipControl'
 import { usePlayer, useIsPlaying } from 'utils/playerHooks'
-import PlayButton from './PlayButton'
+import { PlayButton } from 'components/atoms'
 
 export default function PlayControls(props: { slot?: string }) {
   const player = usePlayer()
@@ -14,7 +14,7 @@ export default function PlayControls(props: { slot?: string }) {
       <Skip ms={-15000} onJump={n => player?.jump(n, true)} />
       <PlayButton
         playing={playing}
-        onClick={() => player?.[playing ? 'pause' : 'resume']()}
+        onPress={() => player?.[playing ? 'pause' : 'resume']()}
       />
       <Skip ms={30000} onJump={n => player?.jump(n, true)} />
     </SC>
