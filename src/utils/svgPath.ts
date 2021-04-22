@@ -1,4 +1,5 @@
 import { clamp, vec } from 'utils/math'
+import { wrapped } from 'utils/array'
 
 type Vertex = vec.Vec2D
 type Path = { path: Vertex[]; rounded?: Record<number, number> }
@@ -10,20 +11,22 @@ export const path = ({ path, rounded = {} }: Path): string => {
   let trailingQ = ''
 
   for (let i = 0; i < verts.length; i++) {
-    const next = org[(i + 1) % org.length]
-    const last = org[(org.length + (i - 1)) % org.length]
+    let next = wrapped(org, i + 1)
+    let last = wrapped(org, i - 1)
+    if (vec.equal(verts[i], next)) next = wrapped(org, i + 2)
+    if (vec.equal(verts[i], last)) last = wrapped(org, i - 2)
 
     let Q = ''
     if (i in rounded) {
+      let r = rounded[i]
+
+      // reduce artifacts from overlapping curves
+      r = vec.smallerMag(vec.sub(next, org[i]), r)
+      r = vec.smallerMag(vec.sub(last, org[i]), r)
+
       const corner: vec.Vec2D = [...org[i]]
-      const c0 = vec.add(
-        org[i],
-        vec.mult(vec.normal(vec.sub(last, org[i])), rounded[i])
-      )
-      const c1 = vec.add(
-        corner,
-        vec.mult(vec.normal(vec.sub(next, corner)), rounded[i])
-      )
+      const c0 = vec.add(org[i], vec.mult(vec.normal(vec.sub(last, org[i])), r))
+      const c1 = vec.add(corner, vec.mult(vec.normal(vec.sub(next, corner)), r))
       const q = ` Q ${corner[0]} ${corner[1]}, ${c1[0]} ${c1[1]}`
 
       if (i > 0) {
@@ -32,7 +35,7 @@ export const path = ({ path, rounded = {} }: Path): string => {
       } else {
         verts[i] = vec.add(
           corner,
-          vec.mult(vec.normal(vec.sub(next, corner)), rounded[i])
+          vec.mult(vec.normal(vec.sub(next, corner)), r)
         )
         trailingQ = ` L ${c0[0]} ${c0[1]}` + q
       }
@@ -56,10 +59,16 @@ export const interpolated = (a: Path, b: Path) => {
       if (n === 0) v = a
       else if (n === 1) v = b
       else {
-        for (let i = 0; i < a.path.length; i++)
+        for (let i = 0; i < a.path.length; i++) {
+          if ((a.rounded && i in a.rounded) || (b.rounded && i in b.rounded)) {
+            const ra = (a.rounded ?? {})[i] ?? 0
+            const rb = (b.rounded ?? {})[i] ?? 0
+            ;(v.rounded ??= {})[i] = ra + (rb - ra) * n
+          }
           v.path.push(
             vec.add(a.path[i], vec.mult(vec.sub(b.path[i], a.path[i]), n))
           )
+        }
       }
 
       return path(v)
