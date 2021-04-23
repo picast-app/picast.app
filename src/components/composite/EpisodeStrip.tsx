@@ -238,7 +238,7 @@ const S = {
         width: calc(100% - 5rem);
         text-align: left;
         margin: 0;
-        max-width: calc(100% - 7.5rem);
+        max-width: calc(100% - 4rem);
       }
 
       span,
@@ -254,6 +254,7 @@ const S = {
 
       picture ~ :is(h1, time, span) {
         left: 4.5rem;
+        max-width: calc(100% - 8rem);
       }
     }
   `,
@@ -286,7 +287,6 @@ const S = {
       top: 50%;
       left: 1rem;
       transform: translateY(-50%);
-      max-width: calc(100% - 4rem);
       font-size: 0.95rem;
     }
   `,

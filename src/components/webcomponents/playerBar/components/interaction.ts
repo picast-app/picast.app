@@ -72,8 +72,10 @@ export default class Interaction extends Service {
     this._historyUnsub = history.listen(() => {
       if (this.isDesktop) return
       if (this.isFullscreen === this.isFullscreenUrl()) return
+      this.stopListenHistory()
+      setTimeout(this.startListenHistory, 100)
       this.isFullscreen = this.isFullscreenUrl()
-      this.fsTransform(+!this.isFullscreen, true)
+      this.fsTransform(+this.isFullscreenUrl(), true)
       this.attachGesture()
     })
   }
