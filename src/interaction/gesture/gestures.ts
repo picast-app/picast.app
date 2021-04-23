@@ -54,8 +54,8 @@ export class VerticalSwipe extends Gesture<{ move: (offY: number) => void }> {
   }
 
   get velocity() {
-    const [[, y0], [, y1 = y0] = []] = this.touch.path.reverse()
-    return y1 - y0
+    const [[, y1], [, y0]] = this.touch.path.slice(-2)
+    return y0 - y1
   }
 
   protected anchorCheck(y: number) {}
