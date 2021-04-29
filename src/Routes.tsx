@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react'
-import { Route, Switch, Redirect } from 'react-router-dom'
+import { Switch, Route, Redirect } from '@picast-app/router'
 import { Progress } from 'components/atoms'
-import location from 'routing/location'
 
 const Library = React.lazy(() => import('screens/Library'))
 const Feed = React.lazy(() => import('screens/Feed'))
@@ -19,20 +18,20 @@ const Settings = React.lazy(() => import('screens/Settings'))
 
 export default () => (
   <Suspense fallback={<Progress />}>
-    <Switch location={location}>
-      <Route exact path="/" component={Library} />
-      <Route exact path="/feed" component={Feed} />
-      <Route exact path="/profile" component={Profile} />
-      <Route exact path="/discover" component={Discover} />
-      <Route exact path="/search" component={Search} />
-      <Route exact path="/show/:id" component={Podcast} />
-      <Route exact path="/signin" component={SignIn} />
-      <Route exact path="/settings/:page?" component={Settings} />
-      <Route exact path="/sandbox" component={Sandbox} />
-      <Route exact path="/sandbox/elevation" component={Elevation} />
-      <Route exact path="/sandbox/ease" component={Ease} />
-      <Route exact path="/sandbox/components" component={Components} />
-      <Route path="/feedview" component={FeedView} />
+    <Switch>
+      <Route path="/">{Library}</Route>
+      <Route path="/feed">{Feed}</Route>
+      <Route path="/profile">{Profile}</Route>
+      <Route path="/discover">{Discover}</Route>
+      <Route path="/search">{Search}</Route>
+      <Route path="/show/:id">{Podcast}</Route>
+      <Route path="/signin">{SignIn}</Route>
+      <Route path="/settings/:page?">{Settings}</Route>
+      <Route path="/sandbox">{Sandbox}</Route>
+      <Route path="/sandbox/elevation">{Elevation}</Route>
+      <Route path="/sandbox/ease">{Ease}</Route>
+      <Route path="/sandbox/components">{Components}</Route>
+      <Route path="/feedview">{FeedView}</Route>
       <Redirect to="/" />
     </Switch>
   </Suspense>

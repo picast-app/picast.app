@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef, forwardRef } from 'react'
-import { Link } from 'components/atoms'
 import Background from './Background'
 import Player from './Player'
 import { Queue } from 'components/composite'
 import { EpisodeInfo } from 'components/composite'
-import { useLocation, useEvent, useMatchMedia } from 'utils/hooks'
+import { useEvent, useMatchMedia } from 'utils/hooks'
 import { desktop } from 'styles/responsive'
 import { scrollTo } from 'utils/animate'
-import { setUrl } from 'routing/url'
 import { memoize } from 'utils/cache'
+import { history, Link, useLocation } from '@picast-app/router'
 import {
   Container,
   TabWrap,
@@ -62,7 +61,7 @@ function FullscreenContainer({ podcast, episode, ...props }: Props) {
     if (!linkTransit.current && Math.round(offset) !== activeTab)
       setActiveTab(Math.round(offset))
     if (Number.isInteger(offset) && offset !== activeTabIndex())
-      setUrl({ hash: hashes[Math.round(offset)] })
+      history.push({ hash: hashes[Math.round(offset)] })
   }
   swipeRef.current = onSwipe
 

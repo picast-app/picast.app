@@ -1,6 +1,6 @@
 import React from 'react'
 import Section from './Section'
-import { Link } from 'components/atoms'
+import { Link } from '@picast-app/router'
 
 export default function About() {
   return (

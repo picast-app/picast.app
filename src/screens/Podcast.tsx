@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { useAPICall, useCustomTheme } from 'utils/hooks'
 import { Screen } from 'components/structure'
 import Appbar from 'components/Appbar'
-import type { RouteComponentProps } from 'react-router'
+import type { RouteProps } from '@picast-app/router'
 import Info from './podcast/Info'
 import Feed from './podcast/Episodes'
 import ContextMenu from './podcast/ContextMenu'
@@ -11,10 +11,7 @@ import { main } from 'workers'
 
 const checked: string[] = []
 
-export default function Podcast({
-  match,
-}: RouteComponentProps<{ id: string }>) {
-  const id = match.params.id.split(/[?#]/)[0]
+export default function Podcast({ match: { id } }: RouteProps<{ id: string }>) {
   const [podcast, _loading] = useAPICall('podcast', id)
   const [feedLoading, setFeedLoading] = useState(podcast?.incomplete ?? false)
   useCustomTheme(podcast?.palette)

@@ -1,11 +1,11 @@
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
-import { Link } from 'components/atoms'
 import { Screen, VirtualList } from 'components/structure'
 import { EpisodeStrip } from 'components/composite'
 import Appbar from 'components/Appbar'
 import { center } from 'styles/mixin'
 import { useAppState, useFeed } from 'utils/hooks'
+import { Link } from '@picast-app/router'
 
 export default function Wrap() {
   return (

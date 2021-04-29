@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Icon, Link } from 'components/atoms'
+import { Icon } from 'components/atoms'
+import { Link } from '@picast-app/router'
 import { Dropdown } from 'components/composite'
 import { main } from 'workers'
 

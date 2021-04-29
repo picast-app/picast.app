@@ -1,7 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Link, Artwork, Icon } from 'components/atoms'
-import { mobile } from 'styles/responsive'
+import { Artwork, Icon } from 'components/atoms'
+import { Link } from '@picast-app/router'
+import { mobile, desktop } from 'styles/responsive'
 
 interface Props {
   podcast: Podcast
@@ -33,10 +34,6 @@ const S = {
     --icon-size: 2.5rem;
     --size: calc(var(--player-height) - 2.5rem);
 
-    & > a:first-of-type {
-      margin-right: 2rem;
-    }
-
     @media ${mobile} {
       position: absolute;
       width: 100%;
@@ -48,6 +45,12 @@ const S = {
 
       & > button {
         margin-right: unset;
+      }
+    }
+
+    @media ${desktop} {
+      & > a:last-of-type {
+        margin-left: 2rem;
       }
     }
   `,

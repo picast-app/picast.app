@@ -1,10 +1,8 @@
 import Service from './base'
 import { desktop } from 'styles/responsive'
-import { setQueryParam, setUrl } from 'routing/url'
-import history from 'routing/history'
-
 import { animateTo } from 'utils/animate'
 import { clamp } from 'utils/math'
+import { history, SearchParams, location } from '@picast-app/router'
 import {
   GestureController,
   VerticalSwipe,
@@ -39,7 +37,7 @@ export default class Interaction extends Service {
     this.touchBoxes.push(container.getElementById('closed')!)
     this.touchBoxes.push(container.getElementById('extended')!)
 
-    this.isFullscreen = !this.isDesktop && this.isFullscreenUrl()
+    this.isFullscreen = !this.isDesktop && this.isFullscreenUrl
 
     const q = window.matchMedia(desktop)
     this.isDesktop = q.matches
@@ -71,11 +69,11 @@ export default class Interaction extends Service {
     this.stopListenHistory()
     this._historyUnsub = history.listen(() => {
       if (this.isDesktop) return
-      if (this.isFullscreen === this.isFullscreenUrl()) return
+      if (this.isFullscreen === this.isFullscreenUrl) return
       this.stopListenHistory()
       setTimeout(this.startListenHistory, 100)
-      this.isFullscreen = this.isFullscreenUrl()
-      this.fsTransform(+this.isFullscreenUrl(), true)
+      this.isFullscreen = !this.isFullscreen
+      this.fsTransform(+this.isFullscreen, true)
       this.attachGesture()
     })
   }
@@ -156,16 +154,16 @@ export default class Interaction extends Service {
       return
 
     this.isFullscreen = targets === 1
-    setUrl({ hash: targets ? 'playing' : null })
+    history.push({ hash: targets ? 'playing' : '' })
     this.attachGesture()
   }
 
   private showEpisodeInfo() {
     if (!this.player.current) return
-    setQueryParam(
-      'info',
-      `${this.player.current.map(({ id }) => id).join('-')}`
-    )
+    const [{ id: pod }, { id: ep }] = this.player.current
+    history.push({
+      search: SearchParams.merge({ info: `${pod}-${ep}` }, location.search),
+    })
   }
 
   private onPlayerClick(e: PointerEvent) {
@@ -173,10 +171,8 @@ export default class Interaction extends Service {
       this.fsTransform(FsState.EXTENDED, true)
   }
 
-  private isFullscreenUrl() {
-    return ['notes', 'playing', 'queue'].includes(
-      location.hash?.slice(1)?.toLowerCase()
-    )
+  private get isFullscreenUrl() {
+    return /^#?notes|playing|queue$/.test(location.hash)
   }
 
   private touchBox(fs: FsState = +this.isFullscreen) {

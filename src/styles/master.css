@@ -41,3 +41,7 @@ nav {
 a {
   color: var(--cl-text);
 }
+
+a.icon-wrap {
+  line-height: 0;
+}

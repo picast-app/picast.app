@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react'
 import styled from 'styled-components'
-import { Redirect } from 'react-router-dom'
+import { Redirect } from '@picast-app/router'
 import { Screen } from 'components/structure'
 import { main } from 'workers'
-import { useHistory, useAppState } from 'utils/hooks'
+import { useAppState } from 'utils/hooks'
 import * as wp from 'utils/webpush'
+import { history, RouteProps } from '@picast-app/router'
 
 const url = new URL(process.env.GOOGLE_OAUTH_ENDPOINT as string)
 
@@ -18,8 +19,7 @@ url.searchParams.set(
 url.searchParams.set('response_type', 'token')
 url.searchParams.set('scope', scopes.join(' '))
 
-export default function SignIn() {
-  const history = useHistory()
+const SignIn: React.FC<RouteProps> = ({ location }) => {
   const [signedIn, loading] = useAppState<boolean>('signedIn')
 
   const { access_token: accessToken } = Object.fromEntries(
@@ -31,7 +31,7 @@ export default function SignIn() {
 
   async function signIn() {
     main.signIn({ accessToken }, await wp.getSubscription(true))
-    history.replace(location.pathname)
+    history.push(location.path, { replace: true })
   }
 
   useEffect(() => {
@@ -48,6 +48,7 @@ export default function SignIn() {
     </Screen>
   )
 }
+export default SignIn
 
 const S = {
   Provider: styled.a`

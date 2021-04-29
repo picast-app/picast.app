@@ -5,7 +5,7 @@ import { Icon, ProgressSC } from 'components/atoms'
 import { Surface, Helmet } from 'components/structure'
 import { useScrollDir, useMatchMedia } from 'utils/hooks'
 import { desktop } from 'styles/responsive'
-import { useHistory } from 'react-router-dom'
+import { useLocation, history } from '@picast-app/router'
 
 type Props = {
   title?: string
@@ -23,8 +23,7 @@ export default function Appbar({
   scrollOut,
 }: Props) {
   const isDesktop = useMatchMedia(desktop)
-  const history = useHistory()
-  const lastPath = (history.location.state as any)?.previous
+  const location = useLocation()
 
   if (isDesktop) return !title ? null : <Helmet title={title} />
   const appbar = (
@@ -33,15 +32,9 @@ export default function Appbar({
         <Icon
           icon="arrow_back"
           aria-hidden
-          {...(!back.startsWith('!') && lastPath
-            ? { onClick: history.goBack, label: 'go back' }
-            : { linkTo: back.replace(/^!/, '') })}
-          {...(backAction && {
-            onClick(e) {
-              e.preventDefault()
-              backAction()
-            },
-          })}
+          {...(back.startsWith('!') || !location.previous
+            ? { linkTo: back.replace(/^!/, '') }
+            : { onClick: backAction ?? history.back, label: 'go back' })}
         />
       )}
       {title && (

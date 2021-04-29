@@ -1,9 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
-import { Switch, Redirect, Route, useHistory } from 'react-router-dom'
+import {
+  Switch,
+  Route,
+  Redirect,
+  useLocation,
+  Link as HLink,
+} from '@picast-app/router'
 import { Screen } from 'components/structure'
 import Appbar from 'components/Appbar'
-import { Link as HLink, Icon } from 'components/atoms'
+import { Icon } from 'components/atoms'
 import { animateTo } from 'utils/animate'
 import { desktop, mobile } from 'styles/responsive'
 import { useMatchMedia } from 'utils/hooks'
@@ -12,7 +18,6 @@ import Appearance from './settings/Appearance'
 import Debug from './settings/Debug'
 import Storage from './settings/Storage'
 import Notifications from './settings/Notifications'
-import location from 'routing/location'
 
 type SettingsRoute = {
   name: string
@@ -34,57 +39,40 @@ let routes: SettingsRoute[] = [
   { name: 'Debug', icon: 'bug', component: Debug },
   { name: 'About', icon: 'info', component: About },
 ]
-routes = routes.filter(({ cond }) => cond !== false)
+routes = routes
+  .filter(({ cond }) => cond !== false)
+  .map(v => ({ path: `/settings/${v.name.toLowerCase()}`, ...v }))
 
 const animation = { duration: 200, easing: 'ease' }
 
 export default function Settings() {
   const ref = useRef<HTMLDivElement>(null)
-  const history = useHistory()
-  const [mounted, setMounted] = useState(
-    location.pathname === '/settings' ? true : false
-  )
+  const { path } = useLocation()
+  const mounted = useRef(path === '/settings')
   const isDesktop = useMatchMedia(desktop)
-
-  const path = location.pathname.split('/').slice(2)[0]
-  const route = routes.find(v => (v.path ?? v.name.toLowerCase()) === path)
+  const route = routes.find(v => v.path === path)
 
   useEffect(() => {
-    if (isDesktop) {
-      if (!location.pathname.split('/').slice(2)[0])
-        history.push('/settings/general')
-      return
-    }
+    if (isDesktop) return
     const isSub = ref.current!.scrollLeft > 0
     if (isSub && !!route) return
     const transform = `translateX(${route ? '-100vw' : 0})`
-    if (!mounted) ref.current!.style.transform = transform
+    if (!mounted.current) ref.current!.style.transform = transform
     else animateTo(ref.current!, { transform }, animation)
-    setMounted(true)
-    // eslint-disable-next-line
-  }, [route])
+    mounted.current = true
+  }, [route, isDesktop])
 
   return (
     <Screen>
       <Appbar
         title={route?.name ?? 'Settings'}
-        back={route ? '!/settings' : '/profile'}
-        {...(route && {
-          async backAction() {
-            await animateTo(
-              ref.current!,
-              { transform: 'translateX(0)' },
-              animation
-            )
-            history.push('/settings')
-          },
-        })}
+        back={route ? '/settings' : '/profile'}
       />
       <S.Container>
         <S.Page ref={ref}>
           <Main isDesktop={isDesktop} />
           <S.SubWrap>
-            <Routes />
+            <Routes isDesktop={isDesktop} />
           </S.SubWrap>
         </S.Page>
       </S.Container>
@@ -92,39 +80,28 @@ export default function Settings() {
   )
 }
 
-const Routes = () => (
-  <Switch location={location}>
-    {routes.map(
-      ({
-        name,
-        path = name.toLowerCase(),
-        component = () => <div>{name}</div>,
-      }) => (
-        <Route
-          key={path}
-          exact
-          path={`/settings/${path}`}
-          component={component}
-        />
-      )
-    )}
-    <Redirect to="/settings" />
+const Routes = ({ isDesktop }: { isDesktop: boolean }) => (
+  <Switch>
+    {routes.map(({ name, path, component = () => <div>{name}</div> }) => (
+      <Route key={path} path={path!}>
+        {component}
+      </Route>
+    ))}
+    <Redirect to={isDesktop ? '/settings/general' : '/settings'} />
   </Switch>
 )
 
-function Main({ isDesktop }: { isDesktop: boolean }) {
-  return (
-    <S.Menu>
-      <ol>
-        {routes.map(({ name, path = name.toLowerCase(), icon }) => (
-          <Link key={path} icon={icon} to={path} isDesktop={isDesktop}>
-            {name}
-          </Link>
-        ))}
-      </ol>
-    </S.Menu>
-  )
-}
+const Main = ({ isDesktop }: { isDesktop: boolean }) => (
+  <S.Menu>
+    <ol>
+      {routes.map(({ name, path, icon }) => (
+        <Link key={path} icon={icon} to={path} isDesktop={isDesktop}>
+          {name}
+        </Link>
+      ))}
+    </ol>
+  </S.Menu>
+)
 
 type LinkProps = {
   to?: string
@@ -135,17 +112,25 @@ type LinkProps = {
 
 const Link: React.FunctionComponent<LinkProps> = ({
   children,
-  to = children.toLowerCase(),
+  to,
   icon,
   isDesktop,
-}) => (
-  <li>
-    <HLink to={`/settings/${to}`} nav={isDesktop ? 'h1' : true}>
-      <Icon icon={icon} />
-      {children}
-    </HLink>
-  </li>
-)
+}) => {
+  const location = useLocation()
+  const current = location.path === to
+
+  const Wrap = current && isDesktop ? 'h1' : React.Fragment
+  return (
+    <li>
+      <HLink to={to!} {...(current && { 'aria-current': 'page' })}>
+        <Wrap>
+          <Icon icon={icon} />
+          {children}
+        </Wrap>
+      </HLink>
+    </li>
+  )
+}
 
 const S = {
   Container: styled.div`
@@ -184,12 +169,14 @@ const S = {
 
   Menu: styled.nav`
     padding: 0.5rem 0;
+    flex-shrink: 0;
 
     li:not(:last-of-type) {
       border-bottom: 1px solid var(--cl-border-light);
     }
 
-    a {
+    a:not([aria-active]),
+    a > h1 {
       height: var(--nav-size);
       display: flex;
       text-decoration: none;

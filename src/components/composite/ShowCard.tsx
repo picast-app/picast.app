@@ -1,7 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Artwork, Link } from 'components/atoms'
+import { Artwork } from 'components/atoms'
 import { lineClamp } from 'styles/mixin'
+import { Link } from '@picast-app/router'
 
 type Props = {
   podcast: Podcast
@@ -38,11 +39,7 @@ export function ShowCard({
     </S.Container>
   )
   if (!podcast) return container
-  return (
-    <Link wrap to={`/show/${podcast.id}`}>
-      {container}
-    </Link>
-  )
+  return <Link to={`/show/${podcast.id}`}>{container}</Link>
 }
 
 const S = {

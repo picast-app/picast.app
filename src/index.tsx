@@ -3,8 +3,6 @@ import 'components/webcomponents'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import reportWebVitals from './reportWebVitals'
-import { Router } from 'react-router-dom'
-import history from 'routing/history'
 import { togglePrint } from 'utils/logger'
 import 'utils/logger'
 import App from './App'
@@ -24,11 +22,7 @@ matchMedia('(prefers-color-scheme: dark)').onchange = ({ matches }) => {
 logger.info(`running in ${process.env.NODE_ENV} env`)
 const strictMode = process.env.NODE_ENV === 'development' && false
 
-let app = (
-  <Router history={history}>
-    <App />
-  </Router>
-)
+let app = <App />
 if (strictMode) app = <React.StrictMode>{app}</React.StrictMode>
 
 ReactDOM.render(app, document.getElementById('root'))

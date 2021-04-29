@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Link } from './Link'
+import { Link } from '@picast-app/router'
 import { useTheme } from 'utils/hooks'
 import { Button } from './Button'
 
@@ -35,7 +35,7 @@ export const Icon: React.FC<Props> = ({
   )
   if (linkTo)
     return (
-      <Link to={linkTo} onClick={onClick}>
+      <Link to={linkTo} onClick={onClick} className="icon-wrap">
         {svg}
       </Link>
     )

@@ -2,7 +2,7 @@ import React from 'react'
 import Appbar from 'components/Appbar'
 import { Icon, Button } from 'components/atoms'
 import { Screen } from 'components/structure'
-import { Redirect } from 'react-router-dom'
+import { Redirect } from '@picast-app/router'
 import { useAppState } from 'utils/hooks'
 import { main } from 'workers'
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Screen } from 'components/structure'
-import { Link } from 'components/atoms'
+import { Link } from '@picast-app/router'
 
 export default function Sandbox() {
   const [loading, setLoading] = useState(false)
@@ -9,19 +9,13 @@ export default function Sandbox() {
     <Screen padd loading={loading}>
       <ol>
         <li>
-          <Link append to="elevation">
-            Elevation
-          </Link>
+          <Link to="/sandbox/elevation">Elevation</Link>
         </li>
         <li>
-          <Link append to="ease">
-            Ease
-          </Link>
+          <Link to="/sandbox/ease">Ease</Link>
         </li>
         <li>
-          <Link append to="components">
-            Components
-          </Link>
+          <Link to="/sandbox/components">Components</Link>
         </li>
       </ol>
       <button onClick={() => setLoading(!loading)}>toggle loading</button>

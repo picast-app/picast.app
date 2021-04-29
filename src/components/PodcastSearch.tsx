@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { Input } from './atoms'
-import { useDebouncedInputCall, useHistory } from 'utils/hooks'
+import { useDebouncedInputCall } from 'utils/hooks'
+import { useLocation, history } from '@picast-app/router'
 
 type Props = {
   visual?: boolean
 }
 
 export default function Search({ visual }: Props) {
-  const [input, setInput] = useState(
-    new URLSearchParams(location.search).get('q') ?? ''
-  )
+  const { path, search } = useLocation()
+  const pathRef = useRef(path)
+  pathRef.current = path
+  const [input, setInput] = useState(new URLSearchParams(search).get('q') ?? '')
   const [lastQuery, setLastQuery] = useState(input)
   const query = useDebouncedInputCall(input)
-  const history = useHistory()
 
   useEffect(() => {
     if (!query && !lastQuery) return
@@ -22,14 +23,13 @@ export default function Search({ visual }: Props) {
     else params.delete('q')
     const to = `/search?${params.toString()}`.replace(/\?$/, '')
     if (
-      to === location.pathname + location.search ||
-      (!query && location.pathname !== '/search')
+      to === pathRef.current + location.search ||
+      (!query && pathRef.current !== '/search')
     )
       return
-    if (location.pathname === '/search') history.replace(to)
-    else history.push(to)
+    history.push(to, { replace: pathRef.current === '/search' })
     setLastQuery(query)
-  }, [query, lastQuery, history])
+  }, [query, lastQuery])
 
   return (
     <Input

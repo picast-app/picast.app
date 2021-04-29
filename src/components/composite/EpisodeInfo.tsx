@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Link } from 'components/atoms'
+import { Link } from '@picast-app/router'
 import { Shownotes } from 'components/composite'
 import type { Podcast, Episode } from 'main/store/types'
 

@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
-import { Icon, Link, Artwork } from 'components/atoms'
+import { Icon, Artwork } from 'components/atoms'
+import { Link } from '@picast-app/router'
 import { main } from 'workers'
 import type { EpisodeBase } from 'main/store/types'
 import { proxy } from 'comlink'
+import { mobile } from 'styles/responsive'
+import { center, transition } from 'styles/mixin'
+import { useArtwork } from 'utils/hooks'
 import {
   playerSub,
   useEpisodePlaying,
   useEpisodeState,
 } from 'utils/playerHooks'
-import { mobile } from 'styles/responsive'
-import { center, transition } from 'styles/mixin'
-import { useArtwork } from 'utils/hooks'
 
 type Props = (
   | {
@@ -29,7 +30,7 @@ export function EpisodeStrip({ artwork, clamp, ...props }: Props) {
     <S.Strip>
       {artwork && episode?.podcast && <Thumbnail podcast={episode.podcast} />}
       <S.Title data-style={clamp ? 'clamp' : undefined}>
-        <S.InfoLink to={`?info=${episode.podcast}-${episode.id}`} independent>
+        <S.InfoLink to={`?info=${episode.podcast}-${episode.id}`}>
           {episode.title}
         </S.InfoLink>
       </S.Title>

@@ -11,13 +11,13 @@ import { ShowCard } from 'components/composite'
 import { Icon, Button } from 'components/atoms'
 import Appbar from 'components/Appbar'
 import PodcastSearch from 'components/PodcastSearch'
-import { useHistory, useMatchMedia, useAPICall } from 'utils/hooks'
+import { useMatchMedia, useAPICall } from 'utils/hooks'
 import { desktop, mobile } from 'styles/responsive'
 import { center } from 'styles/mixin'
-import { Redirect } from 'react-router-dom'
+import { Redirect, useLocation } from '@picast-app/router'
 
 export default function Search() {
-  useHistory()
+  useLocation()
   const isDesktop = useMatchMedia(desktop)
   const [showAll, setShowAll] = useState(false)
   const query = new URLSearchParams(location.search).get('q') ?? undefined

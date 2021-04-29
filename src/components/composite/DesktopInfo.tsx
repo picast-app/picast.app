@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { EpisodeInfo } from './EpisodeInfo'
-import { useHistory, useLocation, useCustomTheme } from 'utils/hooks'
+import { useCustomTheme } from 'utils/hooks'
 import { main } from 'workers'
+import {
+  history,
+  useLocation,
+  SearchParams,
+  RouteProps,
+} from '@picast-app/router'
 
-export function DesktopEpisodeInfo() {
-  const id = new URLSearchParams(location.search).get('info')?.split('-') as
-    | EpisodeId
-    | undefined
-
-  const history = useHistory()
-  useLocation()
+export const DesktopEpisodeInfo: React.FC<RouteProps> = ({ query }) => {
+  const { search, previous } = useLocation()
+  const id = (query.info as string).split('-') as EpisodeId | undefined
   const [ref, setRef] = useState<HTMLElement | null>(null)
 
   const info = useInfo(id)
   useCustomTheme(info?.podcast?.palette, ref)
 
   function close() {
-    if ((history.location.state as any)?.previous) history.goBack()
-    else history.push(location.pathname)
+    if (previous) history.back()
+    else history.push({ search: new SearchParams(search).remove('info') })
   }
 
   return (
@@ -60,16 +62,8 @@ const S = {
     width: 100vw;
     height: 100vh;
 
-    --td: 0.2s;
-
     picast-player:not([hidden]) ~ & {
       height: calc(100vh - var(--player-height));
-    }
-
-    &[hidden] {
-      display: initial;
-      visibility: hidden;
-      transition: visibility 0s var(--td);
     }
 
     &::before {
@@ -80,11 +74,6 @@ const S = {
       width: 100%;
       height: 100%;
       backdrop-filter: blur(1px) saturate(0.5) brightness(0.8);
-      transition: backdrop-filter var(--td) ease;
-    }
-
-    &[hidden]::before {
-      backdrop-filter: blur(0) saturate(1) brightness(1);
     }
   `,
 
@@ -99,7 +88,6 @@ const S = {
     min-height: 25rem;
     border-radius: 0.5rem;
     background-color: var(--cl-surface);
-    transition: transform var(--td) ease-out;
     transform-origin: left top;
 
     *[hidden] > & {
