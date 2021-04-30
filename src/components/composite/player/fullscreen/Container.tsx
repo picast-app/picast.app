@@ -7,7 +7,7 @@ import { useEvent, useMatchMedia } from 'utils/hooks'
 import { desktop } from 'styles/responsive'
 import { scrollTo } from 'utils/animate'
 import { memoize } from 'utils/cache'
-import { history, Link, useLocation } from '@picast-app/router'
+import { history, Link, useLocation, location } from '@picast-app/router'
 import {
   Container,
   TabWrap,
@@ -45,6 +45,11 @@ function FullscreenContainer({ podcast, episode, ...props }: Props) {
     if (!sectionRef) return
     if (isExtended === wasExtended.current) return
     sectionRef.scrollLeft = activeTab * sectionRef.offsetWidth
+    if (lineRef.current)
+      lineRef.current.style.transform = getLineTransform(
+        lineRef.current,
+        activeTab
+      )
   }, [activeTab, sectionRef, isExtended])
 
   const _atab = activeTabIndex(false)
@@ -143,17 +148,11 @@ function Tab({
 
 const TabLine = forwardRef<HTMLDivElement, { active: number }>(
   ({ active }, _ref) => {
-    const [initial] = useState(active)
     const [ref, setRef] = useState<HTMLDivElement | null>(null)
     if (_ref) {
       if (typeof _ref === 'function') _ref(ref)
       else _ref.current = ref
     }
-
-    useEffect(() => {
-      if (!ref) return
-      ref.style.transform = getLineTransform(ref, initial)
-    }, [ref, initial])
 
     if (active < 0) return null
     return <ActiveTabLine ref={setRef} />
