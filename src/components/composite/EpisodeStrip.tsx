@@ -28,20 +28,25 @@ export function EpisodeStrip({ artwork, clamp, ...props }: Props) {
   if (!episode) return null
   return (
     <S.Strip>
-      {artwork && episode?.podcast && <Thumbnail podcast={episode.podcast} />}
-      <S.Title data-style={clamp ? 'clamp' : undefined}>
-        <S.InfoLink to={`?info=${episode.podcast}-${episode.id}`}>
+      <Link to={`?info=${episode.podcast}-${episode.id}`}>
+        {artwork && episode?.podcast && <Thumbnail podcast={episode.podcast} />}
+        <S.Title data-style={clamp ? 'clamp' : undefined}>
           {episode.title}
-        </S.InfoLink>
-      </S.Title>
-      <Published>{episode.published}</Published>
-      <Duration>{episode.duration}</Duration>
-      <S.Actions>
-        <PlayButton
-          id={[episode.podcast, episode.id] as any}
-          progress={episode.relProg ?? 0}
-        />
-      </S.Actions>
+        </S.Title>
+        <Published>{episode.published}</Published>
+        <Duration>{episode.duration}</Duration>
+        <S.Actions
+          onClick={e => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+        >
+          <PlayButton
+            id={[episode.podcast, episode.id] as any}
+            progress={episode.relProg ?? 0}
+          />
+        </S.Actions>
+      </Link>
     </S.Strip>
   )
 }
@@ -197,26 +202,7 @@ function formatDate(raw: number) {
 
 const S = {
   Strip: styled.article`
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    padding: 0 1rem;
-    overflow: hidden;
     height: 100%;
-
-    picture {
-      width: 3rem;
-      height: 3rem;
-      background-color: var(--cl-text-disabled);
-      border-radius: 0.2rem;
-      margin-right: 1rem;
-      overflow: hidden;
-
-      & > * {
-        width: 100%;
-        height: 100%;
-      }
-    }
 
     @media (hover: hover) {
       &:hover * {
@@ -228,34 +214,68 @@ const S = {
       user-select: none;
     }
 
-    @media ${mobile} {
-      display: block;
-      padding-right: 3rem;
-      overflow-x: hidden;
-      position: relative;
+    & > a {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      text-decoration: none;
+      height: 100%;
+      padding: 0 1rem;
+      overflow: hidden;
 
-      & > *:not(div, picture) {
-        flex-grow: unset;
-        width: calc(100% - 5rem);
-        text-align: left;
-        margin: 0;
-        max-width: calc(100% - 4rem);
-      }
-
-      span,
-      time {
-        font-size: 0.8rem;
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
       }
 
       picture {
-        position: absolute;
-        left: 1rem;
-        top: calc(50% - 1.5rem);
+        width: 3rem;
+        height: 3rem;
+        background-color: var(--cl-text-disabled);
+        border-radius: 0.2rem;
+        margin-right: 1rem;
+        overflow: hidden;
+
+        & > * {
+          width: 100%;
+          height: 100%;
+        }
       }
 
-      picture ~ :is(h1, time, span) {
-        left: 4.5rem;
-        max-width: calc(100% - 8rem);
+      @media ${mobile} {
+        display: block;
+        padding-right: 3rem;
+        overflow-x: hidden;
+        position: relative;
+
+        & > *:not(div, picture) {
+          flex-grow: unset;
+          width: calc(100% - 5rem);
+          text-align: left;
+          margin: 0;
+          max-width: calc(100% - 4rem);
+        }
+
+        span,
+        time {
+          font-size: 0.8rem;
+        }
+
+        picture {
+          position: absolute;
+          left: 1rem;
+          top: calc(50% - 1.5rem);
+        }
+
+        picture ~ :is(h1, time, span) {
+          left: 4.5rem;
+          max-width: calc(100% - 8rem);
+        }
       }
     }
   `,
@@ -389,19 +409,6 @@ const S = {
       to {
         stroke-dashoffset: ${circ};
       }
-    }
-  `,
-
-  InfoLink: styled(Link)`
-    transition: color 0.1s ease;
-
-    &::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
     }
   `,
 }

@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import Routes from './Routes'
 import Mainnav from 'components/Mainnav'
-import { Player, DesktopEpisodeInfo } from 'components/composite'
+import { Player } from 'components/composite'
 import { SnackTray } from 'components/structure'
 import { Theme } from 'styles'
 import { desktop } from 'styles/responsive'
 import { HelmetProvider, Helmet } from 'react-helmet-async'
-import { Route } from '@picast-app/router'
 
 export default function App() {
   const [isDarkMode, setDarkMode] = useState(
@@ -37,7 +36,6 @@ export default function App() {
           <Routes />
           <SnackTray />
           <Mainnav />
-          <Route path="?info">{DesktopEpisodeInfo}</Route>
         </S.App>
       </Theme.Provider>
     </HelmetProvider>

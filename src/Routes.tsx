@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react'
 import { Switch, Route, Redirect } from '@picast-app/router'
 import { Progress } from 'components/atoms'
+import EpisodeInfo from 'screens/EpisodeInfo'
 
 const Library = React.lazy(() => import('screens/Library'))
 const Feed = React.lazy(() => import('screens/Feed'))
@@ -17,22 +18,25 @@ const SignIn = React.lazy(() => import('screens/SignIn'))
 const Settings = React.lazy(() => import('screens/Settings'))
 
 export default () => (
-  <Suspense fallback={<Progress />}>
-    <Switch>
-      <Route path="/">{Library}</Route>
-      <Route path="/feed">{Feed}</Route>
-      <Route path="/profile">{Profile}</Route>
-      <Route path="/discover">{Discover}</Route>
-      <Route path="/search">{Search}</Route>
-      <Route path="/show/:id">{Podcast}</Route>
-      <Route path="/signin">{SignIn}</Route>
-      <Route path="/settings/:page?">{Settings}</Route>
-      <Route path="/sandbox">{Sandbox}</Route>
-      <Route path="/sandbox/elevation">{Elevation}</Route>
-      <Route path="/sandbox/ease">{Ease}</Route>
-      <Route path="/sandbox/components">{Components}</Route>
-      <Route path="/feedview">{FeedView}</Route>
-      <Redirect to="/" />
-    </Switch>
-  </Suspense>
+  <>
+    <Suspense fallback={<Progress />}>
+      <Switch>
+        <Route path="/">{Library}</Route>
+        <Route path="/feed">{Feed}</Route>
+        <Route path="/profile">{Profile}</Route>
+        <Route path="/discover">{Discover}</Route>
+        <Route path="/search">{Search}</Route>
+        <Route path="/show/:id">{Podcast}</Route>
+        <Route path="/signin">{SignIn}</Route>
+        <Route path="/settings/:page?">{Settings}</Route>
+        <Route path="/sandbox">{Sandbox}</Route>
+        <Route path="/sandbox/elevation">{Elevation}</Route>
+        <Route path="/sandbox/ease">{Ease}</Route>
+        <Route path="/sandbox/components">{Components}</Route>
+        <Route path="/feedview">{FeedView}</Route>
+        <Redirect to="/" />
+      </Switch>
+    </Suspense>
+    <Route path="?info">{EpisodeInfo}</Route>
+  </>
 )

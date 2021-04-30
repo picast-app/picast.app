@@ -76,7 +76,7 @@ async function init(): Promise<{
         }
       },
     },
-    queue: [],
+    queue: playing ? [playing] : [],
     debug: {
       touch: !!(await db.get('meta', 'touch')),
       print_logs: (await db.get('meta', 'print_logs')) ?? false,
