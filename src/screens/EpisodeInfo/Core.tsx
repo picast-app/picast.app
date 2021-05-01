@@ -15,7 +15,7 @@ export const Core: React.FC<{ id: EpisodeId }> = ({ id }) => {
 
   if (!podcast) return null
   return (
-    <S.Container ref={themeRef}>
+    <S.Container ref={themeRef} className="content">
       <S.Podcast>
         <Artwork covers={podcast.covers} />
         <div>
@@ -36,7 +36,11 @@ const S = {
   Container: styled.article`
     padding: 1rem;
     height: 100%;
-    overflow-y: auto;
+    overflow-y: hidden;
+
+    *[data-anchor='top'] & {
+      overflow-y: auto;
+    }
   `,
 
   Podcast: styled.div`

@@ -61,9 +61,13 @@ const S = {
     }
 
     @media ${mobile} {
-      border-radius: none;
+      border-radius: 0;
       border-top-left-radius: var(--border-radius);
       border-top-right-radius: var(--border-radius);
+    }
+
+    [data-anchor='top'] > & {
+      --border-radius: 0;
     }
   `,
 }

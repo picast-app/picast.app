@@ -2,6 +2,7 @@ import { useEffect, useCallback } from 'react'
 import { animateTo } from 'utils/animate'
 import { GestureController, VerticalSwipe } from 'interaction/gesture/gestures'
 import { min } from 'utils/array'
+import { clamp } from 'utils/math'
 
 export const useTransitionIn = (ref: HTMLDivElement | null) =>
   useEffect(() => {
@@ -50,12 +51,23 @@ export function useSwipe(ref: HTMLElement | null, _close: () => void) {
     controller.addEventListener('start', gesture => {
       const el = ref.firstElementChild as HTMLElement
       const initial = el.offsetTop - el.getBoundingClientRect().top
+      const content = ref.querySelector<HTMLElement>('.content')!
+      let anchor = 0
 
       gesture.addEventListener('move', dy => {
-        el.style.transform = `translateY(${-(initial + dy)}px)`
+        if (ref.dataset.anchor === 'top') {
+          if (content.scrollTop > 0) {
+            anchor = dy
+            return
+          } else ref.dataset.anchor = 'free'
+        }
+        const pos = clamp(0, initial + (dy - anchor), window.innerHeight)
+        if (pos === window.innerHeight) ref.dataset.anchor = 'top'
+        el.style.transform = `translateY(${-pos}px)`
       })
 
       gesture.addEventListener('end', async () => {
+        if (content.scrollTop > 0) return
         const vel = Math.abs(gesture.velocity) > 3 ? gesture.velocity : 0
         const stops = STOPS.map(n => n * window.innerHeight)
         const pos = stops[0] - el.getBoundingClientRect().top
@@ -74,6 +86,7 @@ export function useSwipe(ref: HTMLElement | null, _close: () => void) {
           )
 
         if (stop === stops[2]) close()
+        if (stop === stops[0]) ref.dataset.anchor = 'top'
       })
     })
 
