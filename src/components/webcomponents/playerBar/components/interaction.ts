@@ -18,6 +18,7 @@ enum FsState {
 export default class Interaction extends Service {
   private touchBoxes: HTMLElement[] = []
   private isDesktop?: boolean
+  private isInfo?: boolean
   private isFullscreen = false
   private mainnav?: HTMLElement
   private fullscreen?: HTMLElement
@@ -41,7 +42,6 @@ export default class Interaction extends Service {
 
     const q = window.matchMedia(desktop)
     this.isDesktop = q.matches
-    if (!this.isDesktop) this.addFsListeners()
     q.onchange = v => {
       this.isDesktop = v.matches
       if (this.isDesktop) {
@@ -50,6 +50,9 @@ export default class Interaction extends Service {
       } else this.addFsListeners()
     }
 
+    this.isInfo = this.isInfoUrl
+
+    if (!this.isDesktop && !this.isInfo) this.addFsListeners()
     if (!this.isDesktop) this.fsTransform(+this.isFullscreen)
 
     this.player.shadowRoot
@@ -69,7 +72,14 @@ export default class Interaction extends Service {
     this.stopListenHistory()
     this._historyUnsub = history.listen(() => {
       if (this.isDesktop) return
-      if (this.isFullscreen === this.isFullscreenUrl) return
+      if (this.isFullscreen === this.isFullscreenUrl) {
+        if (this.isInfoUrl !== this.isInfo) {
+          this.isInfo = this.isInfoUrl
+          if (this.isInfo) this.removeFsListeners()
+          else this.addFsListeners()
+        }
+        return
+      }
       this.stopListenHistory()
       setTimeout(this.startListenHistory, 100)
       this.isFullscreen = !this.isFullscreen
@@ -173,6 +183,10 @@ export default class Interaction extends Service {
 
   private get isFullscreenUrl() {
     return /^#?notes|playing|queue$/.test(location.hash)
+  }
+
+  private get isInfoUrl() {
+    return 'info' in new SearchParams(location.search).content
   }
 
   private touchBox(fs: FsState = +this.isFullscreen) {
