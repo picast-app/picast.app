@@ -48,7 +48,9 @@ export const path = ({ path, rounded = {} }: Path): string => {
   return d + trailingQ
 }
 
-export const interpolated = (a: Path, b: Path) => {
+export type Interpolated = { at(n: number): string }
+
+export const interpolated = (a: Path, b: Path): Interpolated => {
   logger.assert(a.path.length === b.path.length, 'paths must have same length')
 
   return {
@@ -75,3 +77,9 @@ export const interpolated = (a: Path, b: Path) => {
     },
   }
 }
+
+export const translate = (path: vec.Vec2D[], off: vec.Vec2D): vec.Vec2D[] =>
+  path.map(v => vec.add(v, off))
+
+export const scale = (path: vec.Vec2D[], [x, y]: vec.Vec2D): vec.Vec2D[] =>
+  path.map(([vx, vy]) => [vx * x, vy * y])

@@ -1,20 +1,23 @@
 import React, { useState, useRef } from 'react'
 import { useChanged } from 'utils/hooks'
 import styled from 'styled-components'
-import { interpolated } from 'utils/svgPath'
-import { vec } from 'utils/math'
+import { interpolated, Interpolated, translate, scale } from 'utils/svgPath'
+import { vec, equiTriBoxRatio } from 'utils/math'
 import { easeInOutSine as ease } from 'utils/ease'
 
 type Props = {
   playing: boolean
   onPress(): void
+  round?: boolean
 }
 
-export function PlayButton({ playing, onPress }: Props) {
+export function PlayButton({ playing, onPress, round = false }: Props) {
   const [initial] = useState(+!playing)
   const svgRef = useRef<SVGSVGElement>(null)
   const cancelAnim = useRef<() => void>()
   const animState = useRef<number>(initial)
+
+  const paths = geometry[round ? 'enclosed' : 'open']
 
   useChanged(() => {
     if (!svgRef.current) return
@@ -23,15 +26,17 @@ export function PlayButton({ playing, onPress }: Props) {
       svgRef.current.getElementById('pbl') as SVGPathElement,
       svgRef.current.getElementById('pbr') as SVGPathElement,
       +!playing,
-      animState
+      animState,
+      paths
     )
-  }, [playing])
+  }, [playing, paths])
 
   return (
-    <Button onClick={onPress}>
+    <Button onClick={onPress} data-wrap={round ? 'round' : 'plain'}>
       <SVG viewBox="0 0 100 100" ref={svgRef}>
-        <path d={pathA.at(initial)} id="pbl" />
-        <path d={pathB.at(initial)} id="pbr" />
+        {round && <circle cx="50" cy="50" r="50" />}
+        <path d={paths[0].at(initial)} id="pbl" />
+        <path d={paths[1].at(initial)} id="pbr" />
       </SVG>
     </Button>
   )
@@ -41,7 +46,8 @@ function transition(
   path0: SVGPathElement,
   path1: SVGPathElement,
   target: number,
-  state: React.MutableRefObject<number>
+  state: React.MutableRefObject<number>,
+  geometry: [Interpolated, Interpolated]
 ) {
   const start = performance.now()
   const dur = 150
@@ -53,8 +59,8 @@ function transition(
     const dt = Math.min((performance.now() - start) / dur, 1)
     const n = (state.current = init + ease(dt) * span)
     if (dt) {
-      path0.setAttribute('d', pathA.at(n))
-      path1.setAttribute('d', pathB.at(n))
+      path0.setAttribute('d', geometry[0].at(n))
+      path1.setAttribute('d', geometry[1].at(n))
     }
     if (dt < 1) rafId = requestAnimationFrame(step)
   }
@@ -63,64 +69,99 @@ function transition(
   return () => cancelAnimationFrame(rafId)
 }
 
-const triH = 75
-const triW = (triH / 100) * 75
-const barW = 20
-const barH = triH * 0.9
-const barOff = (triW / 3) * 2 - barW
-const triCent = 2 / 5
-const triDiv = 0.45
+const geometry = {
+  open: calcPaths(),
+  enclosed: calcPaths({
+    triCent: 1 / 3,
+    barOff: 0.13,
+    barW: 0.15,
+    triH: 0.6,
+    triW: equiTriBoxRatio(0.6),
+  }),
+}
 
-const baseTri: vec.Vec2D[] = [
-  [50 - triW * triCent, 50 - triH / 2],
-  [50 + triW * (1 - triCent), 50],
-  [50 - triW * triCent, 50 + triH / 2],
-]
+type GeoOpts = {
+  vp: [number, number]
+  triW: number
+  triH: number
+  barW: number
+  barH: number
+  triCent: number
+  barOff: number
+  barCR: number
+  triCR: number
+}
 
-const leftTri: vec.Vec2D[] = [
-  baseTri[0],
-  vec.add(baseTri[0], vec.mult(vec.sub(baseTri[1], baseTri[0]), triDiv + 0.01)),
-  vec.add(baseTri[2], vec.mult(vec.sub(baseTri[1], baseTri[2]), triDiv + 0.01)),
-  baseTri[2],
-]
+function calcPaths({
+  vp = [100, 100],
+  triH = 0.6,
+  triW = equiTriBoxRatio(triH),
+  barW = 0.35 * triW,
+  barH = triH * 0.9,
+  triCent = 4 / 9,
+  barOff = triCent / 2 - barW / 2,
+  barCR = 0.5 * barW,
+  triCR = 0.8 * barCR,
+}: Partial<GeoOpts> = {}): [Interpolated, Interpolated] {
+  const triDiv = 0.45
 
-const rightTri: vec.Vec2D[] = [
-  vec.add(baseTri[0], vec.mult(vec.sub(baseTri[1], baseTri[0]), triDiv)),
-  baseTri[1],
-  baseTri[1],
-  vec.add(baseTri[2], vec.mult(vec.sub(baseTri[1], baseTri[2]), triDiv)),
-]
+  const baseTri: vec.Vec2D[] = [
+    [0.5 - triW * triCent, 0.5 - triH / 2],
+    [0.5 + triW * (1 - triCent), 0.5],
+    [0.5 - triW * triCent, 0.5 + triH / 2],
+  ]
 
-const bar: vec.Vec2D[] = [
-  [50 - barW / 2, 50 - barH / 2],
-  [50 + barW / 2, 50 - barH / 2],
-  [50 + barW / 2, 50 + barH / 2],
-  [50 - barW / 2, 50 + barH / 2],
-]
+  const leftTri: vec.Vec2D[] = [
+    baseTri[0],
+    vec.add(
+      baseTri[0],
+      vec.mult(vec.sub(baseTri[1], baseTri[0]), triDiv + 0.02)
+    ),
+    vec.add(
+      baseTri[2],
+      vec.mult(vec.sub(baseTri[1], baseTri[2]), triDiv + 0.02)
+    ),
+    baseTri[2],
+  ]
 
-const transPath = (path: vec.Vec2D[], trans: vec.Vec2D) =>
-  path.map(v => vec.add(v, trans))
+  const rightTri: vec.Vec2D[] = [
+    vec.add(baseTri[0], vec.mult(vec.sub(baseTri[1], baseTri[0]), triDiv)),
+    baseTri[1],
+    baseTri[1],
+    vec.add(baseTri[2], vec.mult(vec.sub(baseTri[1], baseTri[2]), triDiv)),
+  ]
 
-const tr = 8
-const barRound = { 0: 10, 1: 10, 2: 10, 3: 10 }
+  const bar: vec.Vec2D[] = [
+    [0.5 - barW / 2, 0.5 - barH / 2],
+    [0.5 + barW / 2, 0.5 - barH / 2],
+    [0.5 + barW / 2, 0.5 + barH / 2],
+    [0.5 - barW / 2, 0.5 + barH / 2],
+  ]
 
-const pathA = interpolated(
-  { path: transPath(bar, [-barOff, 0]), rounded: barRound },
-  { path: leftTri, rounded: { 0: tr, 3: tr } }
-)
-const pathB = interpolated(
-  { path: transPath(bar, [barOff, 0]), rounded: barRound },
-  { path: rightTri, rounded: { 1: tr, 2: tr } }
-)
+  triCR *= vp[0]
+  barCR *= vp[0]
+  const barRound = { 0: barCR, 1: barCR, 2: barCR, 3: barCR }
+
+  const pathA = interpolated(
+    { path: scale(translate(bar, [-barOff, 0]), vp), rounded: barRound },
+    { path: scale(leftTri, vp), rounded: { 0: triCR, 3: triCR } }
+  )
+  const pathB = interpolated(
+    { path: scale(translate(bar, [barOff, 0]), vp), rounded: barRound },
+    { path: scale(rightTri, vp), rounded: { 1: triCR, 2: triCR } }
+  )
+
+  return [pathA, pathB]
+}
 
 const Button = styled.button`
   padding: 0;
   border: none;
   border-radius: unset;
   display: block;
-  margin: 0 1rem;
-  width: 3rem;
-  height: 3rem;
+  --size: 3rem;
+  width: var(--size);
+  height: var(--size);
   box-sizing: border-box;
   cursor: pointer;
   background-color: transparent;
@@ -138,5 +179,13 @@ const SVG = styled.svg`
     fill: var(--cl-icon);
     stroke: none;
     will-change: d;
+  }
+
+  [data-wrap='round'] > & > path {
+    fill: var(--cl-background);
+  }
+
+  circle {
+    fill: var(--cl-icon);
   }
 `

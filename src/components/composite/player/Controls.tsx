@@ -5,7 +5,9 @@ import Skip from './SkipControl'
 import { usePlayer, useIsPlaying } from 'utils/playerHooks'
 import { PlayButton } from 'components/atoms'
 
-export default function PlayControls(props: { slot?: string }) {
+type Props = { slot?: string; round?: boolean }
+
+const PlayControls: React.FC<Props> = ({ round = false, ...props }) => {
   const player = usePlayer()
   const playing = useIsPlaying()
 
@@ -15,27 +17,34 @@ export default function PlayControls(props: { slot?: string }) {
       <PlayButton
         playing={playing}
         onPress={() => player?.[playing ? 'pause' : 'resume']()}
+        round={round}
       />
       <Skip ms={30000} onJump={n => player?.jump(n, true)} />
     </SC>
   )
 }
+export default PlayControls
 
 const SC = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
 
-  --pb-size: 4.5rem;
+  --pb-size: 3rem;
 
-  & > button[data-style~='icon-wrap'] {
-    width: var(--pb-size);
-    height: var(--pb-size);
+  & > button[data-wrap] {
+    --size: var(--pb-size);
+    width: var(--size);
+    height: var(--size);
+  }
 
-    svg {
-      width: 80%;
-      height: 80%;
-    }
+  button[data-wrap='plain'] {
+    margin: 0 0.5rem;
+    --size: calc(var(--pb-size) * 1.3);
+  }
+
+  button[data-wrap='round'] {
+    margin: 0 0.8rem;
   }
 
   @media ${mobile} {

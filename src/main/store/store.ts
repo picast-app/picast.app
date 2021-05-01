@@ -193,13 +193,21 @@ export default class Store {
     )
   }
 
-  public async episodeInfo([podId, epId]: EpisodeId): Promise<
-    (Episode & { podcast: Podcast }) | null
-  > {
-    const remote = await api.episode([podId, epId])
-    if (!remote) return null
-    const episode: any = convert.episode(remote, podId)
-    if (episode?.podcast) episode.podcast = await this.podcast(episode.podcast)
+  public async episodeInfo(
+    id: EpisodeId
+  ): Promise<(Episode & { podcast: Podcast }) | null> {
+    let episode: any
+    try {
+      const remote = await api.episode(id)
+      if (!remote) throw 0
+      episode = convert.episode(remote, id[0])
+    } catch (e) {
+      logger.error('failed to fetch remote episode', e)
+      episode = await this.episode(id)
+    }
+    if (!episode) return null
+    if (episode.podcast) episode.podcast = await this.podcast(episode.podcast)
+    episode.shownotes ??= 'failed to fetch shownotes'
     return episode
   }
 

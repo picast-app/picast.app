@@ -37,5 +37,6 @@ module.exports = {
     '@typescript-eslint/ban-types': ['warn', { types: { '{}': false } }],
     'require-await': 'off',
     '@typescript-eslint/require-await': 'warn',
+    'no-throw-literal': 'off',
   },
 }

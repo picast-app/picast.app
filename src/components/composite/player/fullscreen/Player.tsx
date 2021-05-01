@@ -20,7 +20,7 @@ export default function Player({ podcast, episode }: Props) {
       </S.TitleWrap>
       <S.CtrlWrap>
         <player-progress />
-        <Controls />
+        <Controls round />
       </S.CtrlWrap>
     </S.Player>
   )
