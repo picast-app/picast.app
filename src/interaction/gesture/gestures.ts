@@ -54,6 +54,7 @@ export class VerticalSwipe extends Gesture<{ move: (offY: number) => void }> {
   }
 
   get velocity() {
+    if (this.touch.path.length < 2) return 0
     const [[, y1], [, y0]] = this.touch.path.slice(-2)
     return y0 - y1
   }

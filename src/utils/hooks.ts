@@ -12,6 +12,7 @@ import throttle from 'lodash/throttle'
 import { main, subscriptionSub, state as appState } from 'workers'
 import { isPromise } from 'utils/promise'
 import type { API } from 'main/main.worker'
+import * as palette from 'styles/palette'
 
 export const useTheme = () => useContext(Theme)
 
@@ -414,22 +415,25 @@ export function useCustomTheme(
   colors: Exclude<Podcast['palette'], undefined> = {} as any,
   target: HTMLElement | null = document.body
 ) {
-  const theme = useTheme()
+  const dark = useTheme() === 'dark'
+  useEffect(() => {
+    if (!target) return
+    palette.apply(colors, target, dark)
+    return () => palette.remove(target)
+  }, [colors, dark, target])
+}
+
+export function useThemeRef(theme?: Podcast['palette']) {
+  const [ref, setRef] = useState<HTMLElement | null>(null)
+  const dark = useTheme() === 'dark'
 
   useEffect(() => {
-    if (!colors.darkVibrant || !colors.lightVibrant || !target) return
+    if (!ref || !theme) return
+    palette.apply(theme, ref, dark)
+    return () => palette.remove(ref)
+  }, [ref, theme, dark])
 
-    target.style.setProperty(
-      '--cl-primary',
-      theme === 'light' ? colors.darkVibrant : colors.lightVibrant
-    )
-    const select = theme === 'light' ? colors.lightMuted : colors.darkMuted
-    if (select) target.style.setProperty('--cl-select', select)
-
-    return () => {
-      target.style.removeProperty('--cl-primary')
-    }
-  }, [colors, theme, target])
+  return setRef
 }
 
 type Dimensions<T = true> = [

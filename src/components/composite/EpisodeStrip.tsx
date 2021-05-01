@@ -8,11 +8,7 @@ import { proxy } from 'comlink'
 import { mobile } from 'styles/responsive'
 import { center, transition } from 'styles/mixin'
 import { useArtwork } from 'utils/hooks'
-import {
-  playerSub,
-  useEpisodePlaying,
-  useEpisodeState,
-} from 'utils/playerHooks'
+import { useEpisodeState, useEpisodeToggle } from 'utils/playerHooks'
 
 type Props = (
   | {
@@ -98,35 +94,15 @@ const getEpisodeFromFeed: EpGetter<{ feed: string; index: number }> = (
 const getEpisodeFromId: EpGetter<{ id: EpisodeId }> = async ({ id }, cb) =>
   cb(await main.episode(id))
 
-const toggle = ([pod, ep]: EpisodeId) => async () => {
-  const player = playerSub.state
-
-  if (pod !== player?.current?.[0]?.id || ep !== player?.current?.[1]?.id) {
-    if (player) {
-      await player.play([pod, ep])
-    } else {
-      const unsub = playerSub.subscribe(player => {
-        if (!player) return
-        player.resume()
-        unsub()
-      })
-      await main.setPlaying([pod, ep])
-    }
-  } else {
-    if (player.isPlaying()) player.pause()
-    else await player.resume()
-  }
-}
-
 function PlayButton({ id, progress }: { id: EpisodeId; progress: number }) {
-  const playing = useEpisodePlaying(id)
+  const [playing, toggle] = useEpisodeToggle(id)
   return (
     <S.Play>
       <EpisodeProgress episode={id} initial={progress} playing={playing} />
       <Icon
         icon={playing ? 'pause' : 'play'}
         label={playing ? 'pause' : 'play'}
-        onClick={toggle(id)}
+        onClick={toggle}
       />
     </S.Play>
   )

@@ -1,6 +1,7 @@
 import { useState, useEffect, useReducer } from 'react'
 import { useSubscriptionValue } from 'utils/hooks'
 import subscription from 'utils/subscription'
+import { main } from 'workers'
 import type { Player } from 'components/webcomponents'
 
 const joinId = ([podId, epId]: [string, string]) => `${podId}-${epId}`
@@ -143,3 +144,27 @@ export function useEpisodeState(
 
   return state
 }
+
+const toggle = ([pod, ep]: EpisodeId) => async () => {
+  const player = playerSub.state
+
+  if (pod !== player?.current?.[0]?.id || ep !== player?.current?.[1]?.id) {
+    if (player) {
+      await player.play([pod, ep])
+    } else {
+      const unsub = playerSub.subscribe(player => {
+        if (!player) return
+        player.resume()
+        unsub()
+      })
+      await main.setPlaying([pod, ep])
+    }
+  } else {
+    if (player.isPlaying()) player.pause()
+    else await player.resume()
+  }
+}
+
+export const useEpisodeToggle = (
+  id: EpisodeId
+): [playing: boolean, toggle: () => void] => [useEpisodePlaying(id), toggle(id)]
