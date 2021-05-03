@@ -23,8 +23,9 @@ export function PlayButton({ playing, onPress, round = false }: Props) {
     if (!svgRef.current) return
     cancelAnim.current?.()
     cancelAnim.current = transition(
-      svgRef.current.getElementById('pbl') as SVGPathElement,
-      svgRef.current.getElementById('pbr') as SVGPathElement,
+      ['pbl', 'pbr'].map(
+        id => svgRef.current!.getElementById(id) as SVGPathElement
+      ),
       +!playing,
       animState,
       paths
@@ -35,16 +36,15 @@ export function PlayButton({ playing, onPress, round = false }: Props) {
     <Button onClick={onPress} data-wrap={round ? 'round' : 'plain'}>
       <SVG viewBox="0 0 100 100" ref={svgRef}>
         {round && <circle cx="50" cy="50" r="50" />}
-        <path d={paths[0].at(initial)} id="pbl" />
-        <path d={paths[1].at(initial)} id="pbr" />
+        <path d={paths[0](initial)} id="pbl" />
+        <path d={paths[1](initial)} id="pbr" />
       </SVG>
     </Button>
   )
 }
 
 function transition(
-  path0: SVGPathElement,
-  path1: SVGPathElement,
+  paths: SVGPathElement[],
   target: number,
   state: React.MutableRefObject<number>,
   geometry: [Interpolated, Interpolated]
@@ -58,10 +58,7 @@ function transition(
   const step = () => {
     const dt = Math.min((performance.now() - start) / dur, 1)
     const n = (state.current = init + ease(dt) * span)
-    if (dt) {
-      path0.setAttribute('d', geometry[0].at(n))
-      path1.setAttribute('d', geometry[1].at(n))
-    }
+    if (dt) paths.forEach((path, i) => path.setAttribute('d', geometry[i](n)))
     if (dt < 1) rafId = requestAnimationFrame(step)
   }
 

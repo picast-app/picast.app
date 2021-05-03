@@ -33,7 +33,7 @@ export default () => (
         <Route path="/sandbox/elevation">{Elevation}</Route>
         <Route path="/sandbox/ease">{Ease}</Route>
         <Route path="/sandbox/components">{Components}</Route>
-        <Route path="/feedview">{FeedView}</Route>
+        <Route path="/feedview/.*">{FeedView}</Route>
         <Redirect to="/" />
       </Switch>
     </Suspense>

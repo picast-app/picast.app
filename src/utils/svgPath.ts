@@ -48,33 +48,30 @@ export const path = ({ path, rounded = {} }: Path): string => {
   return d + trailingQ
 }
 
-export type Interpolated = { at(n: number): string }
+export type Interpolated = (n: number) => string
 
 export const interpolated = (a: Path, b: Path): Interpolated => {
   logger.assert(a.path.length === b.path.length, 'paths must have same length')
 
-  return {
-    at(n: number): string {
-      n = clamp(0, n, 1)
-
-      let v: Path = { path: [] }
-      if (n === 0) v = a
-      else if (n === 1) v = b
-      else {
-        for (let i = 0; i < a.path.length; i++) {
-          if ((a.rounded && i in a.rounded) || (b.rounded && i in b.rounded)) {
-            const ra = (a.rounded ?? {})[i] ?? 0
-            const rb = (b.rounded ?? {})[i] ?? 0
-            ;(v.rounded ??= {})[i] = ra + (rb - ra) * n
-          }
-          v.path.push(
-            vec.add(a.path[i], vec.mult(vec.sub(b.path[i], a.path[i]), n))
-          )
+  return (n: number) => {
+    n = clamp(0, n, 1)
+    let v: Path = { path: [] }
+    if (n === 0) v = a
+    else if (n === 1) v = b
+    else {
+      for (let i = 0; i < a.path.length; i++) {
+        if ((a.rounded && i in a.rounded) || (b.rounded && i in b.rounded)) {
+          const ra = (a.rounded ?? {})[i] ?? 0
+          const rb = (b.rounded ?? {})[i] ?? 0
+          ;(v.rounded ??= {})[i] = ra + (rb - ra) * n
         }
+        v.path.push(
+          vec.add(a.path[i], vec.mult(vec.sub(b.path[i], a.path[i]), n))
+        )
       }
+    }
 
-      return path(v)
-    },
+    return path(v)
   }
 }
 
