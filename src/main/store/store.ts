@@ -30,7 +30,7 @@ export default class Store {
     ws.on('episodeAdded', async ({ podcast, episodes }) => {
       const formatted = episodes.map(({ url, published, ...rest }: any) => ({
         file: url,
-        published: published * 1000,
+        published: new Date(published).getTime(),
         podcast,
         ...rest,
       }))
