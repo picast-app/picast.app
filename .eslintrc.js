@@ -38,5 +38,7 @@ module.exports = {
     'require-await': 'off',
     '@typescript-eslint/require-await': 'warn',
     'no-throw-literal': 'off',
+    'no-duplicate-imports': 'off',
+    '@typescript-eslint/no-duplicate-imports': ['warn'],
   },
 }

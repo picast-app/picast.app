@@ -40,7 +40,7 @@ export default function Appbar({
       {title && (
         <>
           <Helmet title={title} />
-          <S.Title>{title}</S.Title>
+          <S.Title id="sc-title">{title}</S.Title>
         </>
       )}
       {children}

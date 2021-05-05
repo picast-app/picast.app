@@ -11,7 +11,7 @@
   --cl-border: #0002;
   --cl-border-strong: #0008;
   --cl-border-light: #0001;
-  --cl-primary: #f9a825;
+  --cl-primary: #1E88E5;
   --cl-icon: var(--cl-text-strong);
   --cl-error: #c62828;
   --cl-select: initial;
@@ -30,5 +30,4 @@
   --cl-border: #fff3;
   --cl-border-strong: #fff8;
   --cl-border-light: #fff1;
-  --cl-primary: #ffeb3b;
 }

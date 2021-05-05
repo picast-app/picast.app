@@ -45,7 +45,13 @@ export function Input({
   return (
     <S.Wrap>
       {input}
-      <S.Actions onClick={e => e.preventDefault()}>{actions}</S.Actions>
+      <S.Actions onClick={e => e.preventDefault()}>
+        {React.Children.toArray(actions).map((el, i) =>
+          React.isValidElement(el)
+            ? React.cloneElement(el, { key: el.key ?? i, tabIndex: -1 })
+            : el
+        )}
+      </S.Actions>
     </S.Wrap>
   )
 }
