@@ -64,7 +64,7 @@ export default class Player extends Component {
   }
 
   private async onStateChange(id: EpisodeId) {
-    if (id[1] === this.current?.[1].id) return
+    if (id?.[1] === this.current?.[1].id) return
     const [podcast, episode] = await this.getInfo(id)
     if (!podcast || !episode) throw Error("couldn't read current info")
     this.setCurrent([podcast, episode])

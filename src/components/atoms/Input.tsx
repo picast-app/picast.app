@@ -14,6 +14,7 @@ type Props = {
   required?: boolean
   pattern?: string
   minLength?: number
+  actions?: JSX.Element[]
 }
 
 export function Input({
@@ -22,9 +23,10 @@ export function Input({
   blend,
   style,
   type,
+  actions,
   ...props
 }: Props & Omit<React.HTMLAttributes<HTMLInputElement>, keyof Props>) {
-  return (
+  const input = (
     <S.Input
       {...props}
       value={value}
@@ -38,6 +40,13 @@ export function Input({
             : (style as any).componentStyle?.rules?.raw?.join?.('\n'),
       })}
     />
+  )
+  if (!actions?.length) return input
+  return (
+    <S.Wrap>
+      {input}
+      <S.Actions onClick={e => e.preventDefault()}>{actions}</S.Actions>
+    </S.Wrap>
   )
 }
 
@@ -81,5 +90,30 @@ const S = {
     }
 
     ${({ extend }) => extend ?? ''}
+  `,
+
+  Wrap: styled.div`
+    position: relative;
+    height: 3rem;
+
+    /* correct for lastpass widget */
+    input[autocomplete='off'] + div {
+      transform: translateX(-25px);
+    }
+  `,
+
+  Actions: styled.div`
+    display: flex;
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-right: 0.5rem;
+    height: 100%;
+    align-items: center;
+
+    svg {
+      opacity: 0.4;
+      height: 1.4rem;
+    }
   `,
 }

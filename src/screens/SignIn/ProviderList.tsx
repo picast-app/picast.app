@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Icon, Input } from 'components/atoms'
+import { Dialog } from 'components/structure'
 import * as oauth from './oauth'
 
 const { href: googleUrl } = oauth.googleURL()
@@ -16,6 +17,7 @@ export default function ProviderList() {
         </S.Google>
         <hr />
         <IdentInput />
+        <button type="submit">continue</button>
       </fieldset>
     </S.List>
   )
@@ -24,6 +26,7 @@ export default function ProviderList() {
 function IdentInput() {
   const [ident, setIdent] = useState('')
   const [password, setPassword] = useState('')
+  const [showInfo, setShowInfo] = useState(false)
 
   return (
     <>
@@ -33,6 +36,14 @@ function IdentInput() {
         onChange={setIdent}
         required
         pattern="[a-zZ-Z0-9]{3,30}"
+        actions={[
+          <Icon
+            icon="info"
+            key="info"
+            onClick={() => setShowInfo(true)}
+            label="explain"
+          />,
+        ]}
       />
       <Input
         placeholder="Password"
@@ -42,7 +53,21 @@ function IdentInput() {
         required
         minLength={8}
       />
-      <button type="submit">continue</button>
+      <Dialog open={showInfo} onClose={() => setShowInfo(false)}>
+        <p>
+          You don't need to to tell us your email address to use Picast. Any
+          user name you can remember will allow you to sign in.
+        </p>
+        <p>
+          Just keep in mind that if you choose to not use an email address, we
+          won't be able to send you a reset link should you forget your
+          password.
+        </p>
+        <p>
+          If you change your mind you can always connect or remove your email
+          addressfrom your profile settings.
+        </p>
+      </Dialog>
     </>
   )
 }
@@ -79,9 +104,9 @@ const S = {
       transform: translate(-50%, -50%);
     }
 
-    button,
+    fieldset > button,
     input,
-    a {
+    fieldset > a {
       appearance: none;
       width: 100%;
       height: 3rem;
@@ -93,8 +118,12 @@ const S = {
       font-size: 0.9rem;
     }
 
-    input + input {
+    fieldset > *:not(hr) {
       margin-top: 0.5rem;
+    }
+
+    fieldset > hr + * {
+      margin-top: unset;
     }
 
     button[type='submit'] {
@@ -108,7 +137,6 @@ const S = {
     }
 
     &:invalid button[type='submit'] {
-      /* opacity: 0.8; */
       color: var(--cl-text-alt-disabled);
     }
   `,
