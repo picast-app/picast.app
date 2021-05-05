@@ -87,7 +87,7 @@ const Routes = ({ isDesktop }: { isDesktop: boolean }) => (
         {component}
       </Route>
     ))}
-    <Redirect to={isDesktop ? '/settings/general' : '/settings'} />
+    {isDesktop && <Redirect to="/settings/appearance" />}
   </Switch>
 )
 
