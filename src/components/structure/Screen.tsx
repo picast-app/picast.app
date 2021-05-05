@@ -163,6 +163,7 @@ const S = {
 
     & > ${ProgressSC} {
       position: fixed;
+      z-index: 1500;
     }
 
     section:not(:first-of-type) {
