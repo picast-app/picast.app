@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/start.js",
-    "build": "npm run types && node scripts/build.js && node scripts/http",
+    "build": "npm run strings && npm run types && node scripts/build.js && node scripts/http",
     "test": "node scripts/test.js",
     "lint:check": "eslint . --cache",
     "lint:fix": "eslint . --fix --cache",
@@ -15,7 +15,8 @@
     "gql:check": "npx apollo client:check",
     "gql:types": "rm -rf src/types/gql && mkdir -p src/types/gql && npx apollo client:download-schema src/types/gql/schema.json && npx apollo client:codegen --target typescript --outputFlat src/types/gql && npx graphql-codegen && node src/gql/bundleTypes && prettier --write \"./src/types/gql/*.ts\"",
     "ws:types": "typerpc schema socket.picast.app -o src/types/ws/index.ts",
-    "types": "npm run gql:types && npm run ws:types"
+    "types": "npm run gql:types && npm run ws:types",
+    "strings": "node scripts/bundleLocales"
   },
   "dependencies": {
     "@picast-app/router": "^0.3.6",
