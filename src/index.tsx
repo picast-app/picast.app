@@ -2,7 +2,6 @@ import 'styles'
 import 'components/webcomponents'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import reportWebVitals from './reportWebVitals'
 import { togglePrint } from 'utils/logger'
 import 'utils/logger'
 import App from './App'
@@ -39,5 +38,3 @@ window.addEventListener('storage', ({ key, newValue }) => {
     (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
   document.documentElement.dataset.theme = theme
 })
-
-reportWebVitals()

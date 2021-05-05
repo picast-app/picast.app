@@ -11,11 +11,22 @@ type Props = {
   blend?: boolean
   style?: string | StyledComponent<'input', any>
   type?: string
+  required?: boolean
+  pattern?: string
+  minLength?: number
 }
 
-export function Input({ value = '', onChange, blend, style, type }: Props) {
+export function Input({
+  value = '',
+  onChange,
+  blend,
+  style,
+  type,
+  ...props
+}: Props & Omit<React.HTMLAttributes<HTMLInputElement>, keyof Props>) {
   return (
     <S.Input
+      {...props}
       value={value}
       onChange={({ target }) => onChange?.(target.value)}
       data-style={blend ? 'blend' : 'default'}

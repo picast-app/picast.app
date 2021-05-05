@@ -6,18 +6,7 @@ import { main } from 'workers'
 import { useAppState } from 'utils/hooks'
 import * as wp from 'utils/webpush'
 import { history, RouteProps } from '@picast-app/router'
-
-const url = new URL(process.env.GOOGLE_OAUTH_ENDPOINT as string)
-
-const scopes = ['openid']
-
-url.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID as string)
-url.searchParams.set(
-  'redirect_uri',
-  (location.origin + location.pathname).replace(/\/$/, '')
-)
-url.searchParams.set('response_type', 'token')
-url.searchParams.set('scope', scopes.join(' '))
+import Providers from './SignIn/ProviderList'
 
 const SignIn: React.FC<RouteProps> = ({ location }) => {
   const [signedIn, loading] = useAppState<boolean>('signedIn')
@@ -43,8 +32,7 @@ const SignIn: React.FC<RouteProps> = ({ location }) => {
   if (!loading && signedIn) return <Redirect to="/" />
   return (
     <Screen padd loading={!!location.hash}>
-      <span>Sign In</span>
-      <S.Provider href={url.href}>SignIn with Google</S.Provider>
+      <Providers />
     </Screen>
   )
 }

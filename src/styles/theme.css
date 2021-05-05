@@ -4,10 +4,12 @@
   --cl-surface-alt: #1c1f22;
   --cl-text: #000d;
   --cl-text-strong: #000;
+  --cl-text-disabled: #00000060;
   --cl-text-alt: #fffd;
   --cl-text-alt-strong: #fffffff5;
-  --cl-text-disabled: #00000060;
+  --cl-text-alt-disabled: #fff8;
   --cl-border: #0002;
+  --cl-border-strong: #0008;
   --cl-border-light: #0001;
   --cl-primary: #f9a825;
   --cl-icon: var(--cl-text-strong);
@@ -26,6 +28,7 @@
   --cl-text-strong: #fff;
   --cl-text-disabled: #ffffff60;
   --cl-border: #fff3;
+  --cl-border-strong: #fff8;
   --cl-border-light: #fff1;
   --cl-primary: #ffeb3b;
 }
