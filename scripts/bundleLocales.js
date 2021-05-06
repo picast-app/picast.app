@@ -24,16 +24,16 @@ const parser = {
   smap: content =>
     content
       // remove empty lines
-      .replace(/\n^\s*$/gm, '')
+      .replace(/(^|\n)(\s*\n)/g, '')
       // remove comments
-      .replace(/\n[#=].*$/gm, '')
+      .replace(/(\n|^)[#=].*(\n|$)/g, '')
       // trim end of line
       .replace(/\s*(?=$)/gm, '')
       // inline multiline
       .replace(/\n\s+/gm, ' ')
       .split('\n')
       .map(line => line.split(':').map(v => v.trim()))
-      .map(([k, v]) => [k || v, v]),
+      .map(([k, v]) => [k || v, v.replace(/\\s/g, ' ')]),
 }
 
 for (const lang of fs.readdirSync(locDir)) {

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/start.js",
+    "dev": "npm run strings && node scripts/start.js",
     "build": "npm run strings && npm run types && node scripts/build.js && node scripts/http",
     "test": "node scripts/test.js",
     "lint:check": "eslint . --cache",
