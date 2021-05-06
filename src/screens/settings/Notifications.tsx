@@ -23,7 +23,7 @@ export default function Notifications() {
       await main.wpSub(JSON.stringify(sub))
     } catch (e) {
       notify.snack({
-        text: 'Failed to receive push notification permission.',
+        text: $`@error.push_grant`,
         lvl: 'error',
       })
       throw e
@@ -41,9 +41,9 @@ export default function Notifications() {
   if (granted === undefined) return null
   return (
     <Section title="Notifications">
-      <label>Push Notification permission</label>
+      <label>{$`@settings.grant_push`}</label>
       <Button text onClick={granted ? revoke : grant}>
-        {granted ? 'revoke' : 'grant'}
+        {granted ? $`revoke` : $`grant`}
       </Button>
     </Section>
   )

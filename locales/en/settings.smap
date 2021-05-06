@@ -1,0 +1,19 @@
+# /appearance
+pick_theme:     Color theme
+use_system:     Use system theme
+extract_color:  Extract color from artwork
+
+# /notifications
+grant_push:     Push Notification permission
+
+# /storage
+used: Used
+available: Available
+clear_all: Clear all data
+
+# /debug
+:dppx
+concurrency: Concurrency
+print_logs: Print logs
+show_touch: Show touch paths
+toggle_playback: Toggle playback loading

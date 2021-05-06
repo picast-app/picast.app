@@ -15,16 +15,21 @@ const routes: {
   match?: RegExp
   desktop?: true
 }[] = [
-  { path: '/', label: 'Library', icon: 'library', match: /^\/show/i },
-  { path: '/feed', label: 'Feed', icon: 'subscriptions' },
-  { path: '/discover', label: 'Discover', icon: 'search', match: /^\/search/i },
+  { path: '/', label: $.c`library`, icon: 'library', match: /^\/show/i },
+  { path: '/feed', label: $.c`feed`, icon: 'subscriptions' },
+  {
+    path: '/discover',
+    label: $.c`discover`,
+    icon: 'search',
+    match: /^\/search/i,
+  },
   {
     path: '/profile',
-    label: 'Profile',
+    label: $.c`profile`,
     icon: 'person',
     match: /^\/(signin|settings)/i,
   },
-  { path: '/settings', label: 'Settings', icon: 'gear', desktop: true },
+  { path: '/settings', label: $.c`settings`, icon: 'gear', desktop: true },
 ]
 
 export default function Mainnav() {

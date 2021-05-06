@@ -1,0 +1,12 @@
+title: Sign In / Sign Up
+google: with Google
+
+# tooltip in username input
+
+info_1: You don't need to to tell us your email address to use Picast. 
+        Any user name you can remember will allow you to sign in.
+
+info_2: Just keep in mind that if you choose to not use an email address, 
+        we won't be able to send you a reset link should you forget your password.
+
+info_3: If you change your mind you can always connect or remove your email address from your profile settings.

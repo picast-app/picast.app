@@ -38,14 +38,14 @@ function MainScreen({ name, setName, password, setPassword }: MainProps) {
   return (
     <S.List onSubmit={e => e.preventDefault()}>
       <fieldset>
-        <legend>Sign In / Sign Up</legend>
+        <legend>{$`@signin.title`}</legend>
         <S.Google href={googleURL()}>
           <Icon icon="google" />
-          with Google
+          {$`@signin.google`}
         </S.Google>
         <hr />
         <Input
-          placeholder="Email or User Name"
+          placeholder={$.or($.c`email`, $.c`username`)}
           value={name}
           onChange={setName}
           required
@@ -54,12 +54,12 @@ function MainScreen({ name, setName, password, setPassword }: MainProps) {
             <Icon
               icon="info"
               onClick={() => setShowInfo(true)}
-              label="explain"
+              label={$`explain`}
             />,
           ]}
         />
         <Input
-          placeholder="Password"
+          placeholder={$.c`password`}
           value={password}
           onChange={setPassword}
           type={revealed ? 'text' : 'password'}
@@ -68,27 +68,17 @@ function MainScreen({ name, setName, password, setPassword }: MainProps) {
           actions={[
             <Icon
               icon={revealed ? 'not_visible' : 'visible'}
-              label={revealed ? 'hide' : 'show'}
+              label={revealed ? $`hide` : $`show`}
               onClick={() => setReveal(!revealed)}
             />,
           ]}
         />
         <Dialog open={showInfo} onClose={() => setShowInfo(false)}>
-          <p>
-            You don't need to to tell us your email address to use Picast. Any
-            user name you can remember will allow you to sign in.
-          </p>
-          <p>
-            Just keep in mind that if you choose to not use an email address, we
-            won't be able to send you a reset link should you forget your
-            password.
-          </p>
-          <p>
-            If you change your mind you can always connect or remove your email
-            addressfrom your profile settings.
-          </p>
+          <p>{$`@signin.info_1`}</p>
+          <p>{$`@signin.info_2`}</p>
+          <p>{$`@signin.info_3`}</p>
         </Dialog>
-        <button type="submit">continue</button>
+        <button type="submit">{$`continue`}</button>
       </fieldset>
     </S.List>
   )

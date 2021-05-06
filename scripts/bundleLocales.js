@@ -23,17 +23,16 @@ const parser = {
     ),
   smap: content =>
     content
-      // remove empty lines
-      .replace(/(^|\n)(\s*\n)/g, '')
       // remove comments
-      .replace(/(\n|^)[#=].*(\n|$)/g, '')
+      .replace(/^[#=].*$/gm, '')
       // trim end of line
       .replace(/\s*(?=$)/gm, '')
       // inline multiline
       .replace(/\n\s+/gm, ' ')
       .split('\n')
+      .filter(Boolean)
       .map(line => line.split(':').map(v => v.trim()))
-      .map(([k, v]) => [k || v, v.replace(/\\s/g, ' ')]),
+      .map(([k, v]) => [k || v, (v || '').replace(/\\s/g, ' ')]),
 }
 
 for (const lang of fs.readdirSync(locDir)) {
@@ -72,6 +71,7 @@ function bundleLocale(locale) {
 function parseFile(file) {
   const ext = file.split('.').pop()
   if (typeof parser[ext] !== 'function') throw Error(`can't parse .${ext} file`)
+  console.log(parser[ext](fs.readFileSync(file, 'utf8')))
   return parser[ext](fs.readFileSync(file, 'utf8'))
 }
 

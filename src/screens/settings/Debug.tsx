@@ -12,15 +12,15 @@ export default function Debug() {
   const update = (field: string) => (v: any) => main.updateDebug({ [field]: v })
   return (
     <Section>
-      <span>dppx</span>
+      <span>{$`@settings.dppx`}</span>
       <span>{devicePixelRatio}</span>
-      <span>Concurrency</span>
+      <span>{$`@settings.concurrency`}</span>
       <span>{navigator.hardwareConcurrency}</span>
-      <span>Print logs</span>
+      <span>{$`@settings.print_logs`}</span>
       <Switch checked={debug?.print_logs} onChange={update('print_logs')} />
-      <span>Render touch paths</span>
+      <span>{$`@settings.show_touch`}</span>
       <Switch checked={debug?.touch} onChange={update('touch')} />
-      <span>Toggle playback loading</span>
+      <span>{$`@settings.toggle_playback`}</span>
       <Switch
         checked={anim}
         onChange={v => {

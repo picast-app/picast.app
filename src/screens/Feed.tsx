@@ -43,8 +43,9 @@ function Intro() {
   return (
     <S.Intro>
       <span>
-        When you are <Link to="/signin">signed in</Link>, new episodes from the
-        podcasts you subscribe to will appear here.
+        {$`@feed.signed_out_msg_a`}
+        <Link to="/signin">{$`@feed.signed_out_msg_link`}</Link>
+        {$`@feed.signed_out_msg_b`}
       </span>
     </S.Intro>
   )

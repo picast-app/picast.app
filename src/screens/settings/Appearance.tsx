@@ -22,8 +22,8 @@ export default function Appearance() {
   }, [customTheme, systemTheme])
 
   return (
-    <Section title="Theme">
-      <label htmlFor="mode">Color theme</label>
+    <Section title={$.c`theme`}>
+      <label htmlFor="mode">{$`@settings.pick_theme`}</label>
       <S.Select
         id="mode"
         name="Theme"
@@ -37,7 +37,7 @@ export default function Appearance() {
         <option>light</option>
         <option>dark</option>
       </S.Select>
-      <label htmlFor="dark-sys">Use system theme</label>
+      <label htmlFor="dark-sys">{$`@settings.use_system`}</label>
       <Switch
         id="dark-sys"
         checked={!customTheme}
@@ -45,7 +45,7 @@ export default function Appearance() {
           setCstTheme(!v ? (systemTheme as any) : null)
         }}
       />
-      <label htmlFor="extract">Extract color from artwork</label>
+      <label htmlFor="extract">{$`@settings.extract_color`}</label>
       <Switch id="extract" />
     </Section>
   )

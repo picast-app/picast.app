@@ -4,10 +4,10 @@ import { Link } from '@picast-app/router'
 
 export default function About() {
   return (
-    <Section title="Build">
-      <span>Branch</span>
+    <Section title={$`build`}>
+      <span>{$`branch`}</span>
       <span>{process.env.BRANCH}</span>
-      <span>Commit</span>
+      <span>{$`commit`}</span>
       <Link
         to={`https://github.com/picast-app/picast.app/commit/${process.env.COMMIT}`}
       >

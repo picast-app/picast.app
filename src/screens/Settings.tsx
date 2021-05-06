@@ -26,18 +26,19 @@ type SettingsRoute = {
   component?: any
   cond?: boolean
 }
+
 let routes: SettingsRoute[] = [
-  { name: 'General', icon: 'gear' },
-  { name: 'Appearance', icon: 'palette', component: Appearance },
-  { name: 'Notifications', icon: 'bell', component: Notifications },
+  { name: $.c`general`, icon: 'gear' },
+  { name: $.c`appearance`, icon: 'palette', component: Appearance },
+  { name: $.c`notifications`, icon: 'bell', component: Notifications },
   {
-    name: 'Storage',
+    name: $.c`storage`,
     icon: 'storage',
     component: Storage,
     cond: 'storage' in navigator,
   },
-  { name: 'Debug', icon: 'bug', component: Debug },
-  { name: 'About', icon: 'info', component: About },
+  { name: $.c`debug`, icon: 'bug', component: Debug },
+  { name: $.c`about`, icon: 'info', component: About },
 ]
 routes = routes
   .filter(({ cond }) => cond !== false)

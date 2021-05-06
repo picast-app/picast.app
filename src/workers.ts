@@ -1,8 +1,7 @@
-import { wrap } from 'comlink'
+import { wrap, proxy, createEndpoint } from 'comlink'
 import MainWorker from 'main/main.worker'
 import createSub from 'utils/subscription'
 import type { API } from 'main/main.worker'
-import { proxy, createEndpoint } from 'comlink'
 import { snack } from 'utils/notification'
 
 export { proxy }

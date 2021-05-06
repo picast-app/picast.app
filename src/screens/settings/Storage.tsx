@@ -25,13 +25,13 @@ export default function Storage() {
   return (
     <S.Page>
       <Section>
-        <span>Used</span>
+        <span>{$`@settings.used`}</span>
         <span>{format(usage)}</span>
-        <span>Available</span>
+        <span>{$`@settings.available`}</span>
         <span>{format(available)}</span>
       </Section>
       {chartData && <Chart total={usage!} {...chartData} />}
-      <Button onClick={clearData}>clear all data</Button>
+      <Button onClick={clearData}>{$`@settings.clear_all`}</Button>
     </S.Page>
   )
 }
