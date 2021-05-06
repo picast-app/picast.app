@@ -16,4 +16,7 @@ const wrap = <T extends (...args: any[]) => any>(
 
 export default Object.assign(lookup, {
   c: wrap(lookup, v => v[0].toUpperCase() + v.slice(1)),
+  or: (...keys: string[]) => orFormat.format(keys),
 })
+
+const orFormat = new Intl.ListFormat('en', { type: 'disjunction' })

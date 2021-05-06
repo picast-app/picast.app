@@ -38,3 +38,16 @@ declare var logger: import('utils/logger').default
 type SignInCreds = {
   accessToken: string
 }
+
+declare namespace Intl {
+  class ListFormat {
+    constructor(
+      locale?: string,
+      opts?: {
+        type?: 'conjunction' | 'disjunction' | 'unit'
+        style?: 'long' | 'short' | 'narrow'
+      }
+    )
+    public format(list: string[]): string
+  }
+}

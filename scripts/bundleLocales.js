@@ -11,6 +11,31 @@ const paths = dir =>
     .map(v => path.join(dir, v))
     .flatMap(v => (fs.statSync(v).isDirectory() ? paths(v) : [v]))
 
+// output: [key, value][]
+const parser = {
+  json: content =>
+    Object.entries(JSON.parse(content)).flatMap(([k, v]) =>
+      k !== '__self__'
+        ? [[k, v]]
+        : !Array.isArray(v)
+        ? [[v, v]]
+        : v.map(w => [w, w])
+    ),
+  smap: content =>
+    content
+      // remove empty lines
+      .replace(/\n^\s*$/gm, '')
+      // remove comments
+      .replace(/\n[#=].*$/gm, '')
+      // trim end of line
+      .replace(/\s*(?=$)/gm, '')
+      // inline multiline
+      .replace(/\n\s+/gm, ' ')
+      .split('\n')
+      .map(line => line.split(':').map(v => v.trim()))
+      .map(([k, v]) => [k || v, v]),
+}
+
 for (const lang of fs.readdirSync(locDir)) {
   if (fs.statSync(path.join(locDir, lang)).isDirectory() && lang !== 'bundled')
     bundleLocale(lang)
@@ -23,12 +48,12 @@ function bundleLocale(locale) {
   const strings = {}
 
   for (const file of paths(dir)) {
-    const baseKey = /tokens\.json/.test(file)
+    const baseKey = /tokens\.[a-z0-9]+$/.test(file)
       ? ''
       : `@${file
           .slice(dir.length)
           .replace(/^\//, '')
-          .replace(/\.json$/, '')
+          .replace(/\.[a-z0-9]+$/, '')
           .replace(/\//g, '.')}.`
 
     for (const [k, v] of parseFile(file)) {
@@ -38,16 +63,20 @@ function bundleLocale(locale) {
     }
   }
 
-  fs.writeFileSync(path.join(outDir, `${locale}.json`), JSON.stringify(strings))
+  fs.writeFileSync(
+    path.join(outDir, `${locale}.json`),
+    JSON.stringify(sortKeys(strings))
+  )
 }
 
 function parseFile(file) {
-  const obj = require(file)
-  return Object.entries(obj).flatMap(([k, v]) =>
-    k !== '__self__'
-      ? [[k, v]]
-      : !Array.isArray(v)
-      ? [[v, v]]
-      : v.map(w => [w, w])
+  const ext = file.split('.').pop()
+  if (typeof parser[ext] !== 'function') throw Error(`can't parse .${ext} file`)
+  return parser[ext](fs.readFileSync(file, 'utf8'))
+}
+
+function sortKeys(obj) {
+  return Object.fromEntries(
+    Object.entries(obj).sort(([a], [b]) => a.localeCompare(b))
   )
 }
