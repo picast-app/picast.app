@@ -196,7 +196,8 @@ export default class Store {
   public async episodeInfo(
     id: EpisodeId
   ): Promise<(Episode & { podcast: Podcast }) | null> {
-    let episode: any
+    let episode: any = await this.episode(id)
+    if (episode.shownotes) return episode
     try {
       const remote = await api.episode(id)
       if (!remote) throw 0
@@ -206,6 +207,7 @@ export default class Store {
       episode = await this.episode(id)
     }
     if (!episode) return null
+    await this.db.put('episodes', episode)
     if (episode.podcast) episode.podcast = await this.podcast(episode.podcast)
     episode.shownotes ??= 'failed to fetch shownotes'
     return episode

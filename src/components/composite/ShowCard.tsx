@@ -10,6 +10,7 @@ type Props = {
   strip?: boolean
   title?: boolean
   author?: boolean
+  eager?: boolean
 }
 
 export function ShowCard({
@@ -18,6 +19,7 @@ export function ShowCard({
   card = !strip,
   title = false,
   author = title,
+  eager = false,
 }: Props) {
   const container = (
     <S.Container data-style={card ? 'card' : 'strip'}>
@@ -25,6 +27,7 @@ export function ShowCard({
         src={podcast?.artwork}
         title={podcast?.title}
         covers={podcast?.covers}
+        lazy={!eager}
       />
       {podcast && (
         <>

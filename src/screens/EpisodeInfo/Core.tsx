@@ -27,7 +27,7 @@ export const Core: React.FC<{ id: EpisodeId }> = ({ id }) => {
       <S.Actions>
         <PlayButton playing={playing} onPress={toggle} round />
       </S.Actions>
-      <Shownotes>{episode?.shownotes}</Shownotes>
+      <Shownotes className="notes">{episode?.shownotes}</Shownotes>
     </S.Container>
   )
 }
@@ -36,10 +36,22 @@ const S = {
   Container: styled.article`
     padding: 1rem;
     height: 100%;
-    overflow-y: hidden;
+    max-height: inherit;
+    display: flex;
+    flex-direction: column;
 
     *[data-anchor='top'] & {
       overflow-y: auto;
+    }
+
+    @media ${desktop} {
+      .notes {
+        flex-grow: 1;
+        margin: 0 -1rem -1rem -1rem;
+        padding: 0 1rem 1rem 1rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
     }
   `,
 

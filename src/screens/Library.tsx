@@ -60,7 +60,7 @@ export default function Library() {
       </Appbar>
       <S.Grid>
         {subs?.map(podcast => (
-          <ShowCard podcast={podcast} key={podcast.id} />
+          <ShowCard podcast={podcast} key={podcast.id} eager />
         ))}
       </S.Grid>
       {isDesktop && (theme !== 'light' || !subs?.length) && <Glow />}
