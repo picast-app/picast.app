@@ -15,10 +15,11 @@ export type State = {
   user: {
     provider?: 'google'
     wsAuth?: string
+    signedIn: boolean
   }
   signedIn: boolean
   signOut(): void
-  signIn(v: { provider: 'google' }): void
+  signIn(v: Partial<State['user']>): void
   playing: {
     id: EpisodeId | null
     current: [Podcast | null, EpisodeMin | null]
@@ -42,15 +43,16 @@ async function init(): Promise<{
   const state = observable<State>({
     subscriptions: [],
     wpSubs: await store.wpSubscriptions(),
-    user: {},
+    user: { signedIn: await db.get('meta', 'signedIn') },
     get signedIn() {
-      return this.user.provider !== undefined
+      return this.user.signedIn
     },
     signOut() {
       this.user.provider = undefined
+      this.user.signedIn = false
     },
     signIn(data) {
-      Object.assign(this.user, data)
+      Object.assign(this.user, { ...data, signedIn: true })
     },
     playing: {
       id: playing ?? null,

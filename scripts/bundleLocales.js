@@ -71,7 +71,6 @@ function bundleLocale(locale) {
 function parseFile(file) {
   const ext = file.split('.').pop()
   if (typeof parser[ext] !== 'function') throw Error(`can't parse .${ext} file`)
-  console.log(parser[ext](fs.readFileSync(file, 'utf8')))
   return parser[ext](fs.readFileSync(file, 'utf8'))
 }
 

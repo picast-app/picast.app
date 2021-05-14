@@ -13,7 +13,5 @@ export default abstract class WebComponent extends HTMLElement {
     return template
   }
 
-  public static readonly template: HTMLTemplateElement
   public static readonly mode: ShadowRootMode = 'open'
-  public static readonly tagName: string
 }

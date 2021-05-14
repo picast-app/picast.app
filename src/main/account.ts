@@ -18,6 +18,7 @@ export async function signIn(creds: SignInCreds, wpSub?: string | null) {
 export async function signOut() {
   const { state } = await stateProm
   state.user.provider = undefined
+  state.user.signedIn = false
   state.subscriptions = []
 
   const db = await dbProm
@@ -69,7 +70,7 @@ async function storeSignIn(me: T.Me_me | null, action = false) {
     await db.delete('meta', 'signin')
     state.signOut()
   } else {
-    const info = { provider: me.authProvider }
+    const info = { signedIn: true }
     await db.put('meta', info, 'signin')
     state.signIn(info)
     await sync.meta(!action)
