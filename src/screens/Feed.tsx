@@ -17,7 +17,7 @@ export default function Wrap() {
 }
 
 function Main() {
-  const [signedIn, loading] = useAppState<boolean>('signedIn')
+  const [signedIn, loading] = useAppState<boolean>('user.signedIn')
   if (loading) return null
   if (!signedIn) return <Intro />
   return <Feed />

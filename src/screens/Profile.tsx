@@ -7,7 +7,7 @@ import { useAppState } from 'utils/hooks'
 import { main } from 'workers'
 
 export default function Profile() {
-  const [signedIn, loading] = useAppState<boolean>('signedIn')
+  const [signedIn, loading] = useAppState<boolean>('user.signedIn')
 
   if (!loading && !signedIn) return <Redirect to="/signin" />
   return (

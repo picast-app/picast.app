@@ -7,7 +7,7 @@ import * as cl from 'utils/css/color'
 
 type Props = {
   value?: string
-  onChange?(v: string): void
+  onChange?(v: string, target: EventTarget & HTMLInputElement): void
   blend?: boolean
   style?: string | StyledComponent<'input', any>
   type?: string
@@ -15,6 +15,7 @@ type Props = {
   pattern?: string
   minLength?: number
   actions?: JSX.Element[]
+  disabled?: boolean
 }
 
 export function Input({
@@ -30,7 +31,7 @@ export function Input({
     <S.Input
       {...props}
       value={value}
-      onChange={({ target }) => onChange?.(target.value)}
+      onChange={({ target }) => onChange?.(target.value, target)}
       data-style={blend ? 'blend' : 'default'}
       type={type}
       {...(style && {

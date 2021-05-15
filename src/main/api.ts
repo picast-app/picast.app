@@ -6,6 +6,7 @@ import feedQuery from 'gql/queries/feed.gql'
 import searchQuery from 'gql/queries/search.gql'
 import episodesQuery from 'gql/queries/podcastEpisodes.gql'
 import googleSigninMutation from 'gql/mutations/signInGoogle.gql'
+import passwordSigninMutation from 'gql/mutations/signIn.gql'
 import meQuery from 'gql/queries/me.gql'
 import subscribeMutation from 'gql/mutations/subscribe.gql'
 import unsubscribeMutation from 'gql/mutations/unsubscribe.gql'
@@ -75,6 +76,14 @@ export async function signInGoogle(accessToken: string, wpSub?: string) {
     T.SignInGoogleVariables
   >(googleSigninMutation, { accessToken, wpSub })
   return me
+}
+
+export async function signInPassword(ident: string, password: string) {
+  const { signIn } = await client.request<
+    T.SignInpassword,
+    T.SignInpasswordVariables
+  >(passwordSigninMutation, { ident, password })
+  return signIn
 }
 
 export async function signOut() {

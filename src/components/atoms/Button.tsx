@@ -21,6 +21,7 @@ export const Button: React.FC<Props> = ({
   if (text) styles.push('text')
   return (
     <S.Button
+      type="button"
       {...props}
       {...(styles.length && { ['data-style']: styles.join(' ') })}
       onClick={e => onClick?.(e)}

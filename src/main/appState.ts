@@ -17,7 +17,6 @@ export type State = {
     wsAuth?: string
     signedIn: boolean
   }
-  signedIn: boolean
   signOut(): void
   signIn(v: Partial<State['user']>): void
   playing: {
@@ -43,10 +42,7 @@ async function init(): Promise<{
   const state = observable<State>({
     subscriptions: [],
     wpSubs: await store.wpSubscriptions(),
-    user: { signedIn: await db.get('meta', 'signedIn') },
-    get signedIn() {
-      return this.user.signedIn
-    },
+    user: { signedIn: !!(await db.get('meta', 'signedIn')) },
     signOut() {
       this.user.provider = undefined
       this.user.signedIn = false
@@ -81,7 +77,9 @@ async function init(): Promise<{
     queue: playing ? [playing] : [],
     debug: {
       touch: !!(await db.get('meta', 'touch')),
-      print_logs: (await db.get('meta', 'print_logs')) ?? false,
+      print_logs:
+        (await db.get('meta', 'print_logs')) ??
+        process.env.NODE_ENV === 'development',
       async set(update) {
         for (const [k, v] of Object.entries(update)) {
           // @ts-ignore
