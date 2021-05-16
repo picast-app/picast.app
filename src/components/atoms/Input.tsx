@@ -97,6 +97,27 @@ const S = {
     }
 
     ${({ extend }) => extend ?? ''}
+
+    &.incorrect {
+      border-color: var(--cl-error);
+      color: var(--cl-error);
+      animation: 0.15s linear 0s 2 forwards shake;
+    }
+
+    @keyframes shake {
+      0% {
+        transform: translateX(0);
+      }
+      25% {
+        transform: translateX(0.2rem);
+      }
+      75% {
+        transform: translateX(-0.2rem);
+      }
+      100% {
+        transform: translateX(0);
+      }
+    }
   `,
 
   Wrap: styled.div`

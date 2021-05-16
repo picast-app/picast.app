@@ -2,6 +2,8 @@ title: Sign In / Sign Up
 title_signup: Sign Up
 google: with Google
 signup: create account
+wrong_pass: incorrect password
+must_match: passwords must match
 
 # tooltip in username input
 
@@ -12,3 +14,8 @@ info_2: Just keep in mind that if you choose to not use an email address,
         we won't be able to send you a reset link should you forget your password.
 
 info_3: If you change your mind you can always connect or remove your email address from your profile settings.
+
+# user name in use error
+in_use_a: User name already in use. Did you mean to\s
+in_use_link: sign in\s
+in_use_b: instead?

@@ -31,3 +31,8 @@
   --cl-border-strong: #fff8;
   --cl-border-light: #fff1;
 }
+
+:root[data-theme='dark'] input:-webkit-autofill,
+:root[data-theme='dark'] input:focus:-webkit-autofill {
+  box-shadow: 0 0 0 2rem #002b inset !important;
+}

@@ -7,6 +7,7 @@ import searchQuery from 'gql/queries/search.gql'
 import episodesQuery from 'gql/queries/podcastEpisodes.gql'
 import googleSigninMutation from 'gql/mutations/signInGoogle.gql'
 import passwordSigninMutation from 'gql/mutations/signIn.gql'
+import passwordSignUpMutation from 'gql/mutations/signUp.gql'
 import meQuery from 'gql/queries/me.gql'
 import subscribeMutation from 'gql/mutations/subscribe.gql'
 import unsubscribeMutation from 'gql/mutations/unsubscribe.gql'
@@ -84,6 +85,14 @@ export async function signInPassword(ident: string, password: string) {
     T.SignInpasswordVariables
   >(passwordSigninMutation, { ident, password })
   return signIn
+}
+
+export async function signUpPassword(ident: string, password: string) {
+  const { signUp } = await client.request<T.SignUp, T.SignUpVariables>(
+    passwordSignUpMutation,
+    { ident, password }
+  )
+  return signUp
 }
 
 export async function signOut() {

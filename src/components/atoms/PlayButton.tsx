@@ -72,8 +72,8 @@ const geometry = {
     triCent: 1 / 3,
     barOff: 0.13,
     barW: 0.15,
-    triH: 0.6,
-    triW: equiTriBoxRatio(0.6),
+    triH: 0.5,
+    triW: equiTriBoxRatio(0.5),
   }),
 }
 

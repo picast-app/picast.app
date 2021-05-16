@@ -15,6 +15,17 @@ export async function signIn(creds: SignInCreds, wpSub?: string | null) {
   await pullSubscriptions(me.subscriptions)
 }
 
+export async function signInPassword(ident: string, password: string) {
+  const res = await api.signInPassword(ident, password)
+  if (res?.user?.id) {
+    const { state } = await stateProm
+    storeSignIn(res.user)
+    await state.setWPSubs(res.user.wpSubs)
+    await pullSubscriptions(res.user.subscriptions)
+  }
+  return res
+}
+
 export async function signOut() {
   const { state } = await stateProm
   state.user.provider = undefined

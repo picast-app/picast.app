@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { Icon, Input } from 'components/atoms'
 import { Screen, Dialog } from 'components/structure'
@@ -6,26 +6,46 @@ import Appbar from 'components/Appbar'
 import { main } from 'workers'
 import { useAppState } from 'utils/hooks'
 import * as wp from 'utils/webpush'
-import { Redirect, useLocation, history, RouteProps } from '@picast-app/router'
 import { mobile } from 'styles/responsive'
+import {
+  Redirect,
+  useLocation,
+  history,
+  RouteProps,
+  Link,
+} from '@picast-app/router'
 
 const Signin: React.FC<RouteProps> = ({ location }) => {
   const [signedIn, signingIn] = useOAuthSignIn()
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [passConfirm, setPassConfirm] = useState('')
-  const signup = location.path.includes('signup')
-  const title = $(`@signin.title${signup ? '_signup' : ''}` as const)
+  const [inUse, setInUse] = useState(false)
+  const isSignUp = location.path.includes('signup')
+  const title = $(`@signin.title${isSignUp ? '_signup' : ''}` as const)
 
   async function signIn() {
     const response = await main.signInPassword(name, password)
+    logger.info(response)
     if (response.reason === 'unknown_ident') history.push('/signup')
+    if (response.reason === 'incorrect_auth') {
+      const input = document.getElementById('in-p') as HTMLInputElement
+      input.setCustomValidity($`@signin.wrong_pass`)
+      input.classList.add('incorrect')
+    }
+  }
+
+  async function signUp() {
+    if (password !== passConfirm || !isSignUp) return
+    const response = await main.signUpPassword(name, password)
+    logger.info(response)
+    if (response.reason === 'duplicate_ident') setInUse(true)
   }
 
   if (signedIn) return <Redirect to="/" />
   return (
     <Screen padd loading={signingIn}>
-      <Appbar title={title} />
+      <Appbar title={title} {...(isSignUp && { back: '/signin' })} />
       <MainScreen
         {...{
           name,
@@ -35,9 +55,15 @@ const Signin: React.FC<RouteProps> = ({ location }) => {
           passConfirm,
           setPassConfirm,
           title,
-          signup,
+          inUse,
+          setInUse,
         }}
-        onSubmit={signIn}
+        setName={v => {
+          if (inUse) setInUse(false)
+          setName(v)
+        }}
+        signup={isSignUp}
+        onSubmit={isSignUp ? signUp : signIn}
       />
       {signingIn && <S.Overlay />}
     </Screen>
@@ -55,15 +81,20 @@ type MainProps = {
   onSubmit(): void
   signup: boolean
   title: string
+  inUse: boolean
+  setInUse(v: boolean): void
 }
 
-function MainScreen({ onSubmit, signup, ...props }: MainProps) {
-  const ref = useRef<HTMLFieldSetElement>(null)
-
+const MainScreen: React.FunctionComponent<MainProps> = ({
+  onSubmit,
+  signup,
+  setPassConfirm,
+  ...props
+}) => {
   useEffect(() => {
-    if (signup)
-      [...(ref.current?.querySelectorAll('input') ?? [])].slice(-1)[0]?.focus()
-  }, [signup])
+    if (signup) document.getElementById('in-pr')?.focus()
+    else setPassConfirm('')
+  }, [signup, setPassConfirm])
 
   return (
     <S.List
@@ -73,7 +104,7 @@ function MainScreen({ onSubmit, signup, ...props }: MainProps) {
       }}
       data-stage={signup ? 'signup' : 'signin'}
     >
-      <fieldset ref={ref}>
+      <fieldset>
         <legend>{props.title}</legend>
         <S.OAuthWrap>
           <S.Google href={googleURL()}>
@@ -82,12 +113,11 @@ function MainScreen({ onSubmit, signup, ...props }: MainProps) {
           </S.Google>
           <hr />
         </S.OAuthWrap>
-        <PasswordSignin {...{ ...props, signup }} />
+        <PasswordSignin {...{ ...props, signup, setPassConfirm }} />
       </fieldset>
     </S.List>
   )
 }
-
 function PasswordSignin({
   name,
   setName,
@@ -96,6 +126,7 @@ function PasswordSignin({
   passConfirm,
   setPassConfirm,
   signup,
+  inUse,
 }: Omit<MainProps, 'onSubmit'>) {
   const [showInfo, setShowInfo] = useState(false)
   const [revealed, setReveal] = useState(false)
@@ -124,22 +155,35 @@ function PasswordSignin({
             label={$`explain`}
           />,
         ]}
+        id="in-use"
       />
+      {inUse && (
+        <S.Error>
+          {$`@signin.in_use_a`}
+          <Link to="/signin">{$`@signin.in_use_link`}</Link>
+          {$`@signin.in_use_b`}
+        </S.Error>
+      )}
       <Input
         placeholder={$.c`password`}
         value={password}
-        onChange={setPassword}
+        onChange={(v, input) => {
+          setPassword(v)
+          input.setCustomValidity('')
+          input.classList.remove('incorrect')
+        }}
         type={revealed ? 'text' : 'password'}
         required
         minLength={8}
         actions={[reveal]}
+        id="in-p"
       />
       <Input
         placeholder={'confirm password'}
         value={passConfirm}
         onChange={(v, input) => {
           setPassConfirm(v)
-          input.setCustomValidity(v === password ? '' : 'passwords must match')
+          input.setCustomValidity(v === password ? '' : $`@signin.must_match`)
         }}
         type={revealed ? 'text' : 'password'}
         required={signup}
@@ -147,6 +191,7 @@ function PasswordSignin({
         actions={[reveal]}
         hidden={!signup}
         disabled={!signup}
+        id="in-pr"
       />
       <Dialog open={showInfo} onClose={() => setShowInfo(false)}>
         <p>{$`@signin.info_1`}</p>
@@ -278,7 +323,7 @@ const S = {
 
     button,
     input,
-    a {
+    div > a {
       appearance: none;
       width: 100%;
       height: 3rem;
@@ -313,7 +358,7 @@ const S = {
       color: var(--cl-text-alt-disabled);
     }
 
-    input:focus-visible,
+    input:not(.incorrect):focus-visible,
     a:focus-visible {
       border-color: var(--cl-primary);
       box-shadow: inset 0 0 2px var(--cl-primary);
@@ -345,6 +390,17 @@ const S = {
       height: 1.4rem;
       margin-right: 1rem;
       margin-left: 0.5rem;
+    }
+  `,
+
+  Error: styled.span`
+    color: var(--cl-error);
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+
+    a {
+      color: inherit;
+      text-decoration: underline;
     }
   `,
 }
