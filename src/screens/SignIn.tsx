@@ -148,6 +148,7 @@ function PasswordSignin({
         required
         minLength={3}
         pattern=".*[^\s]{3,}.*"
+        autoComplete="username"
         actions={[
           <Icon
             icon="info"
@@ -175,6 +176,7 @@ function PasswordSignin({
         type={revealed ? 'text' : 'password'}
         required
         minLength={8}
+        {...(signup && { autoComplete: 'new-password' })}
         actions={[reveal]}
         id="in-p"
       />
@@ -188,6 +190,7 @@ function PasswordSignin({
         type={revealed ? 'text' : 'password'}
         required={signup}
         minLength={8}
+        {...(signup && { autoComplete: 'new-password' })}
         actions={[reveal]}
         hidden={!signup}
         disabled={!signup}

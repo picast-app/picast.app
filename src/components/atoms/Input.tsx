@@ -16,6 +16,7 @@ type Props = {
   minLength?: number
   actions?: JSX.Element[]
   disabled?: boolean
+  autoComplete?: string
 }
 
 export function Input({
