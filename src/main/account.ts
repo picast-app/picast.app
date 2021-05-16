@@ -9,24 +9,31 @@ import type * as T from 'types/gql'
 
 export async function signIn(creds: SignInCreds, wpSub?: string | null) {
   const me = await api.signInGoogle(creds.accessToken, wpSub ?? undefined)
-  const { state } = await stateProm
-  storeSignIn(me, true)
-  await state.setWPSubs(me.wpSubs)
-  await pullSubscriptions(me.subscriptions)
+  await afterSignedIn(me)
 }
 
 export async function signInPassword(ident: string, password: string) {
   const res = await api.signInPassword(ident, password)
-  if (res?.user?.id) {
-    const { state } = await stateProm
-    storeSignIn(res.user)
-    await state.setWPSubs(res.user.wpSubs)
-    await pullSubscriptions(res.user.subscriptions)
-  }
+  if (res.user) await afterSignedIn(res.user)
   return res
 }
 
-export async function signOut() {
+export async function signUpPassword(ident: string, password: string) {
+  const res = await api.signUpPassword(ident, password)
+  if (res.user) await afterSignedIn(res.user)
+  return res
+}
+
+async function afterSignedIn(user: any) {
+  const { state } = await stateProm
+  await storeSignIn(user, true)
+  await state.setWPSubs(user.wpSubs)
+  await pullSubscriptions(user.subscriptions)
+}
+
+export async function signOut(skipAPI = false) {
+  logger.info('sign out', { skipAPI })
+
   const { state } = await stateProm
   state.user.provider = undefined
   state.user.signedIn = false
@@ -45,7 +52,7 @@ export async function signOut() {
   logger.info(`evict ${keys.length} images`)
   await Promise.all(keys.map(k => cache.delete(k)))
 
-  await api.signOut()
+  if (!skipAPI) await api.signOut()
 }
 
 export async function pullSubscriptions(
@@ -63,8 +70,8 @@ export async function pullSubscriptions(
     const subscriptions = await store.getSubscriptions()
     const me = await api.me(subscriptions)
     await storeSignIn(me)
-    if (me) await state.setWPSubs(me.wpSubs)
-    if (!me) return logger.info('not logged in')
+    if (!me) return
+    await state.setWPSubs(me.wpSubs)
     subs = me.subscriptions
   }
   return await store.syncSubscriptions({
@@ -77,10 +84,8 @@ async function storeSignIn(me: T.Me_me | null, action = false) {
   logger.info('store sign in', me)
   const db = await dbProm
   const { state } = await stateProm
-  if (!me) {
-    await db.delete('meta', 'signin')
-    state.signOut()
-  } else {
+  if (!me) await signOut(true)
+  else {
     const info = { signedIn: true }
     await db.put('meta', info, 'signin')
     state.signIn(info)
@@ -111,4 +116,6 @@ export async function disablePushNotifications(id: string) {
   await api.wpPodUnsub(id)
 }
 
-pullSubscriptions()
+stateProm.then(({ state }) => {
+  if (state.user.signedIn) pullSubscriptions()
+})
