@@ -68,4 +68,8 @@ export const Section = styled.section`
   flex-shrink: 0;
   scroll-snap-align: start;
   scroll-snap-stop: always;
+
+  & > article {
+    height: 100%;
+  }
 `

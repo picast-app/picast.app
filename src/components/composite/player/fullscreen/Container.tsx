@@ -107,7 +107,7 @@ function FullscreenContainer({ podcast, episode, ...props }: Props) {
       <SectionWrap ref={setSecRef}>
         <Section>
           {podcast && (
-            <EpisodeInfo podcast={podcast} episode={episode as any} />
+            <EpisodeInfo podcast={podcast} episode={episode as any} touchCtrl />
           )}
         </Section>
         <Section>

@@ -1,18 +1,49 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from '@picast-app/router'
 import { Shownotes } from 'components/composite'
+import { desktop, mobile } from 'styles/responsive'
+import { ignore } from 'interaction/gesture/gestures'
 import type { Podcast, Episode } from 'main/store/types'
 
 interface Props {
   podcast: Podcast
   episode: Episode
+  touchCtrl?: boolean
 }
 
-export function EpisodeInfo({ podcast, episode }: Props) {
+export function EpisodeInfo({ podcast, episode, touchCtrl }: Props) {
+  const [ref, setRef] = useState<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (!ref || !touchCtrl) return
+    const player = ref.closest<HTMLElement>('picast-player')
+    if (!player) return
+
+    let playerY: number
+    const updatePos = () => {
+      const y = player.getBoundingClientRect().y
+      if (playerY && !y) ref.style.overflowY = 'auto'
+      if (y && !playerY) ref.style.overflowY = 'hidden'
+      playerY = y
+    }
+    updatePos()
+
+    const observer = new MutationObserver(updatePos)
+
+    ref.addEventListener('touchmove', e => {
+      if (!(e.currentTarget as HTMLElement).scrollTop || playerY) return
+      e.stopPropagation()
+      ignore(e.touches as any)
+    })
+
+    observer.observe(player, { attributes: true, attributeFilter: ['style'] })
+    return () => observer.disconnect()
+  }, [ref, touchCtrl])
+
   if (!podcast || !episode) return null
   return (
-    <S.Container onClick={e => e.stopPropagation()}>
+    <S.Container ref={setRef} onClick={e => e.stopPropagation()}>
       {podcast && episode && (
         <>
           <h1>{episode.title}</h1>
@@ -48,11 +79,17 @@ const S = {
         text-decoration: none;
       }
     }
+
+    @media ${mobile} {
+      overflow-y: auto;
+    }
   `,
 
   NoteContainer: styled.div`
-    max-height: 50vh;
-    overflow: hidden auto;
-    margin-top: 2rem;
+    @media ${desktop} {
+      max-height: 50vh;
+      overflow: hidden auto;
+      margin-top: 2rem;
+    }
   `,
 }

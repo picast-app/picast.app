@@ -56,6 +56,16 @@ export default class TouchRegistry extends EventManager<{
     }
   }
 
+  public ignore(list: TouchList) {
+    for (const touch of list) {
+      if (touch.identifier in this.active) {
+        if (touch.pageY > this.active[touch.identifier].y)
+          this.active[touch.identifier].offY +=
+            touch.pageY - this.active[touch.identifier].y
+      }
+    }
+  }
+
   public static render?: (registry: TouchRegistry) => void
 }
 
@@ -66,6 +76,7 @@ export class TouchRegistryEvent extends EventManager<
 > {
   public claimed = false
   public readonly path: [x: number, y: number][] = []
+  public offY = 0
 
   constructor(public readonly id: number) {
     super()
@@ -90,7 +101,7 @@ export class TouchRegistryEvent extends EventManager<
   }
 
   public move(x: number, y: number) {
-    this.path.push([x, y])
+    this.path.push([x, y - this.offY])
     this.call('move', this)
   }
 

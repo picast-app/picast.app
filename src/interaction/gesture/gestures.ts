@@ -4,6 +4,8 @@ import EventManager, { EventDef } from 'utils/event'
 
 const registry = new Registry()
 
+export const ignore = (list: TouchList) => registry.ignore(list)
+
 // @ts-ignore
 abstract class Gesture<T extends EventDef = {}> extends EventManager<
   { end: (cancelled?: boolean) => void } & T
