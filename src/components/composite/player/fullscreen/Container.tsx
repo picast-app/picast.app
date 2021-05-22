@@ -65,7 +65,7 @@ function FullscreenContainer({ podcast, episode, ...props }: Props) {
     if (!linkTransit.current && Math.round(offset) !== activeTab)
       setActiveTab(Math.round(offset))
     if (Number.isInteger(offset) && offset !== activeTabIndex())
-      history.push({ hash: hashes[Math.round(offset)] })
+      history.push({ hash: hashes[Math.round(offset)] }, { replace: true })
   }
   swipeRef.current = onSwipe
 
@@ -85,7 +85,7 @@ function FullscreenContainer({ podcast, episode, ...props }: Props) {
   useEvent(
     sectionRef,
     'scroll',
-    ({ currentTarget: { scrollLeft, offsetWidth }, ...e }) => {
+    ({ currentTarget: { scrollLeft, offsetWidth } }) => {
       swipeRef.current?.(scrollLeft / offsetWidth)
     },
     { passive: true }
@@ -138,7 +138,7 @@ function Tab({
 }) {
   return (
     <li role="presentation">
-      <Link to={hash} aria-selected={active}>
+      <Link to={hash} aria-selected={active} replace>
         {children}
       </Link>
     </li>
