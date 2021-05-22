@@ -2,6 +2,8 @@ import React from 'react'
 import styled from 'styled-components'
 import { Icon } from 'components/atoms'
 import { center } from 'styles/mixin'
+import { useMatchMedia } from 'utils/hooks'
+import { mobile } from 'styles/responsive'
 
 type Props = {
   ms: number
@@ -9,6 +11,8 @@ type Props = {
 }
 
 export default function SkipControl({ ms, onJump }: Props) {
+  const isMobile = useMatchMedia(mobile)
+
   return (
     <S.Wrap data-dir={ms >= 0 ? 'forward' : 'backward'}>
       <Icon
@@ -17,6 +21,7 @@ export default function SkipControl({ ms, onJump }: Props) {
         label={`skip ${Math.abs(ms / 1000)} seconds ${
           ms > 0 ? 'forward' : 'backward'
         }`}
+        ripple={isMobile}
       />
       <S.Label aria-hidden>{Math.abs(ms / 1000)}</S.Label>
     </S.Wrap>
@@ -26,33 +31,33 @@ export default function SkipControl({ ms, onJump }: Props) {
 const S = {
   Wrap: styled.div`
     position: relative;
-    width: 2rem;
-    height: 2rem;
+    width: 3.5rem;
+    height: 3.5rem;
     font-size: 2rem;
 
-    & > button[data-style~='icon-wrap'],
-    svg {
-      position: absolute;
+    & > button[data-style~='icon-wrap'] {
+      transform-origin: center;
       width: 100%;
       height: 100%;
-      left: 0;
-      top: 0;
+      box-sizing: border-box;
     }
 
     svg {
-      transform-origin: center;
-      transform: scale(1.2);
+      ${center}
+      width: 80%;
+      height: 80%;
     }
 
-    &[data-dir='backward'] svg {
-      transform: scale(1.2) rotateY(180deg);
+    &[data-dir='backward'] button[data-style~='icon-wrap'] {
+      transform: rotateY(180deg);
     }
   `,
 
   Label: styled.span`
     ${center}
     font-size: 0.3em;
-    margin-top: 7%;
+    margin-top: 3%;
+    font-weight: bold;
     color: var(--cl-icon);
     pointer-events: none;
   `,

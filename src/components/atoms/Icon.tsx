@@ -12,6 +12,7 @@ type Props = {
   label?: string
   autoFocus?: boolean
   tabIndex?: number
+  ripple?: boolean
 }
 
 export const Icon: React.FC<Props> = ({
@@ -23,6 +24,7 @@ export const Icon: React.FC<Props> = ({
   autoFocus,
   tabIndex,
   children,
+  ripple = false,
   ...props
 }) => {
   const theme = useTheme()
@@ -41,7 +43,12 @@ export const Icon: React.FC<Props> = ({
     )
   if (onClick)
     return (
-      <Button iconWrap={label} onClick={onClick} {...{ autoFocus, tabIndex }}>
+      <Button
+        iconWrap={label}
+        onClick={onClick}
+        {...{ autoFocus, tabIndex }}
+        feedback={ripple}
+      >
         {svg}
       </Button>
     )

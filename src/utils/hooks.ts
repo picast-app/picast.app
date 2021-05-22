@@ -13,27 +13,12 @@ import { main, subscriptionSub, state as appState } from 'workers'
 import { isPromise } from 'utils/promise'
 import type { API } from 'main/main.worker'
 import * as palette from 'styles/palette'
+import { querySub } from 'utils/css/query'
 
 export const useTheme = () => useContext(Theme)
 
-export function useMatchMedia(query: string) {
-  const [match, setMatch] = useState(window.matchMedia(query).matches)
-
-  const handleEvent = (e: MediaQueryListEvent | MediaQueryList) =>
-    setMatch(e.matches)
-
-  useEffect(() => {
-    const mql = window.matchMedia(query)
-    handleEvent(mql)
-    mql.onchange = handleEvent
-
-    return () => {
-      mql.onchange = null
-    }
-  })
-
-  return match
-}
+export const useMatchMedia = (query: string) =>
+  useSubscriptionValue(querySub(query))
 
 type ScrollDir = 'up' | 'down'
 type ScrollDirProps = {
@@ -188,8 +173,29 @@ export const useSubscription = <T>(
 ]
 
 export function useSubscriptionValue<T>(sub: Subscription<T>): T {
-  const [v, setV] = useState<T>(sub.state)
-  useEffect(() => (setV(sub.state), sub.subscribe(setV)), [sub])
+  let initial: T
+  const setRef = useRef<(v: T) => void>()
+
+  const [unsub] = useState(() => {
+    const unsub = sub.subscribe(v => {
+      setRef.current?.(v)
+    })
+    initial = sub.state
+    return unsub
+  })
+
+  const [v, setV] = useState<T>(initial!)
+  setRef.current = setV
+
+  useEffect(
+    () => () => {
+      setRef.current = undefined
+      unsub()
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
+
   return v
 }
 

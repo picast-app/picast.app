@@ -1,7 +1,14 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Screen } from 'components/structure'
-import { Title, Input, Switch, PlayButton } from 'components/atoms'
+import {
+  Title,
+  Input,
+  Switch,
+  PlayButton,
+  Button,
+  Icon,
+} from 'components/atoms'
 import { ShowCard } from 'components/composite'
 import { useComputed } from 'utils/hooks'
 
@@ -77,6 +84,14 @@ export default function Components() {
         <Title h2>Play Button</Title>
         <PlayButton playing={playing} onPress={() => setPlaying(!playing)} />
       </section>
+
+      <S.Feedback>
+        <Title h2>Button feedback</Title>
+        <div>
+          <Button feedback>text</Button>
+          <Icon icon="cancel" onClick={() => {}} label="feedback" ripple />
+        </div>
+      </S.Feedback>
     </Screen>
   )
 }
@@ -104,6 +119,16 @@ const S = {
   Podcast: styled.section`
     & > img {
       margin: 2rem 0;
+    }
+  `,
+
+  Feedback: styled.section`
+    & > div {
+      display: flex;
+    }
+
+    button:not(:first-of-type) {
+      margin-left: 2rem;
     }
   `,
 }
