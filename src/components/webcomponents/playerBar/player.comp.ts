@@ -217,6 +217,7 @@ export default class Player extends Component {
   // events
 
   onDurationChange(duration: number) {
+    if (this.currentId) main.setEpisodeDuration(this.currentId[1], duration)
     this.setProgressAttr('duration', duration)
     this.events.call('duration', duration, this.currentId)
   }

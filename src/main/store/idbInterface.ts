@@ -22,8 +22,8 @@ export default class IDBInterface {
 
   public async idbPut<T extends Parameters<DB['get']>[0]>(
     table: T,
-    key: Schema[T]['key'],
-    value: Schema[T]['value']
+    value: Schema[T]['value'],
+    key?: Schema[T]['key']
   ) {
     await this.db.put(table, value, key)
   }

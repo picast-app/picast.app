@@ -157,7 +157,7 @@ function Duration({ children: dur }: { children: number }) {
       ? `${Math.round(dur / 60)}m`
       : `${(dur / 60 ** 2) | 0}h ${((dur % 60 ** 2) / 60) | 0}m`
 
-  return <S.Duration>{txt}</S.Duration>
+  return <S.Duration hidden={!dur}>{txt}</S.Duration>
 }
 
 const { format } = new Intl.DateTimeFormat('en-US', {
@@ -306,6 +306,11 @@ const S = {
     min-width: 5rem;
     margin-right: 3vw;
     white-space: nowrap;
+
+    &[hidden] {
+      display: initial;
+      visibility: hidden;
+    }
 
     @media ${mobile} {
       position: absolute;

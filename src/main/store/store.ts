@@ -9,6 +9,7 @@ import ws, { wsApi } from 'main/ws'
 import appState from '../appState'
 import type * as T from 'types/gql'
 import { hashIds, encodeIds } from 'utils/encode'
+import * as obj from 'utils/object'
 
 type TotalCB = (v: { total: number; complete: boolean }) => void
 
@@ -308,22 +309,38 @@ export default class Store {
   }
 
   public async setEpisodeProgress(id: string, progress: number) {
-    const episode = await this.db.get('episodes', id)
-    if (!episode) throw Error(`can't update unknown episode ${id}`)
-    await this.db.put('episodes', {
-      ...episode,
+    await this.updateEpisode(id, {
       currentTime: progress,
-      relProg: progress / episode.duration,
+      relProg: ({ duration }) => progress / duration,
     })
   }
 
   public async setEpisodeCompleted(id: string) {
+    await this.updateEpisode(id, { completed: true }, 'currentTime', 'relProg')
+  }
+
+  public async setEpisodeDuration(id: string, duration: number) {
+    logger.info(`set ${id} duration:`, duration)
+    await this.updateEpisode(id, { duration })
+  }
+
+  private async updateEpisode(
+    id: string,
+    update: {
+      [K in keyof Episode]?: Episode[K] | ((v: Episode) => Episode[K])
+    },
+    ...removed: (keyof Episode)[]
+  ) {
     const episode = await this.db.get('episodes', id)
     if (!episode) throw Error(`can't update unknown episode ${id}`)
-    delete episode.currentTime
-    delete episode.relProg
-    episode.completed = true
-    await this.db.put('episodes', episode)
+    for (const key of removed) delete episode[key]
+    await this.db.put('episodes', {
+      ...episode,
+      ...obj.map(update, (k, v) => [
+        k,
+        typeof v === 'function' ? v(episode) : v,
+      ]),
+    })
   }
 
   public async getEpisodeProgress(id: string): Promise<number> {

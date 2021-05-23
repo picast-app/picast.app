@@ -187,7 +187,7 @@ async function checkForUpdate() {
     const latest = await fetch('/index.html').then(res => res.text())
     if ((await cached.text()) !== latest) {
       await cacheStatic()
-      await main.idbPut('meta', 'updateStatus', 'EVICT_PENDING')
+      await main.idbPut('meta', 'EVICT_PENDING', 'updateStatus')
       const clients = await self.clients.matchAll()
       clients.forEach(client =>
         client.postMessage?.({ type: 'UPDATE_AVAILABLE' })
@@ -202,6 +202,6 @@ async function checkForUpdate() {
       ({ url }) => !staticFiles.includes(url.replace(self.location.origin, ''))
     )
     await Promise.all(toEvict.map(v => cache.delete(v)))
-    await main.idbPut('meta', 'updateStatus', 'UP_TO_DATE')
+    await main.idbPut('meta', 'UP_TO_DATE', 'updateStatus')
   }
 }

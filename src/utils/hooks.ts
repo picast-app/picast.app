@@ -345,7 +345,7 @@ export function useIDBState<T>(
   const [loading, setLoading] = useState(true)
   const setter = useComputed(key, key => (v: T) => {
     setState(v)
-    main.idbPut('meta', key, v)
+    main.idbPut('meta', v, key)
   })
 
   useEffect(() => {
