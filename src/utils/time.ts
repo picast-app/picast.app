@@ -22,8 +22,12 @@ export const durAttr = (sec: number) => {
 export const log = () => {
   const date: any = new Date()
   const ts = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}:${date.getMilliseconds()}`
+  // format timestamps iff regex lookbehinds are supported
+  // looking at you Safari... you absolute shitshow of a browser
   try {
-    return ts.replace(/(?<=^|:)(\d)(?!\d)/g, '0$1').replace(/:(\d{2})$/, ':0$1')
+    return ts
+      .replace(new RegExp('(?<=^|:)(d)(?!d)', 'g'), '0$1')
+      .replace(/:(\d{2})$/, ':0$1')
   } catch {
     return ts
   }

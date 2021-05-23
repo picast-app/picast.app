@@ -171,8 +171,8 @@ export default class Progress extends Component {
 
     progress = clamp(0, progress, 1)
 
-    this.labelProg = progress * this.duration!
-    this.labelRemains = this.duration! * (1 - progress)
+    this.labelProg = progress * (this.duration! | 0)
+    this.labelRemains = (this.duration! | 0) * (1 - progress)
 
     if (this.inline) this.renderInline(progress)
     else this.renderFull(progress)
