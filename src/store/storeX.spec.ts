@@ -1,3 +1,4 @@
+import 'jest-extended'
 import Store from './storeX'
 
 type StoreSchema = {
@@ -10,19 +11,51 @@ type StoreSchema = {
   foo: string
 }
 
-const store = new Store<StoreSchema>()
+test('calls getters', () => {
+  const store = new Store<StoreSchema>()
 
-test('get handlers', () => {
   const getApp = jest.fn(() => ({ colorTheme: 'dark', useSystemTheme: false }))
   const getTheme = jest.fn(() => 'light')
 
-  store.addHandler('settings.appearance', getApp as any)
+  store.handler('settings.appearance').get = getApp as any
   expect(store.get('settings.appearance.colorTheme')).toBe('dark')
-  expect(getApp.mock.calls.length).toBe(1)
-  expect(getTheme.mock.calls.length).toBe(0)
+  expect(getApp).toHaveBeenCalled()
+  expect(getTheme).not.toHaveBeenCalled()
 
-  store.addHandler('settings.appearance.colorTheme', getTheme as any)
+  store.handler('settings.appearance.colorTheme').get = getTheme as any
   expect(store.get('settings.appearance.colorTheme')).toBe('light')
-  expect(getApp.mock.calls.length).toBe(1)
-  expect(getTheme.mock.calls.length).toBe(1)
+  expect(getApp).toHaveBeenCalledTimes(1)
+  expect(getTheme).toHaveBeenCalledTimes(1)
+})
+
+test('prevents duplicate getters', () => {
+  const store = new Store<StoreSchema>()
+  expect(() => {
+    store.handler('foo').get = () => ''
+  }).not.toThrow()
+  expect(() => {
+    store.handler('foo').get = () => ''
+  }).toThrow()
+})
+
+test('calls setters', () => {
+  const store = new Store<StoreSchema>()
+
+  const setOuter = jest.fn(() => {})
+  const setInner = jest.fn(() => {})
+
+  store.handler('settings.appearance').set = setOuter
+  store.set('settings.appearance.colorTheme', 'light')
+  expect(setInner).toHaveBeenCalledTimes(0)
+  expect(setOuter).toHaveBeenCalledTimes(1)
+
+  store.handler('settings.appearance.colorTheme').set = setInner
+  store.set('settings.appearance.colorTheme', 'dark')
+  expect(setInner).toHaveBeenCalledTimes(1)
+  expect(setOuter).toHaveBeenCalledTimes(2)
+
+  setOuter.mockReset()
+  setInner.mockReset()
+  store.set('settings.appearance.colorTheme', 'light')
+  expect(setOuter).toHaveBeenCalledAfter(setInner)
 })

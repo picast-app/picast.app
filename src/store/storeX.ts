@@ -17,18 +17,43 @@ type FlatSchema<T> = T extends Schema
 
 export default class Store<T extends Schema, TF = FlatSchema<T>> {
   public get<K extends keyof TF & string>(key: K): TF[K] {
-    for (const [k, f] of this.handlers)
-      if (key.startsWith(k)) return this.pick(f(), k, key)
+    for (const [k, { get }] of this.handlers)
+      if (key.startsWith(k) && get) return this.pick(get(), k, key)
     throw Error(`no get handler for '${key}' registered`)
   }
 
-  // handler map in reverse alphabetical order
-  private handlers: [string, any][] = []
+  public set<K extends keyof TF & string>(key: K, value: TF[K]) {
+    for (let i = 0; i < this.handlers.length; i++) {
+      if (!key.startsWith(this.handlers[i][0])) continue
+      for (const handler of this.handlers[i][1].set) handler(value)
+    }
+  }
 
-  public addHandler<K extends keyof TF & string>(key: K, handler: () => TF[K]) {
-    const i = this.handlers.findIndex(([k]) => k < key)
-    if (i < 0) this.handlers.push([key, handler])
-    else this.handlers.splice(i, 0, [key, handler])
+  // handler map in reverse alphabetical order
+  private handlers: [
+    string,
+    { get?: () => any; set: ((v: any) => any)[] }
+  ][] = []
+
+  public handler<K extends keyof TF & string>(key: K) {
+    const handlers = this.handlers
+    const accessor = () => {
+      let i = handlers.findIndex(([k]) => k <= key)
+      if (i < 0) i = handlers.length
+      if (handlers[i]?.[0] !== key) handlers.splice(i, 0, [key, { set: [] }])
+      return handlers[i][1]
+    }
+
+    return {
+      set get(func: () => TF[K]) {
+        const acc = accessor()
+        if (acc.get) throw Error(`'${key}' already has getter`)
+        acc.get = func
+      },
+      set set(func: (v: TF[K]) => any) {
+        accessor().set.push(func)
+      },
+    }
   }
 
   private pick(obj: any, root: string, select: string) {
