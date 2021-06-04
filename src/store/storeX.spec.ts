@@ -44,12 +44,12 @@ test('calls setters', () => {
   const setOuter = jest.fn(() => {})
   const setInner = jest.fn(() => {})
 
-  store.handler('settings.appearance').set = setOuter
+  store.handler('settings.appearance').set(setOuter)
   store.set('settings.appearance.colorTheme', 'light')
   expect(setInner).toHaveBeenCalledTimes(0)
   expect(setOuter).toHaveBeenCalledTimes(1)
 
-  store.handler('settings.appearance.colorTheme').set = setInner
+  store.handler('settings.appearance.colorTheme').set(setInner)
   store.set('settings.appearance.colorTheme', 'dark')
   expect(setInner).toHaveBeenCalledTimes(1)
   expect(setOuter).toHaveBeenCalledTimes(2)
@@ -58,4 +58,27 @@ test('calls setters', () => {
   setInner.mockReset()
   store.set('settings.appearance.colorTheme', 'light')
   expect(setOuter).toHaveBeenCalledAfter(setInner)
+})
+
+test('diff setter', () => {
+  const store = new Store<StoreSchema>()
+
+  const listener = jest.fn(() => {})
+  store.handler('settings.appearance.colorTheme').set(listener)
+
+  let last: any = undefined
+  const differ = jest.fn(v => {
+    const diff = last !== v
+    last = v
+    return diff
+  })
+  store.handler('settings.appearance.colorTheme').set(differ, true)
+
+  store.set('settings.appearance.colorTheme', 'light')
+  expect(listener).toHaveBeenCalledTimes(1)
+  expect(differ).toHaveBeenCalledTimes(1)
+
+  store.set('settings.appearance.colorTheme', 'light')
+  expect(listener).toHaveBeenCalledTimes(1)
+  expect(differ).toHaveBeenCalledTimes(2)
 })

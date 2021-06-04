@@ -18,22 +18,20 @@ type FlatSchema<T> = T extends Schema
 export default class Store<T extends Schema, TF = FlatSchema<T>> {
   public get<K extends keyof TF & string>(key: K): TF[K] {
     for (const [k, { get }] of this.handlers)
-      if (key.startsWith(k) && get) return this.pick(get(), k, key)
+      if (key.startsWith(k) && get) return this.pick(get(key), k, key)
     throw Error(`no get handler for '${key}' registered`)
   }
 
   public set<K extends keyof TF & string>(key: K, value: TF[K]) {
     for (let i = 0; i < this.handlers.length; i++) {
       if (!key.startsWith(this.handlers[i][0])) continue
-      for (const handler of this.handlers[i][1].set) handler(value)
+      for (const handler of this.handlers[i][1].set)
+        if (handler(value, key) === false) return
     }
   }
 
   // handler map in reverse alphabetical order
-  private handlers: [
-    string,
-    { get?: () => any; set: ((v: any) => any)[] }
-  ][] = []
+  private handlers: [string, { get?: Getter; set: Setter[] }][] = []
 
   public handler<K extends keyof TF & string>(key: K) {
     const handlers = this.handlers
@@ -45,13 +43,13 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
     }
 
     return {
-      set get(func: () => TF[K]) {
+      set get(handler: Getter<TF[K]>) {
         const acc = accessor()
         if (acc.get) throw Error(`'${key}' already has getter`)
-        acc.get = func
+        acc.get = handler
       },
-      set set(func: (v: TF[K]) => any) {
-        accessor().set.push(func)
+      set(handler: Setter<TF[K]>, authoritative = false) {
+        accessor().set[authoritative ? 'unshift' : 'push'](handler)
       },
     }
   }
@@ -64,3 +62,6 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
     return value
   }
 }
+
+type Getter<T = any> = (path: string) => T
+type Setter<T = any> = (v: T, path: string) => unknown
