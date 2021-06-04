@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { useAPICall, useCustomTheme } from 'utils/hooks'
+import { useAPICall, useCustomTheme } from 'hooks'
 import { Screen } from 'components/structure'
 import Appbar from 'components/Appbar'
 import type { RouteProps } from '@picast-app/router'

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { EpisodeStrip } from 'components/composite'
 import { VirtualList } from 'components/structure'
-import { useFeed, useValueRef } from 'utils/hooks'
+import { useFeed, useValueRef } from 'hooks'
 import { main, proxy } from 'workers'
 
 type Props = {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { mobile } from 'styles/responsive'
-import { useMatchMedia } from 'utils/hooks'
+import { useMatchMedia } from 'hooks'
 
 type Props = {
   onClick?(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void

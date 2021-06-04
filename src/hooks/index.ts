@@ -7,13 +7,15 @@ import {
   useCallback,
 } from 'react'
 import { Theme } from 'styles'
-import subscription, { Subscription } from './subscription'
+import subscription, { Subscription } from 'utils/subscription'
 import throttle from 'lodash/throttle'
 import { main, subscriptionSub, state as appState } from 'workers'
 import { isPromise } from 'utils/promise'
 import type { API } from 'main/main.worker'
 import * as palette from 'styles/palette'
 import { querySub } from 'utils/css/query'
+
+export * from './store'
 
 export const useTheme = () => useContext(Theme)
 

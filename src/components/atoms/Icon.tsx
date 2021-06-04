@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Link } from '@picast-app/router'
-import { useTheme } from 'utils/hooks'
+import { useTheme } from 'hooks'
 import { Button } from './Button'
 
 type Props = {

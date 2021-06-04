@@ -9,6 +9,7 @@ import * as account from './account'
 import appState, { State } from './appState'
 import { deleteDB } from 'idb'
 import * as playback from './playback'
+import { threaded } from 'store'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const self: DedicatedWorkerGlobalScope
@@ -55,6 +56,7 @@ const api = {
   ...store,
   ...playback,
   ...account,
+  ...threaded,
   state,
   readState,
   updateDebug: proxy(updateDebug),

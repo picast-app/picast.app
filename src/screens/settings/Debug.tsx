@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import Section from './Section'
 import { Switch } from 'components/atoms'
-import { useAppState } from 'utils/hooks'
+import { useAppState } from 'hooks'
 import { main } from 'workers'
 import type { State } from 'main/appState'
 

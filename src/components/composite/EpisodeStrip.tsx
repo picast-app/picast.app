@@ -7,7 +7,7 @@ import type { EpisodeBase } from 'main/store/types'
 import { proxy } from 'comlink'
 import { mobile } from 'styles/responsive'
 import { center, transition } from 'styles/mixin'
-import { useArtwork } from 'utils/hooks'
+import { useArtwork } from 'hooks'
 import { useEpisodeState, useEpisodeToggle } from 'utils/playerHooks'
 
 type Props = (

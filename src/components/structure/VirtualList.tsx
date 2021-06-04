@@ -9,7 +9,7 @@ import React, {
   memo,
 } from 'react'
 import ReactDOM from 'react-dom'
-import { useMatchMedia, useWindowDimensions, useValueRef } from 'utils/hooks'
+import { useMatchMedia, useWindowDimensions, useValueRef } from 'hooks'
 import styled from 'styled-components'
 import { desktop } from 'styles/responsive'
 import { scrollParent } from 'utils/dom'

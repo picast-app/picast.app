@@ -6,7 +6,7 @@ type Prefix<T, P extends string> = {
   [K in keyof T]: K extends string ? { [S in `${P}.${K}`]: T[K] } : never
 }[keyof T]
 
-type FlatSchema<T> = T extends Schema
+export type FlatSchema<T> = T extends Schema
   ? T &
       MergeDistr<
         {

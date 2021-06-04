@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import debounce from 'lodash/debounce'
-import { useCanvas, useComputed, useTheme } from 'utils/hooks'
+import { useCanvas, useComputed, useTheme } from 'hooks'
 import { desktopPts, cardPadd } from './grid'
 
 const sidebarWidth = 15 * 16

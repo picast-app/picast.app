@@ -1,5 +1,5 @@
 import { useState, useEffect, useReducer } from 'react'
-import { useSubscriptionValue } from 'utils/hooks'
+import { useSubscriptionValue } from 'hooks'
 import subscription from 'utils/subscription'
 import { main } from 'workers'
 import type { Player } from 'components/webcomponents'

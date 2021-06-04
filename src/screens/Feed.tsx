@@ -4,7 +4,7 @@ import { Screen, VirtualList } from 'components/structure'
 import { EpisodeStrip } from 'components/composite'
 import Appbar from 'components/Appbar'
 import { center } from 'styles/mixin'
-import { useAppState, useFeed } from 'utils/hooks'
+import { useAppState, useFeed } from 'hooks'
 import { Link } from '@picast-app/router'
 
 export default function Wrap() {

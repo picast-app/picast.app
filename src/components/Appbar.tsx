@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { bar } from 'styles/mixin'
 import { Icon, ProgressSC } from 'components/atoms'
 import { Surface, Helmet } from 'components/structure'
-import { useScrollDir, useMatchMedia } from 'utils/hooks'
+import { useScrollDir, useMatchMedia } from 'hooks'
 import { desktop } from 'styles/responsive'
 import { useLocation, history } from '@picast-app/router'
 

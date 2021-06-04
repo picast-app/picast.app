@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { Screen, Surface } from 'components/structure'
 import { Plot, Datum } from 'components/atoms'
 import * as funcs from 'utils/ease'
-import { useComputed } from 'utils/hooks'
+import { useComputed } from 'hooks'
 import { desktop } from 'styles/responsive'
 
 export default function Ease() {

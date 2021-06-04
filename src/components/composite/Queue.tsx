@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { useAppState } from 'utils/hooks'
+import { useAppState } from 'hooks'
 import { EpisodeStrip } from 'components/composite'
 
 export function Queue() {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { useComputed } from 'utils/hooks'
+import { useComputed } from 'hooks'
 import { mobile } from 'styles/responsive'
 
 type Size = [query: string, size: number] | number

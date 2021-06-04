@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import Section from './Section'
 import { Switch } from 'components/atoms'
-import { useMatchMedia } from 'utils/hooks'
+import { useMatchMedia } from 'hooks'
 
 export default function Appearance() {
   const systemDark = useMatchMedia('(prefers-color-scheme: dark)')

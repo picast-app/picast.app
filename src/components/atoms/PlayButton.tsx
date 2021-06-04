@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { useChanged } from 'utils/hooks'
+import { useChanged } from 'hooks'
 import styled from 'styled-components'
 import { interpolated, Interpolated, translate, scale } from 'utils/svgPath'
 import { vec, equiTriBoxRatio } from 'utils/math'

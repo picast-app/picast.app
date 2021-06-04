@@ -4,7 +4,7 @@ import { Icon, Input } from 'components/atoms'
 import { Screen, Dialog } from 'components/structure'
 import Appbar from 'components/Appbar'
 import { main } from 'workers'
-import { useAppState } from 'utils/hooks'
+import { useAppState } from 'hooks'
 import * as wp from 'utils/webpush'
 import { mobile } from 'styles/responsive'
 import {

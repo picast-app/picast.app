@@ -5,7 +5,7 @@ import { Surface } from 'components/structure'
 import { bar } from 'styles/mixin'
 import { desktop, mobile } from 'styles/responsive'
 import Search from './PodcastSearch'
-import { useMatchMedia, useTheme, useNavbarWidget } from 'utils/hooks'
+import { useMatchMedia, useTheme, useNavbarWidget } from 'hooks'
 import { useLocation, Link } from '@picast-app/router'
 
 const routes: {

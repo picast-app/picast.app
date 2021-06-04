@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Artwork, PlayButton } from 'components/atoms'
 import { Shownotes } from 'components/composite'
-import { useAPICall, useThemeRef } from 'utils/hooks'
+import { useAPICall, useThemeRef } from 'hooks'
 import { useEpisodeToggle } from 'utils/playerHooks'
 import { mobile, desktop } from 'styles/responsive'
 

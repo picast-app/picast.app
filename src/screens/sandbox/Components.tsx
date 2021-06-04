@@ -10,7 +10,7 @@ import {
   Icon,
 } from 'components/atoms'
 import { ShowCard } from 'components/composite'
-import { useComputed } from 'utils/hooks'
+import { useComputed } from 'hooks'
 
 export default function Components() {
   const [src, setSrc] = useState(
