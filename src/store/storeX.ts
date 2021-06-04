@@ -1,3 +1,5 @@
+import * as path from 'utils/path'
+
 type Schema = { [K: string]: Schema | string | number | boolean }
 
 type Prefix<T, P extends string> = {
@@ -14,9 +16,26 @@ type FlatSchema<T> = T extends Schema
   : never
 
 export default class Store<T extends Schema, TF = FlatSchema<T>> {
-  public get<K extends keyof TF>(key: K): TF[K] {
-    return 0 as any
+  public get<K extends keyof TF & string>(key: K): TF[K] {
+    for (const [k, f] of this.handlers)
+      if (key.startsWith(k)) return this.pick(f(), k, key)
+    throw Error(`no get handler for '${key}' registered`)
   }
 
-  public set<K extends keyof TF>(key: K, value: TF[K]) {}
+  // handler map in reverse alphabetical order
+  private handlers: [string, any][] = []
+
+  public addHandler<K extends keyof TF & string>(key: K, handler: () => TF[K]) {
+    const i = this.handlers.findIndex(([k]) => k < key)
+    if (i < 0) this.handlers.push([key, handler])
+    else this.handlers.splice(i, 0, [key, handler])
+  }
+
+  private pick(obj: any, root: string, select: string) {
+    if (root === select) return obj
+    const value = path.pick(obj, ...select.slice(root.length + 1).split('.'))
+    if (value === path.none)
+      throw Error(`path '${root}' does not contain '${select}'`)
+    return value
+  }
 }
