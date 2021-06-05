@@ -20,9 +20,9 @@ export type FlatSchema<T> = T extends Schema
   : never
 
 export default class Store<T extends Schema, TF = FlatSchema<T>> {
-  public get<K extends keyof TF & string>(key: K): TF[K] {
+  public async get<K extends keyof TF & string>(key: K): Promise<TF[K]> {
     for (const [k, { get }] of this.handlers)
-      if (key.startsWith(k) && get) return Store.pick(get(key), k, key)
+      if (key.startsWith(k) && get) return Store.pick(await get(key), k, key)
     throw Error(`no get handler for '${key}' registered`)
   }
 
@@ -147,6 +147,6 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
   }
 }
 
-type Getter<T = any> = (path: string) => T
+type Getter<T = any> = (path: string) => T | Promise<T>
 type Setter<T = any> = (v: T, path: string) => unknown
 type Deleted = (path: string) => unknown

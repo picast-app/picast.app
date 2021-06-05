@@ -61,3 +61,5 @@ type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
 type MergeDistr<U> = UnionToIntersection<U> extends infer O
   ? { [K in keyof O]: O[K] }
   : never
+
+type Primitive = string | number | boolean | symbol | null | undefined

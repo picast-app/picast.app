@@ -16,19 +16,23 @@ type StoreSchema = {
   foo: string
 }
 
-test('calls getters', () => {
+test('calls getters', async () => {
   const store = new Store<StoreSchema>()
 
   const getApp = jest.fn(() => ({ colorTheme: 'dark', useSystemTheme: false }))
   const getTheme = jest.fn(() => 'light')
 
   store.handler('settings.appearance').get(getApp as any)
-  expect(store.get('settings.appearance.colorTheme')).toBe('dark')
+  await expect(store.get('settings.appearance.colorTheme')).resolves.toBe(
+    'dark'
+  )
   expect(getApp).toHaveBeenCalled()
   expect(getTheme).not.toHaveBeenCalled()
 
   store.handler('settings.appearance.colorTheme').get(getTheme as any)
-  expect(store.get('settings.appearance.colorTheme')).toBe('light')
+  await expect(store.get('settings.appearance.colorTheme')).resolves.toBe(
+    'light'
+  )
   expect(getApp).toHaveBeenCalledTimes(1)
   expect(getTheme).toHaveBeenCalledTimes(1)
 })

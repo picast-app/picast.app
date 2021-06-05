@@ -8,3 +8,4 @@ docs
 src/types
 tmp
 /*.txt
+src/**/*.md
