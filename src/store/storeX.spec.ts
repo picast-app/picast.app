@@ -6,6 +6,7 @@ type StoreSchema = {
     appearance: {
       colorTheme: 'light' | 'dark'
       useSystemTheme: boolean
+      opt?: number
     }
   }
   foo: string
@@ -81,4 +82,23 @@ test('diff setter', () => {
   store.set('settings.appearance.colorTheme', 'light')
   expect(listener).toHaveBeenCalledTimes(1)
   expect(differ).toHaveBeenCalledTimes(2)
+})
+
+test('drill down attrs', () => {
+  const store = new Store<StoreSchema>()
+  const thGet = jest.fn(() => {})
+
+  store.handler('settings.appearance.colorTheme').set(thGet)
+  expect(thGet).toHaveBeenCalledTimes(0)
+
+  store.set('settings.appearance', {
+    colorTheme: 'light',
+    useSystemTheme: false,
+  })
+  expect(thGet).toHaveBeenCalledTimes(1)
+  expect(thGet).toHaveBeenCalledWith('light', 'settings.appearance')
+
+  store.set('settings.appearance.colorTheme', 'dark')
+  expect(thGet).toHaveBeenCalledTimes(2)
+  expect(thGet).toHaveBeenCalledWith('dark', 'settings.appearance.colorTheme')
 })

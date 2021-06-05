@@ -9,9 +9,13 @@ type Prefix<T, P extends string> = {
 export type FlatSchema<T> = T extends Schema
   ? T &
       MergeDistr<
-        {
-          [K in keyof T]: K extends string ? Prefix<FlatSchema<T[K]>, K> : never
-        }[keyof T]
+        NonNullable<
+          {
+            [K in keyof T]: K extends string
+              ? Prefix<FlatSchema<T[K]>, K>
+              : never
+          }[keyof T]
+        >
       >
   : never
 
@@ -28,17 +32,31 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
       for (const handler of this.handlers[i][1].set)
         if (handler(value, key) === false) return
     }
+    // propagate down into children
+    for (let i = this.handlers.length - 1; i >= 0; i--) {
+      if (
+        this.handlers[i][0].length <= key.length ||
+        !this.handlers[i][0].startsWith(key)
+      )
+        continue
+      for (const handler of this.handlers[i][1].set)
+        handler(this.pick(value, key, this.handlers[i][0]), key)
+    }
   }
 
   // handler map in reverse alphabetical order
-  private handlers: [string, { get?: Getter; set: Setter[] }][] = []
+  private handlers: [
+    string,
+    { get?: Getter; set: Setter[]; del: Deleted[] }
+  ][] = []
 
   public handler<K extends keyof TF & string>(key: K) {
     const handlers = this.handlers
     const accessor = () => {
       let i = handlers.findIndex(([k]) => k <= key)
       if (i < 0) i = handlers.length
-      if (handlers[i]?.[0] !== key) handlers.splice(i, 0, [key, { set: [] }])
+      if (handlers[i]?.[0] !== key)
+        handlers.splice(i, 0, [key, { set: [], del: [] }])
       return handlers[i][1]
     }
 
@@ -50,6 +68,9 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
       },
       set(handler: Setter<TF[K]>, authoritative = false) {
         accessor().set[authoritative ? 'unshift' : 'push'](handler)
+      },
+      delete(handler: Deleted) {
+        accessor().del.push(handler)
       },
     }
   }
@@ -65,3 +86,4 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
 
 type Getter<T = any> = (path: string) => T
 type Setter<T = any> = (v: T, path: string) => unknown
+type Deleted = (path: string) => unknown
