@@ -7,6 +7,10 @@ type StoreSchema = {
       colorTheme: 'light' | 'dark'
       useSystemTheme: boolean
       opt?: number
+      nestOpt?: {
+        a: number
+        b: number
+      }
     }
   }
   foo: string
@@ -84,21 +88,91 @@ test('diff setter', () => {
   expect(differ).toHaveBeenCalledTimes(2)
 })
 
-test('drill down attrs', () => {
+test('propagate updates down', () => {
   const store = new Store<StoreSchema>()
-  const thGet = jest.fn(() => {})
+  const thSet = jest.fn(() => {})
 
-  store.handler('settings.appearance.colorTheme').set(thGet)
-  expect(thGet).toHaveBeenCalledTimes(0)
+  store.handler('settings.appearance.colorTheme').set(thSet)
+  expect(thSet).toHaveBeenCalledTimes(0)
 
   store.set('settings.appearance', {
     colorTheme: 'light',
     useSystemTheme: false,
   })
-  expect(thGet).toHaveBeenCalledTimes(1)
-  expect(thGet).toHaveBeenCalledWith('light', 'settings.appearance')
+  expect(thSet).toHaveBeenCalledTimes(1)
+  expect(thSet).toHaveBeenLastCalledWith('light', 'settings.appearance')
 
   store.set('settings.appearance.colorTheme', 'dark')
-  expect(thGet).toHaveBeenCalledTimes(2)
-  expect(thGet).toHaveBeenCalledWith('dark', 'settings.appearance.colorTheme')
+  expect(thSet).toHaveBeenCalledTimes(2)
+  expect(thSet).toHaveBeenLastCalledWith(
+    'dark',
+    'settings.appearance.colorTheme'
+  )
+})
+
+test('optional property & merge', () => {
+  const store = new Store<StoreSchema>()
+  const optSet = jest.fn(() => {})
+  const optDel = jest.fn(() => {})
+  const glSet = jest.fn(() => {})
+
+  store.handler('settings.appearance.opt').set(optSet)
+  store.handler('settings.appearance.opt').delete(optDel)
+  store.handler('settings').set(glSet)
+  expect(optSet).toHaveBeenCalledTimes(0)
+  expect(optDel).toHaveBeenCalledTimes(0)
+  expect(optDel).toHaveBeenCalledTimes(0)
+  expect(glSet).toHaveBeenCalledTimes(0)
+
+  store.set('settings.appearance', {
+    colorTheme: 'dark',
+    useSystemTheme: true,
+    opt: 0,
+  })
+  expect(optDel).toHaveBeenCalledTimes(0)
+  expect(optSet).toHaveBeenCalledTimes(1)
+  expect(optSet).toHaveBeenLastCalledWith(0, 'settings.appearance')
+  expect(glSet).toHaveBeenCalledTimes(1)
+
+  store.set('settings.appearance', {
+    colorTheme: 'dark',
+    useSystemTheme: false,
+  })
+  expect(optSet).toHaveBeenCalledTimes(1)
+  expect(optDel).toHaveBeenCalledTimes(1)
+  expect(optDel).toHaveBeenLastCalledWith('settings.appearance')
+  expect(glSet).toHaveBeenCalledTimes(2)
+
+  store.merge('settings.appearance', { opt: 1, colorTheme: 'light' })
+  expect(optDel).toHaveBeenCalledTimes(1)
+  expect(optSet).toHaveBeenCalledTimes(2)
+  expect(optSet).toHaveBeenLastCalledWith(1, 'settings.appearance.opt')
+  expect(glSet).toHaveBeenCalledTimes(4)
+
+  // diff merge
+  const themeIgn = jest.fn(() => false)
+  store.handler('settings.appearance.colorTheme').set(themeIgn, true)
+  store.merge('settings.appearance', { opt: 1, colorTheme: 'light' })
+  expect(glSet).toHaveBeenCalledTimes(5)
+
+  // recursive partial
+})
+
+test('search tips', () => {
+  const tree = {
+    a: {
+      b: {
+        c: 'd',
+        e: {
+          f: 'g',
+        },
+      },
+    },
+    foo: 'bar',
+  }
+  expect(Store['tips'](tree)).toEqual([
+    ['a.b.c', 'd'],
+    ['a.b.e.f', 'g'],
+    ['foo', 'bar'],
+  ])
 })

@@ -22,7 +22,7 @@ export type FlatSchema<T> = T extends Schema
 export default class Store<T extends Schema, TF = FlatSchema<T>> {
   public get<K extends keyof TF & string>(key: K): TF[K] {
     for (const [k, { get }] of this.handlers)
-      if (key.startsWith(k) && get) return this.pick(get(key), k, key)
+      if (key.startsWith(k) && get) return Store.pick(get(key), k, key)
     throw Error(`no get handler for '${key}' registered`)
   }
 
@@ -39,8 +39,21 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
         !this.handlers[i][0].startsWith(key)
       )
         continue
-      for (const handler of this.handlers[i][1].set)
-        handler(this.pick(value, key, this.handlers[i][0]), key)
+      const sub = Store.pick(value, key, this.handlers[i][0], true)
+      if (sub !== path.none) {
+        for (const handler of this.handlers[i][1].set) handler(sub, key)
+      } else {
+        for (const handler of this.handlers[i][1].del) handler(key)
+      }
+    }
+  }
+
+  public merge<K extends keyof TF & string>(key: K, value: Partial<TF[K]>) {
+    tips: for (const [tip, v] of Store.tips(value, key + '.')) {
+      for (const [path, { set }] of this.handlers) {
+        if (!tip.startsWith(path)) continue
+        for (const handler of set) if (handler(v, tip) === false) continue tips
+      }
     }
   }
 
@@ -75,12 +88,27 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
     }
   }
 
-  private pick(obj: any, root: string, select: string) {
+  private static pick(
+    obj: any,
+    root: string,
+    select: string,
+    returnNone = false
+  ) {
     if (root === select) return obj
     const value = path.pick(obj, ...select.slice(root.length + 1).split('.'))
-    if (value === path.none)
+    if (value === path.none) {
+      if (returnNone) return path.none
       throw Error(`path '${root}' does not contain '${select}'`)
+    }
     return value
+  }
+
+  private static tips(obj: any, prefix = ''): [string, any][] {
+    return Object.entries(obj).flatMap(([k, v]) =>
+      typeof v === 'object' && v !== null
+        ? Store.tips(v, `${prefix}${k}.`)
+        : [[prefix + k, v]]
+    )
   }
 }
 
