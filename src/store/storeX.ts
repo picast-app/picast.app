@@ -43,7 +43,18 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
       if (sub !== path.none) {
         for (const handler of this.handlers[i][1].set) handler(sub, key)
       } else {
-        for (const handler of this.handlers[i][1].del) handler(key)
+        let o = 0
+        while (
+          i - o > 0 &&
+          this.handlers[i - o - 1][0].startsWith(this.handlers[i][0] + '.')
+        )
+          o++
+
+        for (let i2 = i - o; i2 <= i; i2++)
+          for (const handler of this.handlers[i2][1].del)
+            handler(this.handlers[i][0])
+
+        i -= o
       }
     }
   }

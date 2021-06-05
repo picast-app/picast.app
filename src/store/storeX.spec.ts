@@ -9,7 +9,7 @@ type StoreSchema = {
       opt?: number
       nestOpt?: {
         a: number
-        b: number
+        b?: number
       }
     }
   }
@@ -140,7 +140,7 @@ test('optional property & merge', () => {
   })
   expect(optSet).toHaveBeenCalledTimes(1)
   expect(optDel).toHaveBeenCalledTimes(1)
-  expect(optDel).toHaveBeenLastCalledWith('settings.appearance')
+  expect(optDel).toHaveBeenLastCalledWith('settings.appearance.opt')
   expect(glSet).toHaveBeenCalledTimes(2)
 
   store.merge('settings.appearance', { opt: 1, colorTheme: 'light' })
@@ -156,6 +156,30 @@ test('optional property & merge', () => {
   expect(glSet).toHaveBeenCalledTimes(5)
 
   // recursive partial
+  const delNestOpt = jest.fn(() => {})
+  const delNestOptA = jest.fn(() => {})
+  const delNestOptB = jest.fn(() => {})
+  store.handler('settings.appearance.nestOpt').delete(delNestOpt)
+  store.handler('settings.appearance.nestOpt.a').delete(delNestOptA)
+  store.handler('settings.appearance.nestOpt.b').delete(delNestOptB)
+
+  store.set('settings.appearance.nestOpt', { a: 0, b: 1 })
+  expect(delNestOpt).toHaveBeenCalledTimes(0)
+  expect(delNestOptA).toHaveBeenCalledTimes(0)
+  expect(delNestOptB).toHaveBeenCalledTimes(0)
+
+  store.set('settings.appearance.nestOpt', { a: 1 })
+  expect(delNestOpt).toHaveBeenCalledTimes(0)
+  expect(delNestOptA).toHaveBeenCalledTimes(0)
+  expect(delNestOptB).toHaveBeenCalledTimes(1)
+
+  store.set('settings.appearance', {
+    colorTheme: 'dark',
+    useSystemTheme: false,
+  })
+  expect(delNestOpt).toHaveBeenCalledTimes(1)
+  expect(delNestOptA).toHaveBeenCalledTimes(1)
+  expect(delNestOptB).toHaveBeenCalledTimes(2)
 })
 
 test('search tips', () => {
