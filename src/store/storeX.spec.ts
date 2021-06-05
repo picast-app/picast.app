@@ -22,12 +22,12 @@ test('calls getters', () => {
   const getApp = jest.fn(() => ({ colorTheme: 'dark', useSystemTheme: false }))
   const getTheme = jest.fn(() => 'light')
 
-  store.handler('settings.appearance').get = getApp as any
+  store.handler('settings.appearance').get(getApp as any)
   expect(store.get('settings.appearance.colorTheme')).toBe('dark')
   expect(getApp).toHaveBeenCalled()
   expect(getTheme).not.toHaveBeenCalled()
 
-  store.handler('settings.appearance.colorTheme').get = getTheme as any
+  store.handler('settings.appearance.colorTheme').get(getTheme as any)
   expect(store.get('settings.appearance.colorTheme')).toBe('light')
   expect(getApp).toHaveBeenCalledTimes(1)
   expect(getTheme).toHaveBeenCalledTimes(1)
@@ -36,10 +36,10 @@ test('calls getters', () => {
 test('prevents duplicate getters', () => {
   const store = new Store<StoreSchema>()
   expect(() => {
-    store.handler('foo').get = () => ''
+    store.handler('foo').get(() => '')
   }).not.toThrow()
   expect(() => {
-    store.handler('foo').get = () => ''
+    store.handler('foo').get(() => '')
   }).toThrow()
 })
 

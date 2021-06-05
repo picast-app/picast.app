@@ -84,18 +84,42 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
       return handlers[i][1]
     }
 
+    const makeHandler = <
+      T extends (acc: ReturnType<typeof accessor>, ...rest: R) => any,
+      R extends any[]
+    >(
+      handler: T
+    ): ((...args: R) => () => void) => (...args: R) => {
+      const acc = accessor()
+      const cleanup = handler(acc, ...args)
+      return () => {
+        if (typeof cleanup === 'function') cleanup()
+        if (!acc.get && !acc.set.length && !acc.del.length)
+          this.handlers.splice(
+            this.handlers.findIndex(([, a]) => a === acc),
+            1
+          )
+      }
+    }
+
     return {
-      set get(handler: Getter<TF[K]>) {
-        const acc = accessor()
+      get: makeHandler((acc, handler: Getter<TF[K]>) => {
         if (acc.get) throw Error(`'${key}' already has getter`)
         acc.get = handler
-      },
-      set(handler: Setter<TF[K]>, authoritative = false) {
-        accessor().set[authoritative ? 'unshift' : 'push'](handler)
-      },
-      delete(handler: Deleted) {
-        accessor().del.push(handler)
-      },
+        return () => {
+          delete acc.get
+        }
+      }),
+      set: makeHandler(
+        ({ set }, handler: Setter<TF[K]>, authoritative = false) => {
+          set[authoritative ? 'unshift' : 'push'](handler)
+          return () => set.splice(set.indexOf(handler), 1)
+        }
+      ),
+      delete: makeHandler(({ del }, handler: Deleted) => {
+        del.push(handler)
+        return () => del.splice(del.indexOf(handler), 1)
+      }),
     }
   }
 
