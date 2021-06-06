@@ -1,4 +1,5 @@
 import * as f from 'utils/function'
+import { mutate } from 'utils/path'
 import type { Store } from '.'
 
 export const _ = Symbol('deferred')
@@ -14,6 +15,7 @@ export default abstract class MemCache<T> {
 
   public construct() {
     this.attachGetters()
+    this.attachSetter()
   }
 
   public destruct() {
@@ -53,8 +55,17 @@ export default abstract class MemCache<T> {
     attachNode()
   }
 
+  private attachSetter() {
+    this.cleanupCBs.push(
+      this.store.handler(this.root as any).set((v, path) => {
+        if (path === this.root) this.state = v
+        else
+          mutate(this.state, v, ...path.slice(this.root.length + 1).split('.'))
+      }, true)
+    )
+  }
+
   private assertComplete(node: any = this.state, ...path: string[]) {
-    logger.info('assert', { node })
     if (node === _)
       throw Error(
         `incomplete memcache initialization ('${[this.root, ...path].join(

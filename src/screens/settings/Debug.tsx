@@ -1,15 +1,23 @@
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
 import Section from './Section'
 import { Switch } from 'components/atoms'
-import { useAppState } from 'hooks'
-import { main } from 'workers'
-import type { State } from 'main/appState'
+import { useStateX } from 'hooks/store'
+import { pick } from 'utils/path'
 
 export default function Debug() {
-  const [debug, loading] = useAppState<State['debug']>('debug')
-  const [anim, setAnim] = useState(false)
-  if (loading) return null
-  const update = (field: string) => (v: any) => main.updateDebug({ [field]: v })
+  const [state, { set }] = useStateX('settings.debug')
+  usePlaybackLoading(state?.playbackLoading)
+
+  if (!state) return null
+  const toggle = (path: string) => {
+    const checked = pick(state, path) as boolean
+    return {
+      checked,
+      onChange() {
+        set(`settings.debug.${path}` as any, !checked)
+      },
+    }
+  }
   return (
     <Section>
       <span>{$`@settings.dppx`}</span>
@@ -17,24 +25,21 @@ export default function Debug() {
       <span>{$`@settings.concurrency`}</span>
       <span>{navigator.hardwareConcurrency}</span>
       <span>{$`@settings.print_logs`}</span>
-      <Switch checked={debug?.print_logs} onChange={update('print_logs')} />
+      <Switch {...toggle('printLogs')} />
       <span>{$`@settings.show_touch`}</span>
-      <Switch checked={debug?.touch} onChange={update('touch')} />
+      <Switch {...toggle('showTouchPaths')} />
       <span>{$`@settings.toggle_playback`}</span>
-      <Switch
-        checked={anim}
-        onChange={v => {
-          setAnim(v)
-          progressBars().forEach(el => {
-            el.setAttribute('loading', v.toString())
-          })
-        }}
-      ></Switch>
+      <Switch {...toggle('playbackLoading')} />
     </Section>
   )
 }
 
-const progressBars = () =>
-  [...document.querySelectorAll('picast-player')].flatMap(v => [
-    ...v.shadowRoot!.querySelectorAll('player-progress'),
-  ])
+function usePlaybackLoading(loading?: boolean) {
+  useEffect(() => {
+    if (loading === undefined) return
+    for (const bar of [
+      ...document.querySelectorAll('picast-player'),
+    ].flatMap(v => [...v.shadowRoot!.querySelectorAll('player-progress')]))
+      bar.setAttribute('loading', loading.toString())
+  }, [loading])
+}

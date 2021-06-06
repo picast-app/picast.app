@@ -139,6 +139,8 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
   }
 
   private static tips(obj: any, prefix = ''): [string, any][] {
+    if (typeof obj !== 'object' || obj === null)
+      return [[prefix.replace(/\.$/, ''), obj]]
     return Object.entries(obj).flatMap(([k, v]) =>
       typeof v === 'object' && v !== null
         ? Store.tips(v, `${prefix}${k}.`)

@@ -21,3 +21,20 @@ test('indicates non-existent', () => {
   expect(path.pick(obj, 'a', 'b', 's')).toBe(undefined)
   expect(path.pick(obj, 'a', 'b', 't')).toBe(path.none)
 })
+
+const base = () => ({ a: { b: 'c', d: 'e' } })
+
+test('set path', () => {
+  const v = base()
+  expect(path.set(v, 'x', 'a', 'b')).toMatchObject({ a: { b: 'x', d: 'e' } })
+  expect(v).toMatchObject(base())
+
+  expect(path.set(v, 'foo')).toBe('foo')
+  expect(v).toMatchObject(base())
+})
+
+test('mutate path', () => {
+  const v = base()
+  expect(path.mutate(v, 'x', 'a', 'b')).toBe('x')
+  expect(v).toMatchObject({ a: { b: 'x', d: 'e' } })
+})
