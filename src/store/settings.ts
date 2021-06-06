@@ -1,4 +1,4 @@
-import MemCache, { _, OptPrim } from './memCache'
+import MemCache, { _, OptPrim, HookDict } from './memCache'
 import dbProm from 'main/store/idb'
 import type { Schema } from '.'
 import equal from 'utils/equal'
@@ -8,6 +8,10 @@ type IDBMeta = {
   printLogs: boolean
   showTouchPaths: boolean
 }
+
+const IDBKeys = ['printLogs', 'showTouchPaths'] as const
+const idbWriter = (key: typeof IDBKeys[number]) => async (value: any) =>
+  (await dbProm).put('meta', value, key as string)
 
 export default class Settings extends MemCache<Schema['settings']> {
   root = 'settings'
@@ -23,6 +27,11 @@ export default class Settings extends MemCache<Schema['settings']> {
     },
   }
 
+  hooks: HookDict<Schema['settings']> = {
+    'debug.printLogs': idbWriter('printLogs'),
+    'debug.showTouchPaths': idbWriter('showTouchPaths'),
+  }
+
   async init() {
     this.state.appearance.colorTheme = 'light'
     this.state.appearance.useSystemTheme = false
@@ -34,7 +43,7 @@ export default class Settings extends MemCache<Schema['settings']> {
     const idb = await dbProm
     const tx = idb.transaction('meta', 'readonly')
     const res = await Promise.all([
-      ...Settings.IDBKeys.map(key => tx.store.get(key).then(v => [key, v])),
+      ...IDBKeys.map(key => tx.store.get(key).then(v => [key, v])),
       tx.done,
     ] as Promise<any>[])
     return Object.fromEntries(res.slice(0, -1))
@@ -59,6 +68,4 @@ export default class Settings extends MemCache<Schema['settings']> {
 
     return state as IDBMeta
   }
-
-  private static IDBKeys = ['printLogs', 'showTouchPaths']
 }

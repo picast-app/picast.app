@@ -35,6 +35,6 @@ test('set path', () => {
 
 test('mutate path', () => {
   const v = base()
-  expect(path.mutate(v, 'x', 'a', 'b')).toBe('x')
+  expect(path.mutate(v, 'x', 'a', 'b')).toBe('c')
   expect(v).toMatchObject({ a: { b: 'x', d: 'e' } })
 })

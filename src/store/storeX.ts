@@ -1,6 +1,6 @@
 import * as path from 'utils/path'
 
-type Schema = { [K: string]: Schema | string | number | boolean }
+export type Schema = { [K: string]: Schema | string | number | boolean }
 
 type Prefix<T, P extends string> = {
   [K in keyof T]: K extends string ? { [S in `${P}.${K}`]: T[K] } : never
@@ -18,6 +18,9 @@ export type FlatSchema<T> = T extends Schema
         >
       >
   : never
+
+export type Key<T extends Schema> = keyof FlatSchema<T>
+export type Value<T extends Schema, K extends Key<T>> = FlatSchema<T>[K]
 
 export default class Store<T extends Schema, TF = FlatSchema<T>> {
   public async get<K extends keyof TF & string>(key: K): Promise<TF[K]> {

@@ -23,13 +23,18 @@ export const set = (
 }
 
 // set path in place
-export const mutate = <T>(
+// returns previous value at path
+export const mutate = (
   obj: Record<string | number, any>,
-  value: T,
+  value: any,
   ...[next, ...rest]: string[]
-): T => {
+): any => {
   if (!next) throw Error('must specify path')
-  if (!rest.length) return (obj[next] = value)
+  if (!rest.length) {
+    const cur = obj[next]
+    obj[next] = value
+    return cur
+  }
   if (typeof obj[next] !== 'object' || obj[next] === null) obj[next] = {}
   return mutate(obj[next], value, ...rest)
 }

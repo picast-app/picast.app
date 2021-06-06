@@ -1,10 +1,15 @@
 import * as f from 'utils/function'
-import { mutate } from 'utils/path'
+import { mutate, pick } from 'utils/path'
 import type { Store } from '.'
+import type { Schema, FlatSchema } from './storeX'
 
 export const _ = Symbol('deferred')
 
-export default abstract class MemCache<T> {
+export type HookDict<T extends Schema, F = FlatSchema<T>> = {
+  [K in keyof F]?: (v: F[K]) => any
+}
+
+export default abstract class MemCache<T extends Schema> {
   constructor(protected readonly store: Store) {
     queueMicrotask(async () => {
       await this.init()
@@ -24,6 +29,7 @@ export default abstract class MemCache<T> {
 
   protected abstract readonly root: string
   abstract state: OptPrim<T>
+  protected hooks: HookDict<T> = {}
 
   protected init(): Promise<any> | any {}
   private resolveInit!: () => void
@@ -58,9 +64,10 @@ export default abstract class MemCache<T> {
   private attachSetter() {
     this.cleanupCBs.push(
       this.store.handler(this.root as any).set((v, path) => {
-        if (path === this.root) this.state = v
-        else
-          mutate(this.state, v, ...path.slice(this.root.length + 1).split('.'))
+        path = path.slice(this.root.length + 1)
+        if (!path) this.state = v
+        else if (mutate(this.state, v, ...path.split('.')) !== v)
+          this.hooks[path]?.(v)
       }, true)
     )
   }

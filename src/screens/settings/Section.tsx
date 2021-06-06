@@ -64,11 +64,5 @@ const S = {
       height: var(--row-height);
       line-height: var(--row-height);
     }
-
-    & > * {
-      &:not(:nth-last-child(2)):not(:last-child) {
-        border-bottom: 1px solid var(--cl-border-light);
-      }
-    }
   `,
 }
