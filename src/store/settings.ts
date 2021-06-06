@@ -14,6 +14,7 @@ const idbWriter = (key: typeof IDBKeys[number]) => async (value: any) =>
   (await dbProm).put('meta', value, key as string)
 
 export default class Settings extends MemCache<Schema['settings']> {
+  sync = 'settings'
   root = 'settings'
   state: OptPrim<Schema['settings']> = {
     appearance: {

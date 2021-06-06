@@ -29,11 +29,15 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
     throw Error(`no get handler for '${key}' registered`)
   }
 
-  public set<K extends keyof TF & string>(key: K, value: TF[K]) {
+  public set<K extends keyof TF & string>(
+    key: K,
+    value: TF[K],
+    meta?: Record<string, any>
+  ) {
     for (let i = 0; i < this.handlers.length; i++) {
       if (!key.startsWith(this.handlers[i][0])) continue
       for (const handler of this.handlers[i][1].set)
-        if (handler(value, key) === false) return
+        if (handler(value, key, meta) === false) return
     }
     // propagate down into children
     for (let i = this.handlers.length - 1; i >= 0; i--) {
@@ -44,7 +48,7 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
         continue
       const sub = Store.pick(value, key, this.handlers[i][0], true)
       if (sub !== path.none) {
-        for (const handler of this.handlers[i][1].set) handler(sub, key)
+        for (const handler of this.handlers[i][1].set) handler(sub, key, meta)
       } else {
         let o = 0
         while (
@@ -153,5 +157,9 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
 }
 
 type Getter<T = any> = (path: string) => T | Promise<T>
-type Setter<T = any> = (v: T, path: string) => unknown
+type Setter<T = any> = (
+  v: T,
+  path: string,
+  meta?: Record<string, any>
+) => unknown
 type Deleted = (path: string) => unknown

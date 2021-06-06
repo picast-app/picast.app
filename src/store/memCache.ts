@@ -1,7 +1,8 @@
 import * as f from 'utils/function'
-import { mutate, pick } from 'utils/path'
+import { mutate } from 'utils/path'
 import type { Store } from '.'
 import type { Schema, FlatSchema } from './storeX'
+import { Synchronized } from './tabSync'
 
 export const _ = Symbol('deferred')
 
@@ -15,6 +16,7 @@ export default abstract class MemCache<T extends Schema> {
       await this.init()
       this.assertComplete()
       this.resolveInit()
+      this.setupSync()
     })
   }
 
@@ -30,6 +32,7 @@ export default abstract class MemCache<T extends Schema> {
   protected abstract readonly root: string
   abstract state: OptPrim<T>
   protected hooks: HookDict<T> = {}
+  protected sync?: string
 
   protected init(): Promise<any> | any {}
   private resolveInit!: () => void
@@ -63,13 +66,17 @@ export default abstract class MemCache<T extends Schema> {
 
   private attachSetter() {
     this.cleanupCBs.push(
-      this.store.handler(this.root as any).set((v, path) => {
-        path = path.slice(this.root.length + 1)
-        if (!path) this.state = v
-        else if (mutate(this.state, v, ...path.split('.')) !== v)
-          this.hooks[path]?.(v)
-      }, true)
+      this.store.handler(this.root as any).set(this.onSet.bind(this), true)
     )
+  }
+
+  private onSet(v: any, path: string, meta?: Record<string, any>) {
+    path = path.slice(this.root.length + 1)
+    if (!path) this.state = v
+    else if (mutate(this.state, v, ...path.split('.')) !== v)
+      this.hooks[path]?.(v)
+
+    if (!meta?.reflection) this.syncer?.broadcast({ path, v })
   }
 
   private assertComplete(node: any = this.state, ...path: string[]) {
@@ -81,6 +88,16 @@ export default abstract class MemCache<T extends Schema> {
       )
     if (typeof node !== 'object' || node === null) return
     Object.entries(node).forEach(([k, v]) => this.assertComplete(v, ...path, k))
+  }
+
+  private syncer?: Synchronized
+  private setupSync() {
+    if (!this.sync || this.syncer) return
+    this.syncer = new Synchronized(this.sync)
+    this.syncer.onSync = ({ path, v }) => {
+      logger.info('memcache sync', path, v)
+      this.store.set(`${this.root}.${path}` as any, v, { reflection: true })
+    }
   }
 }
 
