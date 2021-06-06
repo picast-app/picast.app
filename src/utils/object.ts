@@ -7,7 +7,16 @@ export const map = <T extends obj>(
     k: K,
     v: typeof o[K]
   ) => [string | number | symbol, any]
-) => Object.fromEntries(Object.entries(o).map(([k, v]) => func(k as any, v)))
+) =>
+  Object.fromEntries(Object.entries(o).map(([k, v]) => func(k as keyof T, v)))
+
+export const mapValues = <T extends obj>(
+  o: T,
+  func: <K extends keyof T>(v: typeof o[K], k: K) => any
+) =>
+  Object.fromEntries(
+    Object.entries(o).map(([k, v]) => [k, func(v, k as keyof T)])
+  )
 
 export const filter = <T extends obj>(
   o: T,

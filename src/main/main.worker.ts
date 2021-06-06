@@ -10,6 +10,7 @@ import appState, { State } from './appState'
 import { deleteDB } from 'idb'
 import * as playback from './playback'
 import { threaded } from 'store'
+import { registerUICall } from './ui'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const self: DedicatedWorkerGlobalScope
@@ -61,6 +62,7 @@ const api = {
   readState,
   updateDebug: proxy(updateDebug),
   deleteIDB,
+  registerUICall,
 } as const
 
 export type API = typeof api

@@ -3,6 +3,7 @@ import MainWorker from 'main/main.worker'
 import createSub from 'utils/subscription'
 import type { API } from 'main/main.worker'
 import { snack } from 'utils/notification'
+import uiAPI from './uiThreadAPI'
 
 export { proxy }
 
@@ -31,6 +32,10 @@ main.state(
     subscriptionSub.setState(subs)
   })
 )
+
+Object.entries(uiAPI).forEach(([k, v]) => {
+  main.registerUICall(k as any, proxy(v))
+})
 
 const interactions = ['mousewheel', 'keydown', 'pointerdown']
 
