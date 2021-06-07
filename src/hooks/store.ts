@@ -12,7 +12,7 @@ export function useStateX<T extends Key>(key: T) {
       .listenX(
         key,
         proxy((state: any, path: string) =>
-          setValue(previous => {
+          setValue((previous: any) => {
             return set(
               previous,
               state,

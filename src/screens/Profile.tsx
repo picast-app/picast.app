@@ -3,13 +3,13 @@ import Appbar from 'components/Appbar'
 import { Icon, Button } from 'components/atoms'
 import { Screen } from 'components/structure'
 import { Redirect } from '@picast-app/router'
-import { useAppState } from 'hooks'
 import { main } from 'workers'
+import { useStateX } from 'hooks/store'
 
 export default function Profile() {
-  const [signedIn, loading] = useAppState<boolean>('user.signedIn')
+  const [user] = useStateX('user')
 
-  if (!loading && !signedIn) return <Redirect to="/signin" />
+  if (user === null) return <Redirect to="/signin" />
   return (
     <Screen padd>
       <Appbar title="Profile">

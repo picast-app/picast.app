@@ -184,6 +184,14 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
     }) as any).bind(this)
   }
 
+  public afterHandlers(cb: () => any) {
+    if (!this.handlerQueue) cb()
+    else this.handlerQueue.push(cb)
+  }
+  public handlersDone(): Promise<void> {
+    return new Promise(res => this.afterHandlers(res))
+  }
+
   private static pick(
     obj: any,
     root: string,

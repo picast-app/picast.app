@@ -6,6 +6,7 @@ import type { State } from './state'
 import uiThread from 'main/ui'
 import type { Store } from '.'
 import { proxy } from 'comlink'
+import { idbWriter } from './util'
 
 type IDBMeta = {
   printLogs: boolean
@@ -14,8 +15,7 @@ type IDBMeta = {
 }
 
 const IDBKeys = ['printLogs', 'showTouchPaths', 'extractColor'] as const
-const idbWriter = (key: typeof IDBKeys[number]) => async (value: any) =>
-  (await dbProm).put('meta', value, key as string)
+type Key = typeof IDBKeys[number]
 
 export default class Settings extends MemCache<State['settings']> {
   sync = 'settings'
@@ -34,9 +34,9 @@ export default class Settings extends MemCache<State['settings']> {
   }
 
   hooks: HookDict<State['settings']> = {
-    'debug.printLogs': idbWriter('printLogs'),
-    'debug.showTouchPaths': idbWriter('showTouchPaths'),
-    'appearance.extractColor': idbWriter('extractColor'),
+    'debug.printLogs': idbWriter<Key>('printLogs'),
+    'debug.showTouchPaths': idbWriter<Key>('showTouchPaths'),
+    'appearance.extractColor': idbWriter<Key>('extractColor'),
     'appearance.useSystemTheme': v => {
       if (v) this.store.set('settings.appearance.colorTheme', this.sysTheme)
     },

@@ -1,16 +1,16 @@
 import * as f from 'utils/function'
 import { mutate } from 'utils/path'
 import type { Store } from '.'
-import type { Schema, FlatSchema } from './storeX'
+import type { FlatSchema } from './storeX'
 import { Synchronized } from './tabSync'
 
 export const _ = Symbol('deferred')
 
-export type HookDict<T extends Schema, F = FlatSchema<T>> = {
+export type HookDict<T, F = FlatSchema<Exclude<T, null>>> = {
   [K in keyof F]?: (v: F[K]) => any
-}
+} & { $?: (v: T) => any }
 
-export default abstract class MemCache<T extends Schema> {
+export default abstract class MemCache<T> {
   constructor(protected readonly store: Store) {
     queueMicrotask(async () => {
       await this.init()
@@ -29,6 +29,15 @@ export default abstract class MemCache<T extends Schema> {
     f.callAll(this.cleanupCBs)
   }
 
+  // revalidate & attach handlers after schema change
+  protected async reattach() {
+    await this.store.handlersDone()
+    f.callAll(this.cleanupCBs)
+    this.assertComplete()
+    this.attachGetters()
+    this.attachSetter()
+  }
+
   protected abstract readonly root: string
   abstract state: OptPrim<T>
   protected hooks: HookDict<T> = {}
@@ -36,7 +45,7 @@ export default abstract class MemCache<T extends Schema> {
 
   protected init(): Promise<any> | any {}
   private resolveInit!: () => void
-  private initialized = new Promise<void>(res => {
+  protected initialized = new Promise<void>(res => {
     this.resolveInit = res
   })
 
@@ -61,7 +70,7 @@ export default abstract class MemCache<T extends Schema> {
           attachNode(node[key], `${path}.${key}`)
       }
     }
-    attachNode()
+    if (typeof this.state === 'object' && this.state !== null) attachNode()
   }
 
   private attachSetter() {
@@ -72,8 +81,10 @@ export default abstract class MemCache<T extends Schema> {
 
   private onSet(v: any, path: string, meta?: Record<string, any>) {
     path = path.slice(this.root.length + 1)
-    if (!path) this.state = v
-    else if (mutate(this.state, v, ...path.split('.')) !== v)
+    if (!path) {
+      this.state = v
+      this.hooks.$?.(v)
+    } else if (mutate(this.state as any, v, ...path.split('.')) !== v)
       this.hooks[path]?.(v)
 
     if (!meta?.reflection) this.syncer?.broadcast({ path, v })
@@ -101,6 +112,10 @@ export default abstract class MemCache<T extends Schema> {
   }
 }
 
-export type OptPrim<T extends { [K in any]: any }> = {
-  [K in keyof T]: T[K] extends Primitive ? T[K] | typeof _ : OptPrim<T[K]>
-}
+type Opt<T> = T | typeof _
+
+export type OptPrim<T> = T extends { [K in any]: any }
+  ? {
+      [K in keyof T]: T[K] extends Primitive ? Opt<T[K]> : OptPrim<T[K]>
+    }
+  : Opt<T>

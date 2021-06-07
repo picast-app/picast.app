@@ -13,6 +13,9 @@ export type State = {
       playbackLoading: boolean
     }
   }
+  user: {
+    id: string
+  } | null
 }
 
 export type FlatState = FlatSchema<State>
