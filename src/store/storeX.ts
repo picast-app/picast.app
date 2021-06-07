@@ -1,6 +1,7 @@
 import * as path from 'utils/path'
+import { callAll } from 'utils/function'
 
-export type Schema = { [K: string]: Schema | string | number | boolean }
+export type Schema = { [K: string]: Schema | any }
 
 type Prefix<T, P extends string> = {
   [K in keyof T]: K extends string ? { [S in `${P}.${K}`]: T[K] } : never
@@ -23,9 +24,18 @@ export type Key<T extends Schema> = keyof FlatSchema<T>
 export type Value<T extends Schema, K extends Key<T>> = FlatSchema<T>[K]
 
 export default class Store<T extends Schema, TF = FlatSchema<T>> {
+  constructor() {
+    this.get = this.locked(this.get)
+    this.set = this.locked(this.set)
+    this.merge = this.locked(this.merge)
+  }
+
   public async get<K extends keyof TF & string>(key: K): Promise<TF[K]> {
     for (const [k, { get }] of this.handlers)
-      if (key.startsWith(k) && get) return Store.pick(await get(key), k, key)
+      if (key.startsWith(k) && get) {
+        this.escapeLock?.()
+        return Store.pick(await get(key), k, key)
+      }
     throw Error(`no get handler for '${key}' registered`)
   }
 
@@ -90,44 +100,88 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
         handlers.splice(i, 0, [key, { set: [], del: [] }])
       return handlers[i][1]
     }
+    type Accessor = ReturnType<typeof accessor>
 
-    const makeHandler = <
-      T extends (acc: ReturnType<typeof accessor>, ...rest: R) => any,
+    const handlerFactory = <
+      T extends (acc: Accessor, ...rest: R) => void,
       R extends any[]
-    >(
-      handler: T
-    ): ((...args: R) => () => void) => (...args: R) => {
-      const acc = accessor()
-      const cleanup = handler(acc, ...args)
+    >({
+      attach,
+      detach,
+    }: {
+      attach: T
+      detach: (acc: Accessor, accArgs: R) => void
+    }) => (...args: R) => {
+      let acc: Accessor
+      const apply = () => {
+        acc = accessor()
+        attach(acc, ...args)
+      }
+      if (this.handlerQueue) this.handlerQueue.push(apply)
+      else apply()
       return () => {
-        if (typeof cleanup === 'function') cleanup()
-        if (!acc.get && !acc.set.length && !acc.del.length)
-          this.handlers.splice(
-            this.handlers.findIndex(([, a]) => a === acc),
-            1
-          )
+        if (acc) detach(acc, args)
+        else if (this.handlerQueue?.includes(apply))
+          this.handlerQueue.splice(this.handlerQueue.indexOf(apply, 1))
       }
     }
 
     return {
-      get: makeHandler((acc, handler: Getter<TF[K]>) => {
-        if (acc.get) throw Error(`'${key}' already has getter`)
-        acc.get = handler
-        return () => {
+      get: handlerFactory({
+        attach(acc, handler: Getter<TF[K]>) {
+          if (acc.get) throw Error(`'${key}' already has getter`)
+          acc.get = handler
+        },
+        detach(acc) {
           delete acc.get
-        }
+        },
       }),
-      set: makeHandler(
-        ({ set }, handler: Setter<TF[K]>, authoritative = false) => {
+      set: handlerFactory({
+        attach({ set }, handler: Setter<TF[K]>, authoritative = false) {
           set[authoritative ? 'unshift' : 'push'](handler)
-          return () => set.splice(set.indexOf(handler), 1)
-        }
-      ),
-      delete: makeHandler(({ del }, handler: Deleted) => {
-        del.push(handler)
-        return () => del.splice(del.indexOf(handler), 1)
+        },
+        detach({ set }, [handler]) {
+          set.splice(set.indexOf(handler), 1)
+        },
+      }),
+      delete: handlerFactory({
+        attach({ del }, handler: Deleted) {
+          del.push(handler)
+        },
+        detach({ del }, [handler]) {
+          del.splice(del.indexOf(handler), 1)
+        },
       }),
     }
+  }
+
+  private handlerQueue?: (() => void)[]
+  private lockHandler() {
+    if (this.handlerQueue) throw Error('handler already locked')
+    this.handlerQueue = []
+  }
+  private unlockHandler() {
+    if (!this.handlerQueue) throw Error('handler already unlocked')
+    callAll(this.handlerQueue)
+    delete this.handlerQueue
+  }
+
+  private escapeLock?: () => void
+  private locked<T extends (...args: any[]) => any>(meth: T): T {
+    meth = meth.bind(this) as any
+    return (((...args: Parameters<T>) => {
+      let escaped = false
+      this.escapeLock = () => {
+        this.unlockHandler()
+        escaped = true
+      }
+      try {
+        this.lockHandler()
+        return meth(...args)
+      } finally {
+        if (!escaped) this.unlockHandler()
+      }
+    }) as any).bind(this)
   }
 
   private static pick(
