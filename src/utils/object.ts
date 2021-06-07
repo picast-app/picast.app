@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/ban-types
-type obj = object
+type obj = Record<string | number | symbol, any>
 
 export const map = <T extends obj>(
   o: T,
@@ -18,6 +17,11 @@ export const mapValues = <T extends obj>(
     Object.entries(o).map(([k, v]) => [k, func(v, k as keyof T)])
   )
 
+export const forEach = <T extends obj>(
+  v: T,
+  cb: <K extends keyof T>(k: K, v: T[K]) => unknown
+): void => Object.entries(v).forEach(([k, v]) => cb(k, v))
+
 export const filter = <T extends obj>(
   o: T,
   func: <K extends keyof T>(k: K, v: typeof o[K]) => boolean
@@ -31,8 +35,10 @@ export const pick = <T extends obj, K extends keyof T>(
   ...keys: K[]
 ): Pick<T, K> =>
   Object.fromEntries(
-    Object.entries(v).map(([k, v]) => (keys.includes(k as any) ? [k, v] : []))
-  )
+    Object.entries(v).flatMap(([k, v]) =>
+      keys.includes(k as any) ? [[k, v]] : []
+    )
+  ) as any
 
 export const omit = <T extends obj, K extends keyof T>(
   v: T,

@@ -2,22 +2,14 @@ import React, { useEffect } from 'react'
 import Section from './Section'
 import { Switch } from 'components/atoms'
 import { useStateX } from 'hooks/store'
-import { pick } from 'utils/path'
+import { stateToggle } from './util'
 
 export default function Debug() {
   const [state, { set }] = useStateX('settings.debug')
   usePlaybackLoading(state?.playbackLoading)
 
   if (!state) return null
-  const toggle = (path: string) => {
-    const checked = pick(state, path) as boolean
-    return {
-      checked,
-      onChange() {
-        set(`settings.debug.${path}` as any, !checked)
-      },
-    }
-  }
+  const toggle = stateToggle('settings.debug', state, set)
   return (
     <Section>
       <span>{$`@settings.dppx`}</span>

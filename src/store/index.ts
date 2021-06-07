@@ -1,29 +1,14 @@
-import StoreX, { FlatSchema } from './storeX'
+import StoreX from './storeX'
 import Settings from './settings'
 import { proxy } from 'comlink'
+import type { State, FlatState } from './state'
 
-export type Schema = {
-  settings: {
-    appearance: {
-      colorTheme: 'light' | 'dark'
-      useSystemTheme: boolean
-    }
-    debug: {
-      printLogs: boolean
-      showTouchPaths: boolean
-      playbackLoading: boolean
-    }
-  }
-}
-type Flat = FlatSchema<Schema>
-export type Key = keyof Flat
-export type Value<T extends Key> = Flat[T]
-export type Store = StoreX<Schema>
+export type Store = StoreX<State>
 
-export const store = new StoreX<Schema>()
+export const store = new StoreX<State>()
 
 export const threaded = {
-  async listenX<T extends keyof Flat>(
+  async listenX<T extends keyof FlatState>(
     key: T,
     cb: (v: any, path: string) => any
   ) {
@@ -32,6 +17,7 @@ export const threaded = {
   },
   setX: proxy(store.set.bind(store)),
   mergeX: proxy(store.merge.bind(store)),
+  getX: proxy(store.get.bind(store)),
 }
 
 export const settings = new Settings(store)

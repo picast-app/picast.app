@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { main, proxy } from 'workers'
-import type { Key, Value } from 'store'
 import { set } from 'utils/path'
+import type { Key, Value } from 'store/state'
 
 export function useStateX<T extends Key>(key: T) {
   const [value, setValue] = useState<Value<T>>()

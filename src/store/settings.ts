@@ -1,25 +1,30 @@
 import MemCache, { _, OptPrim, HookDict } from './memCache'
 import dbProm from 'main/store/idb'
-import type { Schema } from '.'
 import equal from 'utils/equal'
 import { pick } from 'utils/object'
+import type { State } from './state'
+import uiThread from 'main/ui'
+import type { Store } from '.'
+import { proxy } from 'comlink'
 
 type IDBMeta = {
   printLogs: boolean
   showTouchPaths: boolean
+  extractColor: boolean
 }
 
-const IDBKeys = ['printLogs', 'showTouchPaths'] as const
+const IDBKeys = ['printLogs', 'showTouchPaths', 'extractColor'] as const
 const idbWriter = (key: typeof IDBKeys[number]) => async (value: any) =>
   (await dbProm).put('meta', value, key as string)
 
-export default class Settings extends MemCache<Schema['settings']> {
+export default class Settings extends MemCache<State['settings']> {
   sync = 'settings'
   root = 'settings'
-  state: OptPrim<Schema['settings']> = {
+  state: OptPrim<State['settings']> = {
     appearance: {
       colorTheme: _,
       useSystemTheme: _,
+      extractColor: false,
     },
     debug: {
       printLogs: _,
@@ -28,16 +33,36 @@ export default class Settings extends MemCache<Schema['settings']> {
     },
   }
 
-  hooks: HookDict<Schema['settings']> = {
+  hooks: HookDict<State['settings']> = {
     'debug.printLogs': idbWriter('printLogs'),
     'debug.showTouchPaths': idbWriter('showTouchPaths'),
+    'appearance.extractColor': idbWriter('extractColor'),
+    'appearance.useSystemTheme': v => {
+      if (v) this.store.set('settings.appearance.colorTheme', this.sysTheme)
+    },
+  }
+
+  private sysTheme: State['settings']['appearance']['colorTheme'] = 'light'
+
+  constructor(protected readonly store: Store) {
+    super(store)
+    this.listenSystemTheme()
   }
 
   async init() {
-    this.state.appearance.colorTheme = 'light'
-    this.state.appearance.useSystemTheme = false
-    const idb = await this.idbCompleteDefault(await this.readIDB())
-    Object.assign(this.state.debug, pick(idb, 'printLogs', 'showTouchPaths'))
+    const idbInit = async () => {
+      const idb = await this.idbCompleteDefault(await this.readIDB())
+      Object.assign(this.state.debug, pick(idb, 'printLogs', 'showTouchPaths'))
+      Object.assign(this.state.appearance, pick(idb, 'extractColor'))
+    }
+
+    const uiInit = async () => {
+      const cst = await uiThread.readLocalStorage('custom-theme')
+      this.state.appearance.useSystemTheme = !cst
+      this.state.appearance.colorTheme = cst ?? (this.sysTheme as any)
+    }
+
+    await Promise.all([idbInit(), uiInit()])
   }
 
   private async readIDB(): Promise<Partial<IDBMeta>> {
@@ -55,6 +80,7 @@ export default class Settings extends MemCache<Schema['settings']> {
 
     state.printLogs ??= process.env.NODE_ENV !== 'production'
     state.showTouchPaths ??= false
+    state.extractColor ??= false
 
     if (!equal(state, idb)) {
       const db = await dbProm
@@ -68,5 +94,16 @@ export default class Settings extends MemCache<Schema['settings']> {
     }
 
     return state as IDBMeta
+  }
+
+  private async listenSystemTheme() {
+    const onChange = await uiThread.matchMedia('(prefers-color-scheme: dark)')
+    onChange(
+      proxy((isDark: boolean) => {
+        this.sysTheme = isDark ? 'dark' : 'light'
+        if (this.state.appearance.useSystemTheme)
+          this.store.set('settings.appearance.colorTheme', this.sysTheme)
+      })
+    )
   }
 }

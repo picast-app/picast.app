@@ -1,52 +1,34 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 import Section from './Section'
 import { Switch } from 'components/atoms'
-import { useMatchMedia } from 'hooks'
+import { useStateX } from 'hooks/store'
+import { stateToggle } from './util'
 
 export default function Appearance() {
-  const systemDark = useMatchMedia('(prefers-color-scheme: dark)')
-  const systemTheme = systemDark ? 'dark' : 'light'
-  const [customTheme, setCstTheme] = useState<'light' | 'dark' | null>(
-    localStorage.getItem('custom-theme') as any
-  )
+  const [state, { set }] = useStateX('settings.appearance')
 
-  useEffect(() => {
-    if (!customTheme) {
-      localStorage.removeItem('custom-theme')
-      document.documentElement.dataset.theme = systemTheme
-    } else {
-      localStorage.setItem('custom-theme', customTheme)
-      document.documentElement.dataset.theme = customTheme
-    }
-  }, [customTheme, systemTheme])
-
+  if (!state) return null
+  const toggle = stateToggle('settings.appearance', state, set)
   return (
     <Section title={$.c`theme`}>
       <label htmlFor="mode">{$`@settings.pick_theme`}</label>
       <S.Select
         id="mode"
         name="Theme"
-        value={customTheme ?? systemTheme}
-        onChange={({ target }) => {
-          setCstTheme(target.value as any)
-          localStorage.setItem('custom-theme', target.value)
-        }}
-        disabled={!customTheme}
+        value={state.colorTheme}
+        disabled={state.useSystemTheme}
+        onChange={({ target }) =>
+          set('settings.appearance.colorTheme', target.value as any)
+        }
       >
         <option>light</option>
         <option>dark</option>
       </S.Select>
       <label htmlFor="dark-sys">{$`@settings.use_system`}</label>
-      <Switch
-        id="dark-sys"
-        checked={!customTheme}
-        onChange={v => {
-          setCstTheme(!v ? (systemTheme as any) : null)
-        }}
-      />
+      <Switch id="dark-sys" {...toggle('useSystemTheme')} />
       <label htmlFor="extract">{$`@settings.extract_color`}</label>
-      <Switch id="extract" />
+      <Switch {...toggle('extractColor')} />
     </Section>
   )
 }
