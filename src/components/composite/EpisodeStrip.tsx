@@ -24,7 +24,10 @@ export function EpisodeStrip({ artwork, clamp, ...props }: Props) {
   if (!episode) return null
   return (
     <S.Strip>
-      <Link to={`?info=${episode.podcast}-${episode.id}`}>
+      <Link
+        to={`?info=${episode.podcast}-${episode.id}`}
+        onAuxClick={e => e.preventDefault()}
+      >
         {artwork && episode?.podcast && <Thumbnail podcast={episode.podcast} />}
         <S.Title data-style={clamp ? 'clamp' : undefined}>
           {episode.title}
