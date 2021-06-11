@@ -10,9 +10,10 @@ export const store = new StoreX<State>()
 export const threaded = {
   async listenX<T extends keyof FlatState>(
     key: T,
-    cb: (v: any, path: string) => any
+    cb: (v: any, path: string) => any,
+    ...subs: string[]
   ) {
-    cb(await store.get(key), key)
+    cb(await store.get(key, ...subs), key)
     return proxy(store.handler(key).set(cb))
   },
   setX: proxy(store.set.bind(store)),

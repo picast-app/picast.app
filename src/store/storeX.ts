@@ -30,11 +30,16 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
     this.merge = this.locked(this.merge)
   }
 
-  public async get<K extends keyof TF & string>(key: K): Promise<TF[K]> {
+  public async get<K extends keyof TF & string>(
+    key: K,
+    ...subs: string[]
+  ): Promise<TF[K]> {
+    const final = this.substituteWildcards(key, ...subs)
+
     for (const [k, { get }] of this.handlers)
       if (key.startsWith(k) && get) {
         this.escapeLock?.()
-        return Store.pick(await get(key), k, key)
+        return Store.pick(await get(final, ...subs), k, key)
       }
     throw Error(`no get handler for '${key}' registered`)
   }
@@ -216,9 +221,25 @@ export default class Store<T extends Schema, TF = FlatSchema<T>> {
         : [[prefix + k, v]]
     )
   }
+
+  private substituteWildcards<T extends string>(path: T, ...wild: string[]): T {
+    let match: number
+    while ((match = path.indexOf('*')) >= 0) {
+      if (!wild.length)
+        throw Error(`missing substitution for '${path}' at ${match}`)
+      path = (path.slice(0, match) +
+        wild.shift() +
+        path.slice(match + 1)) as any
+    }
+    if (wild.length)
+      throw Error(
+        `provided too many substitutions (${wild.join(', ')}) for '${path}'`
+      )
+    return path
+  }
 }
 
-type Getter<T = any> = (path: string) => T | Promise<T>
+type Getter<T = any> = (path: string, ...subs: string[]) => T | Promise<T>
 type Setter<T = any> = (
   v: T,
   path: string,

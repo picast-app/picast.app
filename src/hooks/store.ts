@@ -3,7 +3,7 @@ import { main, proxy } from 'workers'
 import { set } from 'utils/path'
 import type { Key, Value } from 'store/state'
 
-export function useStateX<T extends Key>(key: T) {
+export function useStateX<T extends Key>(key: T, ...subs: string[]) {
   const [value, setValue] = useState<Value<T>>()
 
   useEffect(() => {
@@ -19,7 +19,8 @@ export function useStateX<T extends Key>(key: T) {
               ...path.slice(key.length + 1).split('.')
             )
           })
-        ) as any
+        ) as any,
+        ...subs
       )
       .then(unsub => {
         if (cancel) unsub()
@@ -29,7 +30,8 @@ export function useStateX<T extends Key>(key: T) {
       if (typeof cancel === 'function') cancel()
       else cancel = true
     }
-  }, [key])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, ...subs])
 
   return [value, { set: main.setX, merge: main.mergeX }] as const
 }

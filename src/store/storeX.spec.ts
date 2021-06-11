@@ -14,6 +14,11 @@ type StoreSchema = {
     }
   }
   foo: string
+  items: {
+    '*': {
+      title: string
+    } | null
+  }
 }
 
 test('calls getters', async () => {
@@ -104,13 +109,18 @@ test('propagate updates down', () => {
     useSystemTheme: false,
   })
   expect(thSet).toHaveBeenCalledTimes(1)
-  expect(thSet).toHaveBeenLastCalledWith('light', 'settings.appearance')
+  expect(thSet).toHaveBeenLastCalledWith(
+    'light',
+    'settings.appearance',
+    undefined
+  )
 
   store.set('settings.appearance.colorTheme', 'dark')
   expect(thSet).toHaveBeenCalledTimes(2)
   expect(thSet).toHaveBeenLastCalledWith(
     'dark',
-    'settings.appearance.colorTheme'
+    'settings.appearance.colorTheme',
+    undefined
   )
 })
 
@@ -135,7 +145,7 @@ test('optional property & merge', () => {
   })
   expect(optDel).toHaveBeenCalledTimes(0)
   expect(optSet).toHaveBeenCalledTimes(1)
-  expect(optSet).toHaveBeenLastCalledWith(0, 'settings.appearance')
+  expect(optSet).toHaveBeenLastCalledWith(0, 'settings.appearance', undefined)
   expect(glSet).toHaveBeenCalledTimes(1)
 
   store.set('settings.appearance', {
@@ -203,4 +213,32 @@ test('search tips', () => {
     ['a.b.e.f', 'g'],
     ['foo', 'bar'],
   ])
+})
+
+test('wildcards', async () => {
+  const store = new Store<StoreSchema>()
+
+  const items = {
+    a: { title: 'foo' },
+    b: { title: 'bar' },
+    c: { title: 'baz' },
+  }
+  const getter = jest.fn((path, key) => (items as any)[key] ?? null)
+  store.handler('items.*').get(getter)
+
+  await expect(store.get('settings', 'a')).toReject()
+  await expect(store.get('items.*')).toReject()
+  await expect(store.get('items.*', 'a')).resolves.not.toThrow()
+  await expect(store.get('items.*', 'a', 'b')).toReject()
+
+  await expect(store.get('items.*', 'a')).resolves.toMatchObject(items.a)
+  expect(getter).toHaveBeenLastCalledWith('items.a', 'a')
+  await expect(store.get('items.*', 'b')).resolves.toMatchObject(items.b)
+  expect(getter).toHaveBeenLastCalledWith('items.b', 'b')
+  await expect(store.get('items.*', 'd')).resolves.toBeNull()
+  expect(getter).toHaveBeenLastCalledWith('items.d', 'd')
+
+  await expect(store.get('items.*.title', 'a')).resolves.toBe(items.a.title)
+  expect(getter).toHaveBeenLastCalledWith('items.a.title', 'a')
+  await expect(store.get('items.*.title', 'd')).toReject()
 })
