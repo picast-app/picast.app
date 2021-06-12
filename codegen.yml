@@ -6,4 +6,4 @@ generates:
       - fragment-matcher
   ./src/types/gql/schema.ts:
     plugins:
-      - 'typescript'
+      - typescript

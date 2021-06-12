@@ -27,11 +27,27 @@ schema
 
 fs.writeFileSync(`${typeDir}/schema.ts`, schema)
 
+const types = fs
+  .readdirSync(typeDir)
+  .filter(v => !/globalTypes/.test(v) && /\.ts$/.test(v))
+  .flatMap(v =>
+    (
+      fs
+        .readFileSync(path.join(typeDir, v), 'utf-8')
+        .match(/export\s(type|interface)\s\w+(?=\s*=?(\{|extends}))/g) || []
+    )
+      .map(v => v.split(' ').pop())
+      .map(t => `${t}: import('./${v.replace(/\.ts$/, '')}').${t}`)
+  )
+
 fs.writeFileSync(
   `${typeDir}/index.ts`,
-  fs
+  `${fs
     .readdirSync(typeDir)
     .filter(v => !/globalTypes/.test(v) && /\.ts$/.test(v))
     .map(file => `export * from './${file.split('.').slice(0, -1).join('.')}'`)
-    .join('\n')
+    .join('\n')}
+    
+type Collective = {${types.join('\n')}}
+export default Collective`
 )
