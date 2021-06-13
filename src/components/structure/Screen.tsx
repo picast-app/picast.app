@@ -32,7 +32,7 @@ export const Screen: React.FC<Props> = ({
       setShowLoad(false)
       return
     }
-    loadToId.current = setTimeout(() => {
+    loadToId.current = window.setTimeout(() => {
       setShowLoad(true)
     }, LOADER_DELAY)
   }, [loading])
@@ -48,7 +48,7 @@ export const Screen: React.FC<Props> = ({
 
   const appbar =
     typeof children[0] === 'object' &&
-    ((children[0] as unknown) as React.ReactElement).type === Appbar
+    (children[0] as unknown as React.ReactElement).type === Appbar
       ? cloneBar()
       : React.Fragment
 

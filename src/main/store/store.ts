@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/require-await */
 import dbProm, { gql as convert } from './idb'
-import * as api from 'main/api'
+import * as api from 'api/calls'
 import { proxy } from 'comlink'
 import { Podcast, Episode, EpisodeBase } from './types'
 import * as Feed from '../feed'
@@ -100,7 +100,7 @@ export default class Store {
       })
     )
 
-    const remote = await api.podcast(id)
+    const remote = await api.query.podcast(id)
     const episodes =
       remote?.episodes?.edges.map(
         ({ node }) => convert.episode(node as any, id)!
@@ -153,7 +153,7 @@ export default class Store {
       )
     )
 
-    const results = await api.diffEpisodes(
+    const results = await api.query.diffEpisodes(
       ...ids.map(
         id => [id, encodeIds(podcasts[id].episodeIds)] as [string, string]
       )
@@ -189,7 +189,7 @@ export default class Store {
     const pod = await this.epStore.getPodcast(podId)
     return (
       (await pod.getById(epId)) ??
-      (convert.episode(await api.episode([podId, epId]), podId) as any) ??
+      (convert.episode(await api.query.episode([podId, epId]), podId) as any) ??
       null
     )
   }
@@ -200,7 +200,7 @@ export default class Store {
     let episode: any = await this.episode(id)
     if (episode.shownotes) return episode
     try {
-      const remote = await api.episode(id)
+      const remote = await api.query.episode(id)
       if (!remote) throw 0
       episode = convert.episode(remote, id[0])
     } catch (e) {
@@ -254,7 +254,7 @@ export default class Store {
     state.addSubscription(podcast)
     await this.storeSubscription(id)
     await this.epStore.subscribe(id)
-    if (!existing) await api.subscribe(id)
+    if (!existing) await api.mutate.subscribe(id)
   }
 
   public async removeSubscription(id: string, existing: boolean) {
@@ -265,7 +265,7 @@ export default class Store {
     state.removeSubscription(id)
     await this.db.delete('subscriptions', id)
     await this.epStore.unsubscribe(id)
-    if (!existing) await api.unsubscribe(id)
+    if (!existing) await api.mutate.unsubscribe(id)
   }
 
   public async syncSubscriptions({

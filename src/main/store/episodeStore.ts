@@ -1,5 +1,5 @@
 import dbProm, { gql as convert } from './idb'
-import * as api from 'main/api'
+import * as api from 'api/calls'
 import { EpisodeBase } from './types'
 
 type Key = [id: string, published: number]
@@ -99,7 +99,8 @@ export class Podcast {
     if (this.hasFeedStart)
       return logger.warn('skip episode fetch', this.keys.length, n)
     n = Math.max(n, 200)
-    const data = await api.episodes(this.id, n, this.keys.slice(-1)[0]?.[0])
+    const { episodes: data } =
+      (await api.query.episodes(this.id, n, this.keys.slice(-1)[0]?.[0])) ?? {}
     if (!data) {
       this.hasFeedStart = true
       logger.error('failed to fetch', this.id)

@@ -64,7 +64,7 @@ function useRipple(el: HTMLElement | null, setOrigin = true) {
   }
 
   const timeout = (ms: number, cb: (...args: any[]) => void) =>
-    cancellable(() => setTimeout(cb, ms), clearTimeout)
+    cancellable(() => window.setTimeout(cb, ms), clearTimeout)
 
   const animationFrame = (cb: (...args: any[]) => void) =>
     cancellable(() => requestAnimationFrame(cb), cancelAnimationFrame)

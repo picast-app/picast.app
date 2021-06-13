@@ -1,12 +1,12 @@
 import { openDB } from 'idb/with-async-ittr'
-import type Schema from './schema'
+import type IDBSchema from './schema'
 import migrations from './migrations'
 import type * as GQL from 'types/gql'
 import { omit } from 'utils/object'
 
 const VERSION = 3
 
-export default openDB<Schema>(self.location.hostname, VERSION, {
+export default openDB<IDBSchema>(self.location.hostname, VERSION, {
   async upgrade(db, oldVersion, newVersion) {
     if (!(newVersion! in migrations))
       logger.error(`version ${newVersion} not in migrations`)
@@ -34,7 +34,7 @@ const filterEmpty = <T>(obj: T): NoNull<T> =>
 
 const podcast = (
   gql: PickOpt<GQL.PodcastPage_podcast, 'episodes'>
-): Schema['subscriptions']['value'] =>
+): IDBSchema['subscriptions']['value'] =>
   filterEmpty({
     ...omit(gql, '__typename', 'episodes', 'palette'),
     episodeCount: gql.episodes?.pageInfo.total,
@@ -46,7 +46,7 @@ const podcast = (
 const episode = <T extends GQL.EpisodeFull | null>(
   gql: T,
   podcast: string
-): T extends null ? undefined : Schema['episodes']['value'] => {
+): T extends null ? undefined : IDBSchema['episodes']['value'] => {
   if (!gql) return undefined as any
   const data = omit(filterEmpty(gql as any), '__typename', 'publishDate')
   return {

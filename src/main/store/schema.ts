@@ -1,6 +1,4 @@
-import type { DBSchema } from 'idb'
-
-export default interface Schema extends DBSchema {
+type IDBSchema = {
   meta: {
     key: string
     value: any
@@ -45,3 +43,4 @@ export default interface Schema extends DBSchema {
     indexes: { published: string; podcast: string }
   }
 }
+export default IDBSchema

@@ -18,9 +18,8 @@ export default class Audio extends Service implements PlaybackController {
   public enable() {
     this.log?.('enable')
     if (this.audio) throw Error('audio service already enabled')
-    const audio = (this.audio = this.player.shadowRoot!.querySelector<HTMLAudioElement>(
-      'audio'
-    )!)
+    const audio = (this.audio =
+      this.player.shadowRoot!.querySelector<HTMLAudioElement>('audio')!)
     this._playing = !this.audio.paused
 
     audio.addEventListener('durationchange', this.onDurationChange)
@@ -111,7 +110,7 @@ export default class Audio extends Service implements PlaybackController {
   }
 
   private onWaiting() {
-    const toId = setTimeout(() => {
+    const toId = window.setTimeout(() => {
       this.log?.('waiting')
       this.waitTOs.splice(this.waitTOs.indexOf(toId), 1)
       this._playing = false

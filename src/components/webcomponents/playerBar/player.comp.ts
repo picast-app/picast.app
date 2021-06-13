@@ -175,7 +175,8 @@ export default class Player extends Component {
       const { src, time } = this.audioService ?? {}
       if (this.current?.[1].file !== src) throw Error('episode mismatch')
       if (time) await main.setProgress(time)
-      if (this.isPlaying()) this.syncId = setTimeout(this.syncProgress, 5000)
+      if (this.isPlaying())
+        this.syncId = window.setTimeout(this.syncProgress, 5000)
     }
   }
 
@@ -190,10 +191,9 @@ export default class Player extends Component {
   }
 
   private barObserver = new MutationObserver(records => {
-    const [addedBars, removedBars] = ([
-      'addedNodes',
-      'removedNodes',
-    ] as const).map(l =>
+    const [addedBars, removedBars] = (
+      ['addedNodes', 'removedNodes'] as const
+    ).map(l =>
       records
         .flatMap(v => [...v[l]])
         .flatMap(v => [

@@ -1,11 +1,11 @@
 import { expose, proxy } from 'comlink'
 import { togglePrint } from 'utils/logger'
-import * as apiCalls from './api'
+import { query, mutate } from 'api/calls'
 import IDBInterface from './store/idbInterface'
 import bufferInstance from 'utils/instantiationBuffer'
 import dbProm from './store/idb'
 import store from './store'
-import appState, { State } from './appState'
+import appState from './appState'
 import { deleteDB } from 'idb'
 import * as playback from './playback'
 import { threaded } from 'store'
@@ -46,13 +46,9 @@ const readState = async <T = any>(path: string): Promise<T> => {
   })
 }
 
-async function updateDebug(...args: Parameters<State['debug']['set']>) {
-  const { state } = await appState
-  state.debug.set(...args)
-}
-
 const api = {
-  ...apiCalls,
+  ...query,
+  ...mutate,
   ...idbInterface,
   ...store,
   ...playback,
@@ -60,7 +56,6 @@ const api = {
   ...threaded,
   state,
   readState,
-  updateDebug: proxy(updateDebug),
   deleteIDB,
   registerUICall,
 } as const

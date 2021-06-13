@@ -1,6 +1,6 @@
 #import "../fragments/user.gql"
 
-mutation SignInpassword(
+mutation SignInPassword(
   $ident: String!
   $password: String!
   $known: [ID!] = []

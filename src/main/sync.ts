@@ -1,5 +1,5 @@
 import store from './store'
-import * as api from './api'
+import * as api from 'api/calls'
 
 const hour = (n: number) => n * 60 ** 2 * 1000
 
@@ -45,7 +45,7 @@ export async function meta(episodes = true) {
   await store.metaChecked(...ids)
   await store.episodeChecked(...ids)
 
-  const updates = await api.metaSync(sums)
+  const updates = await api.query.metaSync(sums)
 
   const metaChanges = updates.map(({ podcast }) => podcast!).filter(Boolean)
   if (metaChanges.length) logger.info({ metaChanges })

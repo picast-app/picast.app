@@ -113,7 +113,7 @@ export function useDebouncedInputCall<T>(
       v === undefined ? [] : [...c, ...(Array.isArray(v) ? v : [v])],
     []
   )
-  const [cancelGo, setCancelGo] = useState<ReturnType<typeof setTimeout>>()
+  const [cancelGo, setCancelGo] = useState<number>()
   const [debounced, setDebounced] = useState(initial)
 
   const setInputStampsRef = useRef(setInputStamps)
@@ -137,7 +137,7 @@ export function useDebouncedInputCall<T>(
     const inputAvg = inputDelta.reduce((a, c) => a + c, 0) / inputDelta.length
 
     setCancelGo(
-      setTimeout(
+      window.setTimeout(
         () => {
           setInputStampsRef.current(undefined)
           setDebouncedRef.current(inputRef.current)
@@ -291,7 +291,7 @@ export function useAPICall<
       (v: R) => {
         setValue(v)
         setLoading(false)
-        setParams((args as unknown) as P)
+        setParams(args as unknown as P)
       }
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
