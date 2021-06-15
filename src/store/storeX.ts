@@ -1,29 +1,13 @@
 import * as path from 'utils/path'
 import { callAll } from 'utils/function'
+import type { Flatten } from './types'
 
 export type Schema = { [K: string]: Schema | any }
 
-type Prefix<T, P extends string> = {
-  [K in keyof T]: K extends string ? { [S in `${P}.${K}`]: T[K] } : never
-}[keyof T]
+export type Key<T extends Schema> = keyof Flatten<T>
+export type Value<T extends Schema, K extends Key<T>> = Flatten<T>[K]
 
-export type FlatSchema<T> = T extends Schema
-  ? T &
-      MergeDistr<
-        NonNullable<
-          {
-            [K in keyof T]: K extends string
-              ? Prefix<FlatSchema<T[K]>, K>
-              : never
-          }[keyof T]
-        >
-      >
-  : never
-
-export type Key<T extends Schema> = keyof FlatSchema<T>
-export type Value<T extends Schema, K extends Key<T>> = FlatSchema<T>[K]
-
-export default class Store<T extends Schema, TF = FlatSchema<T>> {
+export default class Store<T extends Schema, TF = Flatten<T>> {
   constructor() {
     this.get = this.locked(this.get)
     this.set = this.locked(this.set)

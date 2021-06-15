@@ -1,12 +1,12 @@
 import * as f from 'utils/function'
 import { mutate } from 'utils/path'
 import type { Store } from '.'
-import type { FlatSchema } from './storeX'
+import type { Flatten, Schema } from './types'
 import { Synchronized } from './tabSync'
 
 export const _ = Symbol('deferred')
 
-export type HookDict<T, F = FlatSchema<Exclude<T, null>>> = {
+export type HookDict<T, F = Flatten<T>> = {
   [K in keyof F]?: (v: F[K]) => any
 } & { $?: (v: T) => any }
 
@@ -14,7 +14,7 @@ export default abstract class MemCache<T> {
   constructor(protected readonly store: Store) {
     queueMicrotask(async () => {
       await this.init()
-      this.assertComplete()
+      this.assertComplete(this.state)
       this.resolveInit()
       this.setupSync()
     })
@@ -33,7 +33,7 @@ export default abstract class MemCache<T> {
   protected async reattach() {
     await this.store.handlersDone()
     f.callAll(this.cleanupCBs)
-    this.assertComplete()
+    this.assertComplete(this.state)
     this.attachGetters()
     this.attachSetter()
   }
@@ -85,13 +85,13 @@ export default abstract class MemCache<T> {
       this.state = v
       this.hooks.$?.(v)
     } else if (mutate(this.state as any, v, ...path.split('.')) !== v)
-      this.hooks[path]?.(v)
+      (this.hooks as any)[path]?.(v)
 
     if (!meta?.reflection) this.syncer?.broadcast({ path, v })
   }
 
-  private assertComplete(node: any = this.state, ...path: string[]) {
-    if (node === _)
+  private assertComplete<TN>(node: TN, ...path: string[]) {
+    if ((node as any) === _)
       throw Error(
         `incomplete memcache initialization ('${[this.root, ...path].join(
           '.'
@@ -99,6 +99,7 @@ export default abstract class MemCache<T> {
       )
     if (typeof node !== 'object' || node === null) return
     Object.entries(node).forEach(([k, v]) => this.assertComplete(v, ...path, k))
+    return
   }
 
   private syncer?: Synchronized
@@ -114,8 +115,6 @@ export default abstract class MemCache<T> {
 
 type Opt<T> = T | typeof _
 
-export type OptPrim<T> = T extends { [K in any]: any }
-  ? {
-      [K in keyof T]: T[K] extends Primitive ? Opt<T[K]> : OptPrim<T[K]>
-    }
+export type OptPrim<T> = T extends Schema
+  ? { [K in keyof Omit<T, '*'>]: OptPrim<T[K]> }
   : Opt<T>
