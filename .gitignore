@@ -9,3 +9,5 @@ src/types
 tmp
 /*.txt
 src/**/*.md
+/*.*profile
+/trace*

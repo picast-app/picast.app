@@ -4,3 +4,5 @@ export const callAll = <T extends any[] = []>(
 ) => {
   for (const cb of list ?? []) cb(...args)
 }
+
+export const ident = <T>(v: T): T => v

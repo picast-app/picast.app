@@ -1,18 +1,10 @@
 import MemCache, { _, OptPrim, HookDict } from './memCache'
-import dbProm from 'main/store/idb'
-import equal from 'utils/equal'
 import { pick } from 'utils/object'
 import type { State } from './state'
 import type { Store } from '.'
 import uiThread from 'main/ui'
 import { proxy } from 'comlink'
-import { idbWriter } from './util'
-
-type IDBMeta = {
-  printLogs: boolean
-  showTouchPaths: boolean
-  extractColor: boolean
-}
+import { idbWriter, idbDefaultReader } from './util'
 
 const IDBKeys = ['printLogs', 'showTouchPaths', 'extractColor'] as const
 type Key = typeof IDBKeys[number]
@@ -51,7 +43,11 @@ export default class Settings extends MemCache<State['settings']> {
 
   async init() {
     const idbInit = async () => {
-      const idb = await this.idbCompleteDefault(await this.readIDB())
+      const idb = await idbDefaultReader(IDBKeys, {
+        printLogs: process.env.NODE_ENV !== 'production',
+        showTouchPaths: false,
+        extractColor: false,
+      })
       Object.assign(this.state.debug, pick(idb, 'printLogs', 'showTouchPaths'))
       Object.assign(this.state.appearance, pick(idb, 'extractColor'))
     }
@@ -63,37 +59,6 @@ export default class Settings extends MemCache<State['settings']> {
     }
 
     await Promise.all([idbInit(), uiInit()])
-  }
-
-  private async readIDB(): Promise<Partial<IDBMeta>> {
-    const idb = await dbProm
-    const tx = idb.transaction('meta', 'readonly')
-    const res = await Promise.all([
-      ...IDBKeys.map(key => tx.store.get(key).then(v => [key, v])),
-      tx.done,
-    ] as Promise<any>[])
-    return Object.fromEntries(res.slice(0, -1))
-  }
-
-  private async idbCompleteDefault(idb: Partial<IDBMeta>): Promise<IDBMeta> {
-    const state = { ...idb }
-
-    state.printLogs ??= process.env.NODE_ENV !== 'production'
-    state.showTouchPaths ??= false
-    state.extractColor ??= false
-
-    if (!equal(state, idb)) {
-      const db = await dbProm
-      const tx = db.transaction('meta', 'readwrite')
-      for (const [k, v] of Object.entries(state)) {
-        if (v === (idb as any)[k]) continue
-        logger.info('default meta', k, v)
-        tx.store.put(v, k)
-      }
-      await tx.done
-    }
-
-    return state as IDBMeta
   }
 
   private async listenSystemTheme() {

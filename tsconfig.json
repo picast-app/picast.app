@@ -20,5 +20,5 @@
     "experimentalDecorators": true
   },
   "include": ["src"],
-  "exclude": ["src/types/gql/globalTypes.ts"]
+  "exclude": ["src/types/gql/globalTypes.ts", "node_modules", "build"]
 }

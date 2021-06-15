@@ -16,3 +16,8 @@ export const min = <T>(list: T[], sel: (el: T) => number): T => {
 
   return candidate
 }
+
+export const collection = <T, K extends string | number>(
+  list: T[],
+  key: (v: T) => K
+): Record<K, T> => Object.fromEntries(list.map(v => [key(v), v])) as any
