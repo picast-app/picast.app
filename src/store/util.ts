@@ -12,6 +12,7 @@ type IDBMeta = {
   extractColor: boolean
   currentUser: string
   subscriptions: string[]
+  libSort: string
 }
 
 export const idbDefaultReader = async <T extends keyof IDBMeta>(
@@ -20,8 +21,9 @@ export const idbDefaultReader = async <T extends keyof IDBMeta>(
 ): Promise<Pick<IDBMeta, T>> => {
   const idb = await dbProm
   const tx = idb.transaction('meta', 'readonly')
-  const res = await Promise.all([
+  const res = await Promise.all<any>([
     ...keys.map(key => tx.store.get(key).then(v => [key, v])),
+    tx.done,
   ])
 
   const dbState: Partial<IDBMeta> = Object.fromEntries(res.slice(0, -1))

@@ -4,7 +4,8 @@ import { Link } from '@picast-app/router'
 import { Shownotes } from 'components/composite'
 import { desktop, mobile } from 'styles/responsive'
 import { ignore } from 'interaction/gesture/gestures'
-import type { Podcast, Episode } from 'main/store/types'
+import type { Episode } from 'main/store/types'
+import type { Podcast } from 'store/state'
 
 interface Props {
   podcast: Podcast

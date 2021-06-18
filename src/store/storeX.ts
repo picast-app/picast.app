@@ -23,7 +23,7 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     for (const [k, { get }] of this.handlers)
       if (key.startsWith(k) && get) {
         this.escapeLock?.()
-        return Store.pick(await get(final, ...subs), k, key)
+        return this.pick(await get(final, ...subs), k, key)
       }
     throw Error(`no get handler for '${key}' registered`)
   }
@@ -31,12 +31,15 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
   public set<K extends keyof TF & string>(
     key: K,
     value: TF[K],
-    meta?: Record<string, any>
+    meta: Record<string, any> = {},
+    ...subs: string[]
   ) {
+    const final = this.substituteWildcards(key, ...subs)
+
     for (let i = 0; i < this.handlers.length; i++) {
       if (!key.startsWith(this.handlers[i][0])) continue
       for (const handler of this.handlers[i][1].set)
-        if (handler(value, key, meta) === false) return
+        if (handler(value, final, meta, ...subs) === false) return
     }
     // propagate down into children
     for (let i = this.handlers.length - 1; i >= 0; i--) {
@@ -45,9 +48,10 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
         !this.handlers[i][0].startsWith(key)
       )
         continue
-      const sub = Store.pick(value, key, this.handlers[i][0], true)
+      const sub = this.pick(value, key, this.handlers[i][0], true)
       if (sub !== path.none) {
-        for (const handler of this.handlers[i][1].set) handler(sub, key, meta)
+        for (const handler of this.handlers[i][1].set)
+          handler(sub, final, meta, ...subs)
       } else {
         let o = 0
         while (
@@ -65,11 +69,28 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     }
   }
 
+  // get & register setter
+  public listen<K extends keyof TF & string>(
+    key: K,
+    cb: Setter<TF[K]>,
+    ...subs: string[]
+  ): () => void {
+    let cancel: () => void
+    this.get(key, ...subs).then(v => {
+      cb(v, key, {}, ...subs)
+      cancel = this.handler(key).set(cb)
+    })
+    return () => {
+      cancel?.()
+    }
+  }
+
   public merge<K extends keyof TF & string>(key: K, value: Partial<TF[K]>) {
     tips: for (const [tip, v] of Store.tips(value, key + '.')) {
       for (const [path, { set }] of this.handlers) {
         if (!tip.startsWith(path)) continue
-        for (const handler of set) if (handler(v, tip) === false) continue tips
+        for (const handler of set)
+          if (handler(v, tip, {}) === false) continue tips
       }
     }
   }
@@ -77,7 +98,7 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
   // handler map in reverse alphabetical order
   private handlers: [
     string,
-    { get?: Getter; set: Setter[]; del: Deleted[] }
+    { get?: Getter; fallback?: Fallback; set: Setter[]; del: Deleted[] }
   ][] = []
 
   public handler<K extends keyof TF & string>(key: K) {
@@ -123,6 +144,15 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
         },
         detach(acc) {
           delete acc.get
+        },
+      }),
+      fallback: handlerFactory({
+        attach(acc, handler: Fallback<TF[K]>) {
+          if (acc.fallback) throw Error(`'${key}' already has fallback`)
+          acc.fallback = handler
+        },
+        detach(acc) {
+          delete acc.fallback
         },
       }),
       set: handlerFactory({
@@ -181,16 +211,13 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     return new Promise(res => this.afterHandlers(res))
   }
 
-  private static pick(
-    obj: any,
-    root: string,
-    select: string,
-    returnNone = false
-  ) {
+  private pick(obj: any, root: string, select: string, returnNone = false) {
     if (root === select) return obj
     const value = path.pick(obj, ...select.slice(root.length + 1).split('.'))
     if (value === path.none) {
       if (returnNone) return path.none
+      const fb = this.handlers.find(([p]) => p === select)?.[1].fallback
+      if (fb) return fb()
       throw Error(`path '${root}' does not contain '${select}'`)
     }
     return value
@@ -227,6 +254,8 @@ type Getter<T = any> = (path: string, ...subs: string[]) => T | Promise<T>
 type Setter<T = any> = (
   v: T,
   path: string,
-  meta?: Record<string, any>
+  meta: Record<string, any>,
+  ...subs: string[]
 ) => unknown
 type Deleted = (path: string) => unknown
+type Fallback<T = any> = () => T

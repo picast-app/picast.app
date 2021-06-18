@@ -1,7 +1,7 @@
 import { observable, autorun } from 'mobx'
 import dbProm from './store/idb'
 import store from './store'
-import { Podcast } from './store/types'
+import type { Podcast } from 'store/state'
 import { titleSort } from './utils'
 
 export type State = {
@@ -12,24 +12,24 @@ export type State = {
   addWPSub(...ids: string[]): Promise<void>
   removeWPSub(...ids: string[]): Promise<void>
   setWPSubs(ids: string[]): Promise<void>
-  user: {
-    provider?: 'google'
-    wsAuth?: string
-    signedIn: boolean
-  }
-  signOut(): void
-  signIn(v: Partial<State['user']>): void
+  // user: {
+  //   provider?: 'google'
+  //   wsAuth?: string
+  //   signedIn: boolean
+  // }
+  // signOut(): void
+  // signIn(v: Partial<State['user']>): void
   playing: {
     id: EpisodeId | null
     current: [Podcast | null, EpisodeMin | null]
     set(id: EpisodeId | null): Promise<EpisodeMin | undefined>
   }
   queue: EpisodeId[]
-  debug: {
-    touch: boolean
-    print_logs: boolean
-    set(update: Omit<Partial<State['debug']>, 'set'>): void
-  }
+  // debug: {
+  //   touch: boolean
+  //   print_logs: boolean
+  //   set(update: Omit<Partial<State['debug']>, 'set'>): void
+  // }
 }
 
 async function init(): Promise<{
@@ -42,14 +42,14 @@ async function init(): Promise<{
   const state = observable<State>({
     subscriptions: [],
     wpSubs: await store.wpSubscriptions(),
-    user: { signedIn: !!(await db.get('meta', 'signedIn')) },
-    signOut() {
-      this.user.provider = undefined
-      this.user.signedIn = false
-    },
-    signIn(data) {
-      Object.assign(this.user, { ...data, signedIn: true })
-    },
+    // user: { signedIn: !!(await db.get('meta', 'signedIn')) },
+    // signOut() {
+    //   this.user.provider = undefined
+    //   this.user.signedIn = false
+    // },
+    // signIn(data) {
+    //   Object.assign(this.user, { ...data, signedIn: true })
+    // },
     playing: {
       id: playing ?? null,
       current: !playing
@@ -75,19 +75,19 @@ async function init(): Promise<{
       },
     },
     queue: playing ? [playing] : [],
-    debug: {
-      touch: !!(await db.get('meta', 'touch')),
-      print_logs:
-        (await db.get('meta', 'print_logs')) ??
-        process.env.NODE_ENV === 'development',
-      async set(update) {
-        for (const [k, v] of Object.entries(update)) {
-          // @ts-ignore
-          this[k] = v
-          await db.put('meta', v, k)
-        }
-      },
-    },
+    // debug: {
+    //   touch: !!(await db.get('meta', 'touch')),
+    //   print_logs:
+    //     (await db.get('meta', 'print_logs')) ??
+    //     process.env.NODE_ENV === 'development',
+    //   async set(update) {
+    //     for (const [k, v] of Object.entries(update)) {
+    //       // @ts-ignore
+    //       this[k] = v
+    //       await db.put('meta', v, k)
+    //     }
+    //   },
+    // },
 
     addSubscription(...podcasts) {
       const newSubs = podcasts.filter(
@@ -117,8 +117,8 @@ async function init(): Promise<{
     },
   })
 
-  const signin = await db.get('meta', 'signin')
-  if (signin) state.signIn(signin)
+  // const signin = await db.get('meta', 'signin')
+  // if (signin) state.signIn(signin)
   const subs = await db.getAll('subscriptions')
   state.subscriptions = titleSort(subs)
 

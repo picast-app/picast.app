@@ -291,7 +291,7 @@ export function useAPICall<
       (v: R) => {
         setValue(v)
         setLoading(false)
-        setParams(args as unknown as P)
+        setParams((args as unknown) as P)
       }
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -326,15 +326,15 @@ export function useSubscriptions(): [
   const [subs, set] = useSubscription(subscriptionSub)
 
   function subscribe(podcast: Podcast) {
-    if (subs.find(({ id }) => id === podcast.id)) return
-    set([...subs, podcast])
-    main.addSubscription(podcast.id, false)
+    // if (subs.find(({ id }) => id === podcast.id)) return
+    // set([...subs, podcast])
+    // main.addSubscription(podcast.id, false)
   }
 
   function unsubscribe(id: string) {
-    if (!subs.find(pod => pod.id === id)) return
-    set(subs.filter(v => v.id !== id))
-    main.removeSubscription(id, false)
+    // if (!subs.find(pod => pod.id === id)) return
+    // set(subs.filter(v => v.id !== id))
+    // main.removeSubscription(id, false)
   }
 
   return [subs, subscribe, unsubscribe]

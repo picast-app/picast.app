@@ -1,5 +1,9 @@
 type PromType<T> = T extends PromiseLike<infer U> ? U : T
 
+type MaybeProm<T> = T extends PromiseLike<infer U>
+  ? MaybeProm<U>
+  : T | Promise<T>
+
 type FilterKeys<T, U> = { [P in keyof T]: T[P] extends U ? P : never }[keyof T]
 
 type TupleUnion<U extends string, R extends string[] = []> = {

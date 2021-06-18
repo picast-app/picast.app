@@ -1,10 +1,7 @@
 import { Base, UpdateCB } from './base'
 import { asyncQueue } from 'utils/decorators'
 import type { EpisodeBase } from 'main/store/types'
-import type {
-  Podcast as PodStore,
-  default as EpisodeStore,
-} from 'main/store/episodeStore'
+import type { Podcast as PodStore, EpisodeStore } from 'main/store/episodeStore'
 
 export class MultiPodcast extends Base {
   private episodes: EpisodeBase[] = []

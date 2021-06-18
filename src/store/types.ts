@@ -1,4 +1,4 @@
-export type Schema = { [K: string]: Primitive | Primitive[] | Schema }
+export type Schema = { [K: string]: Primitive | any[] | Schema }
 
 type Stringified<T extends string | number | symbol> = T extends symbol
   ? '[sym]'

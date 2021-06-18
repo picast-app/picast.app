@@ -20,3 +20,11 @@ export const asyncQueue = <TArgs extends any[], TReturn>(
     return await prom
   }
 }
+
+export const waiter = <T>(): [Promise<T>, (v: T) => void] => {
+  let initializer: (v: T) => void
+  const asr = new Promise<T>(res => {
+    initializer = res
+  })
+  return [asr, initializer!]
+}

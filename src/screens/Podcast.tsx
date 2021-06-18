@@ -1,54 +1,37 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import styled from 'styled-components'
-import { useAPICall, useCustomTheme } from 'hooks'
+import { useStateX } from 'hooks'
 import { Screen } from 'components/structure'
 import Appbar from 'components/Appbar'
-import type { RouteProps } from '@picast-app/router'
+import { RouteProps, Redirect } from '@picast-app/router'
 import Info from './podcast/Info'
 import Feed from './podcast/Episodes'
 import ContextMenu from './podcast/ContextMenu'
-import { main } from 'workers'
 
-const checked: string[] = []
+export default function Fake({ match: { id } }: RouteProps<{ id: string }>) {
+  const [podcast] = useStateX('podcasts.*', id)
 
-export default function Podcast({ match: { id } }: RouteProps<{ id: string }>) {
-  const [podcast, _loading] = useAPICall('podcast', id)
-  const [feedLoading, setFeedLoading] = useState(podcast?.incomplete ?? false)
-  useCustomTheme(podcast?.palette)
-  const [fetching, setFetching] = useState(false)
+  logger.info({ podcast })
 
-  useEffect(() => {
-    if (podcast?.incomplete !== undefined) setFeedLoading(podcast?.incomplete)
-  }, [podcast?.incomplete])
-
-  useEffect(() => {
-    if (
-      checked.includes(id) ||
-      _loading ||
-      process.env.NODE_ENV === 'development'
-    )
-      return
-    setFetching(true)
-    checked.push(id)
-    main.fetchEpisodes(id).then(() => setFetching(false))
-  }, [id, _loading])
-
-  const loading = _loading || feedLoading || fetching
-
+  if (podcast === null) return <Redirect to={`/404?pod=${id}`} />
   return (
-    <Screen loading={loading}>
+    <Screen loading={podcast === undefined}>
       <Appbar title={podcast?.title} back="/">
         {podcast ? (
-          <ContextMenu id={podcast?.id} feed={(podcast as any).feed} />
+          <ContextMenu id={podcast.id} feed={(podcast as any).feed} />
         ) : undefined}
       </Appbar>
       <S.Inner selectColor={podcast?.palette?.muted}>
         <Info {...podcast} />
-        <Feed
-          podcast={id}
-          total={podcast?.episodeCount}
-          onLoading={setFeedLoading}
-        />
+        {podcast && (
+          // render after podcast is loaded so that initial batch of episodes
+          // isn't refetched
+          <Feed
+            podcast={id}
+            total={podcast?.episodeCount}
+            onLoading={() => {}}
+          />
+        )}
       </S.Inner>
     </Screen>
   )

@@ -8,18 +8,16 @@ export function useStateX<T extends Key>(key: T, ...subs: string[]) {
 
   useEffect(() => {
     let cancel: boolean | (() => void) = false
+    const l = key.length + subs.reduce((a, c) => a + (-1 + c.length), 0)
     main
       .listenX(
         key,
-        proxy((state: any, path: string) =>
+        proxy((state: any, path: string) => {
+          // logger.info('hook set', path, state)
           setValue((previous: any) => {
-            return set(
-              previous,
-              state,
-              ...path.slice(key.length + 1).split('.')
-            )
+            return set(previous, state, ...path.slice(l + 1).split('.'))
           })
-        ) as any,
+        }) as any,
         ...subs
       )
       .then(unsub => {

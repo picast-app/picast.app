@@ -2,11 +2,12 @@
 import dbProm, { gql as convert } from './idb'
 import * as api from 'api/calls'
 import { proxy } from 'comlink'
-import { Podcast, Episode, EpisodeBase } from './types'
+import { Episode, EpisodeBase } from './types'
+import type { Podcast } from 'store/state'
 import * as Feed from '../feed'
-import EpisodeStore from './episodeStore'
+import epStore, { EpisodeStore } from './episodeStore'
 import ws, { wsApi } from 'main/ws'
-import appState from '../appState'
+// import appState from '../appState'
 import type * as T from 'types/gql'
 import { hashIds, encodeIds } from 'utils/encode'
 import * as obj from 'utils/object'
@@ -63,12 +64,8 @@ export default class Store {
   public static async create(): Promise<Store> {
     const db = await dbProm
     const subs = await db.getAll('subscriptions')
-    const eps = new EpisodeStore(
-      db,
-      subs.map(({ id }) => id)
-    )
     const wpSubs = await db.get('meta', 'wpSubs')
-    return new Store(db, eps, subs, wpSubs ?? [])
+    return new Store(db, await epStore, subs, wpSubs ?? [])
   }
 
   public async refresh() {
@@ -91,6 +88,7 @@ export default class Store {
   }
 
   public async podcast(id: string): Promise<Podcast | null> {
+    debugger
     if (id in this.podcasts) return this.podcasts[id]
 
     let resolve: (v: EpisodeBase[]) => void
@@ -111,12 +109,12 @@ export default class Store {
     if (!remote) return null
 
     const podcast = await this.writePodcastMeta(remote)
-    podcast.incomplete = episodes.length === 0
+    // podcast.incomplete = episodes.length === 0
     return podcast
   }
 
   public async writePodcastMeta(meta: T.PodcastInfo): Promise<Podcast> {
-    const podcast = convert.podcast(meta)
+    const podcast = convert.podcast(meta) as any
     this.podcasts[podcast.id] = podcast
     if (this.subscriptions.includes(podcast.id))
       await this.storeSubscription(podcast.id)
@@ -136,16 +134,17 @@ export default class Store {
   public async episodeChecked(...ids: string[]) {
     ids = ids.filter(id => this.subscriptions.includes(id))
     const tx = this.db.transaction('subscriptions', 'readwrite')
-    ids.forEach(id => {
-      this.podcasts[id].lastEpisodeCheck = Date.now()
-      tx.store.put(this.podcasts[id])
-    })
+    // ids.forEach(id => {
+    //   this.podcasts[id].lastEpisodeCheck = Date.now()
+    //   tx.store.put(this.podcasts[id])
+    // })
     await tx.done
   }
 
   public async fetchEpisodes(...ids: string[]) {
     ids = ids.filter(id => this.subscriptions.includes(id))
     logger.info('fetch episodes', ...ids)
+    debugger
 
     const podcasts = Object.fromEntries(
       await Promise.all(
@@ -244,61 +243,62 @@ export default class Store {
     return proxy(sub.addSub(index, update))
   }
 
-  public async addSubscription(id: string, existing: boolean) {
-    logger.info('subscribe to', id)
-    if (this.subscriptions.includes(id)) return
-    this.subscriptions.push(id)
-    const podcast = await this.podcast(id)
-    if (!podcast) throw Error(`can't subscribe to ${id}`)
-    const { state } = await appState
-    state.addSubscription(podcast)
-    await this.storeSubscription(id)
-    await this.epStore.subscribe(id)
-    if (!existing) await api.mutate.subscribe(id)
-  }
+  // public async addSubscription(id: string, existing: boolean) {
+  //   logger.info('subscribe to', id)
+  //   if (this.subscriptions.includes(id)) return
+  //   this.subscriptions.push(id)
+  //   const podcast = await this.podcast(id)
+  //   if (!podcast) throw Error(`can't subscribe to ${id}`)
+  //   const { state } = await appState
+  //   state.addSubscription(podcast)
+  //   await this.storeSubscription(id)
+  //   // await this.epStore.subscribe(id)
+  //   if (!existing) await api.mutate.subscribe(id)
+  // }
 
-  public async removeSubscription(id: string, existing: boolean) {
-    logger.info('unsubscribe from', id)
-    if (!this.subscriptions.includes(id)) return
-    this.subscriptions = this.subscriptions.filter(v => v !== id)
-    const { state } = await appState
-    state.removeSubscription(id)
-    await this.db.delete('subscriptions', id)
-    await this.epStore.unsubscribe(id)
-    if (!existing) await api.mutate.unsubscribe(id)
-  }
+  // public async removeSubscription(id: string, existing: boolean) {
+  //   logger.info('unsubscribe from', id)
+  //   if (!this.subscriptions.includes(id)) return
+  //   this.subscriptions = this.subscriptions.filter(v => v !== id)
+  //   const { state } = await appState
+  //   state.removeSubscription(id)
+  //   await this.db.delete('subscriptions', id)
+  //   // await this.epStore.unsubscribe(id)
+  //   if (!existing) await api.mutate.unsubscribe(id)
+  // }
 
-  public async syncSubscriptions({
-    add,
-    remove,
-  }: {
-    add: T.Me_me_subscriptions_added[]
-    remove: string[]
-  }): Promise<{
-    removed: string[]
-    added: string[]
-  }> {
-    add ??= []
-    remove ??= []
+  // public async syncSubscriptions({
+  //   add,
+  //   remove,
+  // }: {
+  //   add: T.Me_me_subscriptions_added[]
+  //   remove: string[]
+  // }): Promise<{
+  //   removed: string[]
+  //   added: string[]
+  // }> {
+  //   add ??= []
+  //   remove ??= []
 
-    remove = remove.filter(id => this.subscriptions.includes(id))
-    const removed = remove.map(id => this.podcasts[id]!.title)
-    await Promise.all(remove.map(id => this.removeSubscription(id, true)))
+  //   remove = remove.filter(id => this.subscriptions.includes(id))
+  //   const removed = remove.map(id => this.podcasts[id]!.title)
+  //   await Promise.all(remove.map(id => this.removeSubscription(id, true)))
 
-    add = add.filter(({ id }) => !this.subscriptions.includes(id))
-    add.forEach(data => {
-      this.podcasts[data.id] = convert.podcast(data)
-    })
-    await Promise.all(add.map(({ id }) => this.addSubscription(id, true)))
+  //   add = add.filter(({ id }) => !this.subscriptions.includes(id))
+  //   add.forEach(data => {
+  //     this.podcasts[data.id] = convert.podcast(data) as any
+  //   })
+  //   await Promise.all(add.map(({ id }) => this.addSubscription(id, true)))
 
-    return {
-      removed,
-      added: add.map(({ title }) => title),
-    }
-  }
+  //   return {
+  //     removed,
+  //     added: add.map(({ title }) => title),
+  //   }
+  // }
 
   private async storeSubscription(id: string) {
-    const { incomplete, ...podcast } = this.podcasts[id]
+    // const { incomplete, ...podcast } = this.podcasts[id]
+    const podcast = this.podcasts[id] //
     podcast.lastMetaCheck = Date.now()
     await this.db.put('subscriptions', podcast)
   }

@@ -5,6 +5,7 @@ type ReactProps<
 type PromiseType<T> = T extends PromiseLike<infer I> ? I : T
 
 type PickOpt<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
+type PickReq<T, K extends keyof T> = Required<Pick<T, K>> & Partial<Omit<T, K>>
 
 type RGBA = number
 type RGBA_ = [number, number, number, number]

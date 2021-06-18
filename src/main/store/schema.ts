@@ -1,3 +1,7 @@
+import type { Podcast as _Podcast } from 'store/state'
+
+type Podcast = Omit<_Podcast, 'subscribed'>
+
 type IDBSchema = {
   meta: {
     key: string
@@ -5,42 +9,29 @@ type IDBSchema = {
   }
   subscriptions: {
     key: string
-    value: {
-      id: string
-      title: string
-      author?: string
-      artwork?: string
-      covers: string[]
-      description?: string
-      subscriptionDate?: Date
-      check?: string
-      lastMetaCheck?: number
-      episodeCount?: number
-      palette?: {
-        vibrant: string
-        lightVibrant: string
-        darkVibrant: string
-        muted: string
-        lightMuted: string
-        darkMuted: string
-      }
-    }
+    value: Podcast
+  }
+  podcasts: {
+    key: string
+    value: Podcast
   }
   episodes: {
     key: string
-    value: {
-      id: string
-      podcast: string
-      title: string
-      file: string
-      published: number
-      duration: number
-      currentTime?: number
-      relProg?: number
-      completed?: boolean
-      shownotes: string
-    }
+    value: Episode
     indexes: { published: string; podcast: string }
   }
 }
 export default IDBSchema
+
+type Episode = {
+  id: string
+  podcast: string
+  title: string
+  file: string
+  published: number
+  duration: number
+  currentTime?: number
+  relProg?: number
+  completed?: boolean
+  shownotes: string
+}

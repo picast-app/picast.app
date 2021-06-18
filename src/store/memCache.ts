@@ -10,6 +10,8 @@ export type HookDict<T, F = Flatten<T>> = {
   [K in keyof F]?: (v: F[K]) => any
 } & { $?: (v: T) => any }
 
+export type FBDict<T, F = Flatten<T>> = { [K in keyof F]?: () => F[K] }
+
 export default abstract class MemCache<T> {
   constructor(protected readonly store: Store) {
     queueMicrotask(async () => {
@@ -23,6 +25,7 @@ export default abstract class MemCache<T> {
   public construct() {
     this.attachGetters()
     this.attachSetter()
+    this.attachFBs()
   }
 
   public destruct() {
@@ -41,6 +44,7 @@ export default abstract class MemCache<T> {
   protected abstract readonly root: string
   abstract state: OptPrim<T>
   protected hooks: HookDict<T> = {}
+  protected fbs: FBDict<T> = {}
   protected sync?: string
 
   protected init(): Promise<any> | any {}
@@ -77,6 +81,13 @@ export default abstract class MemCache<T> {
     this.cleanupCBs.push(
       this.store.handler(this.root as any).set(this.onSet.bind(this), true)
     )
+  }
+
+  private attachFBs() {
+    for (const [k, fb] of Object.entries(this.fbs))
+      this.cleanupCBs.push(
+        this.store.handler(`${this.root}.${k}` as any).fallback(fb as any)
+      )
   }
 
   private onSet(v: any, path: string, meta?: Record<string, any>) {

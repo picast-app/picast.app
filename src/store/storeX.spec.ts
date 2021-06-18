@@ -109,18 +109,14 @@ test('propagate updates down', () => {
     useSystemTheme: false,
   })
   expect(thSet).toHaveBeenCalledTimes(1)
-  expect(thSet).toHaveBeenLastCalledWith(
-    'light',
-    'settings.appearance',
-    undefined
-  )
+  expect(thSet).toHaveBeenLastCalledWith('light', 'settings.appearance', {})
 
   store.set('settings.appearance.colorTheme', 'dark')
   expect(thSet).toHaveBeenCalledTimes(2)
   expect(thSet).toHaveBeenLastCalledWith(
     'dark',
     'settings.appearance.colorTheme',
-    undefined
+    {}
   )
 })
 
@@ -145,7 +141,7 @@ test('optional property & merge', () => {
   })
   expect(optDel).toHaveBeenCalledTimes(0)
   expect(optSet).toHaveBeenCalledTimes(1)
-  expect(optSet).toHaveBeenLastCalledWith(0, 'settings.appearance', undefined)
+  expect(optSet).toHaveBeenLastCalledWith(0, 'settings.appearance', {})
   expect(glSet).toHaveBeenCalledTimes(1)
 
   store.set('settings.appearance', {
@@ -160,7 +156,7 @@ test('optional property & merge', () => {
   store.merge('settings.appearance', { opt: 1, colorTheme: 'light' })
   expect(optDel).toHaveBeenCalledTimes(1)
   expect(optSet).toHaveBeenCalledTimes(2)
-  expect(optSet).toHaveBeenLastCalledWith(1, 'settings.appearance.opt')
+  expect(optSet).toHaveBeenLastCalledWith(1, 'settings.appearance.opt', {})
   expect(glSet).toHaveBeenCalledTimes(4)
 
   // diff merge
@@ -241,4 +237,20 @@ test('wildcards', async () => {
   await expect(store.get('items.*.title', 'a')).resolves.toBe(items.a.title)
   expect(getter).toHaveBeenLastCalledWith('items.a.title', 'a')
   await expect(store.get('items.*.title', 'd')).toReject()
+
+  // set
+
+  const setter = jest.fn(() => {})
+  store.handler('items.*').set(setter)
+
+  expect(() => store.set('items.*', { title: 'foo' })).toThrow()
+  expect(() => store.set('items.*.title', 'foo')).toThrow()
+
+  expect(() => store.set('items.*', { title: 'foo' }, {}, 'a')).not.toThrow()
+  expect(setter).toHaveBeenLastCalledWith({ title: 'foo' }, 'items.a', {}, 'a')
+  expect(() => store.set('items.*.title', 'foo', {}, 'a')).not.toThrow()
+  expect(setter).toHaveBeenLastCalledWith('foo', 'items.a.title', {}, 'a')
+  expect(() => store.set('items.*.title', 'foo', {}, 'a', 'b')).toThrow()
 })
+
+// todo: wildcard merge

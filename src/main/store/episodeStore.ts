@@ -1,6 +1,8 @@
 import dbProm, { gql as convert } from './idb'
 import * as api from 'api/calls'
 import { EpisodeBase } from './types'
+import { store } from 'store'
+import { bindThis } from 'utils/proto'
 
 type Key = [id: string, published: number]
 
@@ -47,6 +49,7 @@ export class Podcast {
   }
 
   public async subscribe() {
+    logger.info('subscribe to', this.id)
     const tx = this.db.transaction('episodes', 'readwrite')
     await Promise.all([
       ...Object.values(this.cache!).map(v => tx.store.put(v)),
@@ -99,6 +102,7 @@ export class Podcast {
     if (this.hasFeedStart)
       return logger.warn('skip episode fetch', this.keys.length, n)
     n = Math.max(n, 200)
+    logger.info('fetch', this.id, n)
     const { episodes: data } =
       (await api.query.episodes(this.id, n, this.keys.slice(-1)[0]?.[0])) ?? {}
     if (!data) {
@@ -113,11 +117,12 @@ export class Podcast {
   }
 
   public async addEpisodes(episodes: EpisodeBase[], notify = false) {
+    logger.info('add', episodes.length, 'episodes')
     this.addKeys(Podcast.keys(episodes.map(({ id }) => id)))
     if (!this.subscribed) this.writeToCache(episodes)
     else {
       const tx = this.db.transaction('episodes', 'readwrite')
-      await Promise.all([...episodes.map(v => tx.store.put(v)), tx.done as any])
+      await Promise.all<any>([...episodes.map(v => tx.store.put(v)), tx.done])
     }
     if (!notify) return
     const indices = episodes.map(v =>
@@ -165,13 +170,14 @@ export class Podcast {
   }
 }
 
-export default class EpisodeStore {
+export class EpisodeStore {
   private podcasts: Record<string, Promise<Podcast>> = {}
+  private subscribed: string[] = []
 
-  constructor(
-    private readonly db: PromiseType<typeof dbProm>,
-    private subscribed: string[]
-  ) {}
+  constructor(private readonly db: PromiseType<typeof dbProm>) {
+    bindThis(this)
+    this.listenSubs()
+  }
 
   public getPodcast = async (id: string) =>
     await (this.podcasts[id] ??= Podcast.create(
@@ -180,15 +186,21 @@ export default class EpisodeStore {
       this.subscribed.includes(id)
     ))
 
-  public async subscribe(id: string) {
-    const podcast = await this.getPodcast(id)
-    await podcast.subscribe()
-    this.subscribed.push(id)
+  private async listenSubs() {
+    this.setSubs(await store.get('user.subscriptions'))
+    store.handler('user.subscriptions').set(this.setSubs)
   }
 
-  public async unsubscribe(id: string) {
-    const podcast = await this.getPodcast(id)
-    await podcast.unsubscribe()
-    this.subscribed = this.subscribed.filter(v => v !== id)
+  private async setSubs(subs: string[]) {
+    const addSubs = subs.filter(id => !this.subscribed.includes(id))
+    const delSubs = this.subscribed.filter(id => !subs.includes(id))
+    this.subscribed = subs
+
+    await Promise.all([
+      ...addSubs.map(id => this.getPodcast(id).then(pod => pod.subscribe())),
+      ...delSubs.map(id => this.getPodcast(id).then(pod => pod.unsubscribe())),
+    ])
   }
 }
+
+export default dbProm.then(db => new EpisodeStore(db))
