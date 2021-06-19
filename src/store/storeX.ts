@@ -85,12 +85,17 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     }
   }
 
-  public merge<K extends keyof TF & string>(key: K, value: Partial<TF[K]>) {
+  public merge<K extends keyof TF & string>(
+    key: K,
+    value: Partial<TF[K]>,
+    ...subs: string[]
+  ) {
     tips: for (const [tip, v] of Store.tips(value, key + '.')) {
+      const final = this.substituteWildcards(tip, ...subs)
       for (const [path, { set }] of this.handlers) {
         if (!tip.startsWith(path)) continue
         for (const handler of set)
-          if (handler(v, tip, {}) === false) continue tips
+          if (handler(v, final, {}, ...subs) === false) continue tips
       }
     }
   }
@@ -194,12 +199,18 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
         this.unlockHandler()
         escaped = true
       }
+      const noErr = Symbol()
+      let err: unknown = noErr
       try {
         this.lockHandler()
         return meth(...args)
+      } catch (e) {
+        err = e
       } finally {
         if (!escaped) this.unlockHandler()
       }
+      if (err !== noErr)
+        throw Error(`error in [${meth.name}](${args.join(', ')}): ${err}`)
     }) as any).bind(this)
   }
 

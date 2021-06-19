@@ -1,6 +1,8 @@
 import 'jest-extended'
 import Store from './storeX'
 
+globalThis.logger = console
+
 type StoreSchema = {
   settings: {
     appearance: {
@@ -17,6 +19,7 @@ type StoreSchema = {
   items: {
     '*': {
       title: string
+      author?: string
     } | null
   }
 }
@@ -251,6 +254,27 @@ test('wildcards', async () => {
   expect(() => store.set('items.*.title', 'foo', {}, 'a')).not.toThrow()
   expect(setter).toHaveBeenLastCalledWith('foo', 'items.a.title', {}, 'a')
   expect(() => store.set('items.*.title', 'foo', {}, 'a', 'b')).toThrow()
+})
+
+test('wildcard merge', () => {
+  const store = new Store<StoreSchema>()
+  const titleSet = jest.fn(() => {})
+  const authSet = jest.fn(() => {})
+  store.handler('items.*.title').set(titleSet)
+  store.handler('items.*.author').set(authSet)
+
+  expect(() => store.merge('items.*', { title: 'foo' })).toThrow()
+  expect(() => store.merge('items.*', { title: 'foo' }, 'a')).not.toThrow()
+  expect(() => store.merge('items.*', { title: 'foo' }, 'a', 'b')).toThrow()
+
+  expect(authSet).toHaveBeenCalledTimes(0)
+  expect(titleSet).toHaveBeenCalledTimes(1)
+  expect(titleSet).toHaveBeenLastCalledWith('foo', 'items.a.title', {}, 'a')
+
+  expect(() => store.merge('items.*', { author: 'bar' }, 'a')).not.toThrow()
+  expect(titleSet).toHaveBeenCalledTimes(1)
+  expect(authSet).toHaveBeenCalledTimes(1)
+  expect(authSet).toHaveBeenLastCalledWith('bar', 'items.a.author', {}, 'a')
 })
 
 // todo: wildcard merge
