@@ -5,7 +5,6 @@ import MemCache, { OptPrim, _, HookDict, FBDict } from 'store/memCache'
 import * as api from 'api/calls'
 import * as convert from 'api/convert'
 import { idbDefaultReader, idbWriter } from 'store/util'
-import equals from 'utils/equal'
 import epStore from 'main/store/episodeStore'
 
 export default class UserState extends MemCache<State['user']> {
@@ -72,27 +71,44 @@ export default class UserState extends MemCache<State['user']> {
     const state = await this.initialized
     if (!state) return
 
+    const remote = await api.query.me(state.subscriptions)
+    await this.storePodcastsDiff(remote?.subscriptions)
+
+    logger.info({ remote })
+  }
+
+  public async storePodcastsDiff({
+    added = [],
+    removed = [],
+  }: Partial<GQL.Me_me_subscriptions> = {}): Promise<
+    { added: string[]; removed: string[] } | undefined
+  > {
+    const state = await this.initialized
+    if (!state) return
+
     let subs = [...state.subscriptions]
-    const remote = await api.query.me(subs)
 
-    subs = subs.filter(
-      id => !(remote?.subscriptions.removed ?? []).includes(id)
-    )
+    subs = subs.filter(id => !removed.includes(id))
 
-    for (const added of remote?.subscriptions.added ?? []) {
-      this.store.set('podcasts.*', convert.podcast(added), {}, added.id)
-      subs.push(added.id)
+    for (const pod of added) {
+      this.store.set('podcasts.*', convert.podcast(pod), {}, pod.id)
+      subs.push(pod.id)
 
-      if (!added.episodes?.edges.length) continue
-      const store = await (await epStore).getPodcast(added.id)
+      if (!pod.episodes?.edges.length) continue
+      const store = await (await epStore).getPodcast(pod.id)
       store.addEpisodes(
-        added.episodes.edges.map(v => convert.episode(v.node, added.id))
+        pod.episodes.edges.map(v => convert.episode(v.node, pod.id))
       )
     }
 
-    if (!equals(subs, state.subscriptions))
+    const diff = {
+      added: subs.filter(id => !state.subscriptions.includes(id)),
+      removed: state.subscriptions.filter(id => !subs.includes(id)),
+    }
+
+    if (diff.added.length + diff.removed.length)
       this.store.set('user.subscriptions', subs)
 
-    logger.info({ remote })
+    return diff
   }
 }

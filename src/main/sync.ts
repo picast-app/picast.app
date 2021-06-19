@@ -1,7 +1,7 @@
 import * as api from 'api/calls'
-import { store } from 'store'
+import { store, user } from 'store'
 import { collection } from 'utils/array'
-import { mapList } from 'utils/object'
+import { mapList, mapValuesAsync } from 'utils/object'
 import epStore from 'main/store/episodeStore'
 import { hashIds, encodeIds } from 'utils/encode'
 import * as convert from 'api/convert'
@@ -97,4 +97,17 @@ async function pullDiffEpisodes(podIds: string[]) {
   }
 }
 
-export async function pullSubscriptions() {}
+export async function pullSubscriptions(): Promise<
+  { added: string[]; removed: string[] } | undefined
+> {
+  const subs = await store.get('user.subscriptions')
+  if (!subs?.length) return
+
+  const me = await api.query.me(subs)
+  const diff = await user.storePodcastsDiff(me?.subscriptions)
+
+  if (diff)
+    return await mapValuesAsync(diff, ids =>
+      Promise.all(ids.map(id => store.get('podcasts.*.title', id)))
+    )
+}

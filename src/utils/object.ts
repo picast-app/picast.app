@@ -9,13 +9,23 @@ export const map = <T extends obj>(
 ) =>
   Object.fromEntries(Object.entries(o).map(([k, v]) => func(k as keyof T, v)))
 
-export const mapValues = <T extends obj>(
+export const mapValues = <T extends obj, R>(
   o: T,
-  func: <K extends keyof T>(v: typeof o[K], k: K) => any
-) =>
+  func: <K extends keyof T>(v: typeof o[K], k: K) => R
+): { [K in keyof T]: R } =>
   Object.fromEntries(
     Object.entries(o).map(([k, v]) => [k, func(v, k as keyof T)])
-  )
+  ) as any
+
+export const mapValuesAsync = async <T extends obj, R extends Promise<any>>(
+  o: T,
+  func: <K extends keyof T>(v: typeof o[K], k: K) => R
+): Promise<{ [K in keyof T]: PromiseType<R> }> =>
+  Object.fromEntries(
+    await Promise.all(
+      Object.entries(o).map(([k, v]) => func(v, k as keyof T).then(r => [k, r]))
+    )
+  ) as any
 
 export const mapList = <T extends obj, R>(
   o: T,

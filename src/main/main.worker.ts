@@ -11,6 +11,7 @@ import * as playback from './playback'
 import { threaded } from 'store'
 import { registerUICall } from './ui'
 import { actions as accountActions } from './account'
+import { pullSubscriptions } from './sync'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const self: DedicatedWorkerGlobalScope
@@ -54,6 +55,7 @@ const api = {
   ...playback,
   ...accountActions,
   ...threaded,
+  pullSubscriptions,
   state,
   readState,
   deleteIDB,

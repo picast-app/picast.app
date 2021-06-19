@@ -24,12 +24,6 @@ export async function signOut() {
   await mutate.signOut()
 }
 
-export async function pullSubscriptions(
-  subs?: T.Me_me_subscriptions
-): Promise<{ added: string[]; removed: string[] }> {
-  return { added: [], removed: [] }
-}
-
 export async function enablePushNotifications(id: string) {}
 
 export async function disablePushNotifications(id: string) {}
