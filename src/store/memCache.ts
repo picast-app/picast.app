@@ -17,7 +17,7 @@ export default abstract class MemCache<T> {
     queueMicrotask(async () => {
       await this.init()
       this.assertComplete(this.state)
-      this.resolveInit()
+      this.resolveInit(this.state as T)
       this.setupSync()
     })
   }
@@ -48,8 +48,8 @@ export default abstract class MemCache<T> {
   protected sync?: string
 
   protected init(): Promise<any> | any {}
-  private resolveInit!: () => void
-  protected initialized = new Promise<void>(res => {
+  private resolveInit!: (v: T) => void
+  protected initialized = new Promise<T>(res => {
     this.resolveInit = res
   })
 

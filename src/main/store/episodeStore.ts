@@ -117,7 +117,7 @@ export class Podcast {
   }
 
   public async addEpisodes(episodes: EpisodeBase[], notify = false) {
-    logger.info('add', episodes.length, 'episodes')
+    logger.info('add', episodes.length, 'episodes for', this.id)
     this.addKeys(Podcast.keys(episodes.map(({ id }) => id)))
     if (!this.subscribed) this.writeToCache(episodes)
     else {

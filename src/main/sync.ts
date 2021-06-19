@@ -59,7 +59,7 @@ export async function pullPodcasts(
       logger.info(`update ${id} meta:`, podcast)
       store.merge('podcasts.*', convert.podcast(podcast), id)
     }
-    if (!episodesMatch) {
+    if (episodesMatch === false) {
       logger.info(`fetch new episodes for ${id}`)
       eps.push(id)
     }
@@ -96,3 +96,5 @@ async function pullDiffEpisodes(podIds: string[]) {
     }
   }
 }
+
+export async function pullSubscriptions() {}

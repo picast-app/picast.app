@@ -46,7 +46,7 @@ function usePullSubs() {
     setLoading(true)
     const subs = await main.pullSubscriptions()
     if (!subs) {
-      snack({ text: 'not logged in' })
+      snack({ text: 'not signed in' })
     } else {
       const { added, removed } = subs
       const msg =
