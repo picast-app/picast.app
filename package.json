@@ -19,7 +19,7 @@
     "strings": "node scripts/bundleLocales"
   },
   "dependencies": {
-    "@picast-app/router": "^0.5.0",
+    "@picast-app/router": "^0.5.1",
     "comlink": "^4.3.0",
     "crc": "^3.8.0",
     "graphql-request": "^3.3.0",

@@ -1,6 +1,5 @@
 import { wrap, proxy, createEndpoint } from 'comlink'
 import MainWorker from 'main/main.worker'
-import createSub from 'utils/subscription'
 import type { API } from 'main/main.worker'
 import { snack } from 'utils/notification'
 import uiAPI from './uiThreadAPI'
@@ -17,21 +16,12 @@ async function init() {
     navigator.serviceWorker.ready,
     main[createEndpoint](),
   ])
+
   if (!active) return
 
   active!.postMessage({ type: 'MAIN_WORKER_PORT', port }, [port])
 }
 init()
-
-export const subscriptionSub = createSub<Podcast[]>([])
-
-main.state(
-  'subscriptions',
-  // @ts-ignore
-  proxy((subs: Podcast[]) => {
-    subscriptionSub.setState(subs)
-  })
-)
 
 Object.entries(uiAPI).forEach(([k, v]) => {
   main.registerUICall(k as any, proxy(v))

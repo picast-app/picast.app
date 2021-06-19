@@ -48,7 +48,7 @@ export const metaSync = API<'MetaSync'>(qMetaSync)(
 )
 
 export const diffEpisodes = API<'FetchEpisodeDiff'>(qDiffEpisodes)(
-  (...podcasts: [id: string, known: string][]) => ({
+  (...podcasts: readonly [id: string, known: string][]) => ({
     podcasts: podcasts.map(([id, known]) => ({ id, known })),
   }),
   ({ episodeDiff }) => episodeDiff

@@ -17,6 +17,11 @@ export const mapValues = <T extends obj>(
     Object.entries(o).map(([k, v]) => [k, func(v, k as keyof T)])
   )
 
+export const mapList = <T extends obj, R>(
+  o: T,
+  func: <K extends keyof T>(v: T[K], k: K) => R
+): R[] => Object.entries(o).map(([k, v]) => func(v, k))
+
 export const forEach = <T extends obj>(
   v: T,
   cb: <K extends keyof T>(k: K, v: T[K]) => unknown

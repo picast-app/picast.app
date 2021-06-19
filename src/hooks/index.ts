@@ -9,7 +9,7 @@ import {
 import { Theme } from 'styles'
 import subscription, { Subscription } from 'utils/subscription'
 import throttle from 'lodash/throttle'
-import { main, subscriptionSub, state as appState } from 'workers'
+import { main, state as appState } from 'workers'
 import { isPromise } from 'utils/promise'
 import type { API } from 'main/main.worker'
 import * as palette from 'styles/palette'
@@ -316,28 +316,6 @@ export function useFeed(...podcasts: string[]) {
   }, [dep])
 
   return id
-}
-
-export function useSubscriptions(): [
-  subscriptions: Podcast[],
-  subscribe: (v: Podcast) => void,
-  unsubscribe: (v: string) => void
-] {
-  const [subs, set] = useSubscription(subscriptionSub)
-
-  function subscribe(podcast: Podcast) {
-    // if (subs.find(({ id }) => id === podcast.id)) return
-    // set([...subs, podcast])
-    // main.addSubscription(podcast.id, false)
-  }
-
-  function unsubscribe(id: string) {
-    // if (!subs.find(pod => pod.id === id)) return
-    // set(subs.filter(v => v.id !== id))
-    // main.removeSubscription(id, false)
-  }
-
-  return [subs, subscribe, unsubscribe]
 }
 
 export function useIDBState<T>(

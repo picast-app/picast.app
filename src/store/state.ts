@@ -40,8 +40,6 @@ export type Podcast = {
   covers: string[]
   description?: string
   subscriptionDate?: number
-  check?: string
-  lastMetaCheck?: number
   episodeCount?: number
   palette?: {
     vibrant: string
@@ -51,4 +49,8 @@ export type Podcast = {
     lightMuted: string
     darkMuted: string
   }
+  // sync
+  check?: string
+  lastMetaCheck?: number
+  lastEpisodeCheck?: number
 }

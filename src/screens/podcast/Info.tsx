@@ -5,7 +5,7 @@ import { ArtworkShowcase } from 'components/composite'
 import { Dialog } from 'components/structure'
 import { lineClamp } from 'styles/mixin'
 import { desktop, mobile } from 'styles/responsive'
-import { useMatchMedia, useSubscriptions, useAppState } from 'hooks'
+import { useMatchMedia, useAppState } from 'hooks'
 import ContextMenu, { SC as CM } from './ContextMenu'
 import { main } from 'workers'
 import type { Podcast } from 'store/state'
@@ -13,7 +13,6 @@ import type { Podcast } from 'store/state'
 export default function Info(podcast: Partial<Podcast>) {
   const [showDescription, setShowDescription] = useState(false)
   const isDesktop = useMatchMedia(desktop)
-  // const [subscriptions, subscribe, unsubscribe] = useSubscriptions()
   const [showcaseArt, setShowcaseArt] = useState(false)
   const [wpSubs = []] = useAppState<string[]>('wpSubs')
   const [msgSignIn, setMsgSignIn] = useState(false)
@@ -31,9 +30,6 @@ export default function Info(podcast: Partial<Podcast>) {
   async function toggleSub() {
     if (!podcast.id) return
     if (
-      // !(await main[podcast.subscribed ? 'subscribe' : 'unsubscribe'](
-      //   podcast.id!
-      // ))
       !(await main[podcast.subscribed ? 'unsubscribe' : 'subscribe'](
         podcast.id
       ))
@@ -43,13 +39,6 @@ export default function Info(podcast: Partial<Podcast>) {
 
   const actions = (
     <S.Actions>
-      {/* {podcast.id && subscriptions?.some(({ id }) => id === podcast.id) ? (
-        <Button onClick={() => unsubscribe(podcast.id!)} text>
-          subscribed
-        </Button>
-      ) : (
-        <Button onClick={() => subscribe(podcast as any)}>Subscribe</Button>
-      )} */}
       <Button onClick={toggleSub} text={podcast.subscribed}>
         {podcast.subscribed ? 'subscribed' : 'subscribe'}
       </Button>

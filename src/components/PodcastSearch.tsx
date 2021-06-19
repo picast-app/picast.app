@@ -38,6 +38,7 @@ export default function Search({ visual }: Props) {
       blend={!visual}
       style={style}
       type="search"
+      autoFocus
     />
   )
 }

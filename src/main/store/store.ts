@@ -7,9 +7,7 @@ import type { Podcast } from 'store/state'
 import * as Feed from '../feed'
 import epStore, { EpisodeStore } from './episodeStore'
 import ws, { wsApi } from 'main/ws'
-// import appState from '../appState'
 import type * as T from 'types/gql'
-import { hashIds, encodeIds } from 'utils/encode'
 import * as obj from 'utils/object'
 
 type TotalCB = (v: { total: number; complete: boolean }) => void
@@ -139,37 +137,6 @@ export default class Store {
     //   tx.store.put(this.podcasts[id])
     // })
     await tx.done
-  }
-
-  public async fetchEpisodes(...ids: string[]) {
-    ids = ids.filter(id => this.subscriptions.includes(id))
-    logger.info('fetch episodes', ...ids)
-    debugger
-
-    const podcasts = Object.fromEntries(
-      await Promise.all(
-        ids.map(id => this.epStore.getPodcast(id).then(pod => [id, pod]))
-      )
-    )
-
-    const results = await api.query.diffEpisodes(
-      ...ids.map(
-        id => [id, encodeIds(podcasts[id].episodeIds)] as [string, string]
-      )
-    )
-
-    for (const { podcast, added, removed } of results) {
-      if (removed?.length) {
-        logger.info(`removed from ${podcast} ${removed.join(', ')}`)
-      }
-      if (added?.length) {
-        logger.info(`added ${added.length} episodes to ${podcast}`)
-        await podcasts[podcast].addEpisodes(
-          added.map(v => convert.episode(v as any, podcast)),
-          true
-        )
-      }
-    }
   }
 
   public async onTotalChange(
@@ -346,11 +313,6 @@ export default class Store {
   public async getEpisodeProgress(id: string): Promise<number> {
     const episode = await this.db.get('episodes', id)
     return episode?.relProg ?? 0
-  }
-
-  public async episodesCrc(podcast: string) {
-    const { episodeIds } = await this.epStore.getPodcast(podcast)
-    return hashIds(episodeIds)
   }
 
   private getFeedSub(id: string): Feed.Base | undefined {
