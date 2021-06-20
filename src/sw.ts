@@ -24,7 +24,7 @@ self.addEventListener('message', ({ data: { type, ...data } }) => {
   if (type === 'MAIN_WORKER_PORT') {
     const main = wrap<MainAPI>(data.port)
     setMainWorker(main)
-    main.state('debug.print_logs', proxy(togglePrint as any))
+    main.listenX('settings.debug.printLogs', proxy(togglePrint))
   }
 })
 

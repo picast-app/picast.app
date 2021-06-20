@@ -16,6 +16,7 @@ export type State = {
   user: {
     id: string
     subscriptions: string[]
+    wpSubs: string[]
     wsAuth?: string
   } | null
   podcasts: {
@@ -24,6 +25,10 @@ export type State = {
   library: {
     sorting: string
     list: Podcast[]
+  }
+  player: {
+    current: string
+    queue: string[]
   }
 }
 
@@ -54,3 +59,10 @@ export type Podcast = {
   lastMetaCheck?: number
   lastEpisodeCheck?: number
 }
+
+// type Episode = {
+//   podcast: Podcast
+//   id: string
+//   title: string
+//   file: string
+// }

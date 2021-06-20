@@ -1,6 +1,6 @@
 import content from './template.html'
 import Component from '../base.comp'
-import { main, state } from 'workers'
+import { main } from 'workers'
 import { playerSub } from 'utils/playerHooks'
 import type Progress from 'components/webcomponents/progressBar/progress.comp'
 import { bindThis } from 'utils/proto'
@@ -8,6 +8,7 @@ import MediaSession from './components/mediaSession'
 import Interaction from './components/interaction'
 import Audio from './components/audio'
 import EventDispatcher from './components/events'
+import store from 'store/threadAPI'
 
 export default class Player extends Component {
   static tagName = 'picast-player'
@@ -23,7 +24,7 @@ export default class Player extends Component {
   constructor() {
     super()
     bindThis(this)
-    state('playing.id', this.onStateChange)
+    // state('playing.id', this.onStateChange)
     playerSub.setState(this)
   }
 
@@ -191,9 +192,10 @@ export default class Player extends Component {
   }
 
   private barObserver = new MutationObserver(records => {
-    const [addedBars, removedBars] = (
-      ['addedNodes', 'removedNodes'] as const
-    ).map(l =>
+    const [addedBars, removedBars] = ([
+      'addedNodes',
+      'removedNodes',
+    ] as const).map(l =>
       records
         .flatMap(v => [...v[l]])
         .flatMap(v => [

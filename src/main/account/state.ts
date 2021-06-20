@@ -29,13 +29,13 @@ export default class UserState extends MemCache<State['user']> {
 
   async init() {
     const state = await idbDefaultReader(['currentUser', 'subscriptions'])
-    logger.info('user state:', state)
 
     if (!state.currentUser) this.state = null
     else
       this.state = {
         id: state.currentUser,
         subscriptions: state.subscriptions ?? [],
+        wpSubs: [],
       }
 
     this.pullRemote()
@@ -45,13 +45,19 @@ export default class UserState extends MemCache<State['user']> {
     await this.initialized
     if (this.state) throw Error('already signed in')
 
+    await Promise.all(
+      data.subscriptions.added.map(v => this.storePodcast(v, true))
+    )
     this.store.set('user', {
       id: data.id,
       subscriptions: data.subscriptions.added.map(({ id }) => id),
+      wpSubs: [],
     })
   }
 
   public signOut() {
+    this.store.set('user.subscriptions', [])
+    this.store.set('user.wpSubs', [])
     this.store.set('user', null)
   }
 
@@ -63,8 +69,12 @@ export default class UserState extends MemCache<State['user']> {
 
   private async writeSignedOut() {
     const db = await idb
-    await db.delete('meta', 'currentUser')
-    await db.delete('meta', 'subscriptions')
+    await Promise.all([
+      db.delete('meta', 'currentUser'),
+      db.delete('meta', 'subscriptions'),
+      db.clear('podcasts'),
+      db.clear('episodes'),
+    ])
   }
 
   private async pullRemote() {
@@ -75,6 +85,8 @@ export default class UserState extends MemCache<State['user']> {
     await this.storePodcastsDiff(remote?.subscriptions)
 
     logger.info({ remote })
+
+    if (!remote && this.state) this.signOut()
   }
 
   public async storePodcastsDiff({
@@ -91,14 +103,8 @@ export default class UserState extends MemCache<State['user']> {
     subs = subs.filter(id => !removed.includes(id))
 
     for (const pod of added) {
-      this.store.set('podcasts.*', convert.podcast(pod), {}, pod.id)
+      await this.storePodcast(pod)
       subs.push(pod.id)
-
-      if (!pod.episodes?.edges.length) continue
-      const store = await (await epStore).getPodcast(pod.id)
-      store.addEpisodes(
-        pod.episodes.edges.map(v => convert.episode(v.node, pod.id))
-      )
     }
 
     const diff = {
@@ -110,5 +116,22 @@ export default class UserState extends MemCache<State['user']> {
       this.store.set('user.subscriptions', subs)
 
     return diff
+  }
+
+  private async storePodcast(
+    podcast: GQL.Me_me_subscriptions_added,
+    subscribed?: true
+  ) {
+    this.store.set(
+      'podcasts.*',
+      convert.podcast(podcast),
+      { subscribed },
+      podcast.id
+    )
+    if (!podcast.episodes?.edges.length) return
+    const store = await (await epStore).getPodcast(podcast.id, subscribed)
+    store.addEpisodes(
+      podcast.episodes.edges.map(v => convert.episode(v.node, podcast.id))
+    )
   }
 }

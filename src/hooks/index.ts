@@ -9,7 +9,7 @@ import {
 import { Theme } from 'styles'
 import subscription, { Subscription } from 'utils/subscription'
 import throttle from 'lodash/throttle'
-import { main, state as appState } from 'workers'
+import { main } from 'workers'
 import { isPromise } from 'utils/promise'
 import type { API } from 'main/main.worker'
 import * as palette from 'styles/palette'
@@ -337,48 +337,6 @@ export function useIDBState<T>(
   }, [key])
 
   return [state, setter, loading]
-}
-
-type _AS<T> = { loading: boolean; state: T | undefined }
-
-const equals = (a: any, b: any) => {
-  const ka = Object.keys(a)
-  const kb = Object.keys(b)
-  if (ka.length !== kb.length) return false
-  return ka.every(k => a[k] === b[k])
-}
-
-export function useAppState<T = unknown>(path: string) {
-  const [{ loading, state }, setState] = useReducer(
-    (state: _AS<T>, update: Partial<_AS<T>>) => {
-      const merged = { ...state, ...update }
-      return equals(state, merged) ? state : merged
-    },
-    { loading: true, state: undefined }
-  )
-
-  useEffect(() => {
-    setState({ loading: true, state: undefined })
-    let cancelled = false
-    let cancel: (() => void) | undefined = undefined
-
-    const init = async () => {
-      const set = (v: unknown) => {
-        if (cancelled) return
-        setState({ state: v as T, loading: false })
-      }
-      cancel = await appState(path, set)
-      if (cancelled) return cancel()
-    }
-    init()
-
-    return () => {
-      cancelled = true
-      cancel?.()
-    }
-  }, [path])
-
-  return [state, loading] as const
 }
 
 export function useEvent<

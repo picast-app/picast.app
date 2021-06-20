@@ -4,11 +4,11 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import 'i18n/strings'
 import { togglePrint } from 'utils/logger'
+import store from 'store/threadAPI'
 import App from './App'
-import { state } from './workers'
 import 'store/uiStateHooks'
 
-state<boolean>('debug.print_logs', togglePrint)
+store.listenX('settings.debug.printLogs', togglePrint)
 
 window.addEventListener('echo_reload', () => {
   location.reload()

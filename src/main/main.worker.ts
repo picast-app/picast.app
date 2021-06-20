@@ -1,11 +1,9 @@
-import { expose, proxy } from 'comlink'
-import { togglePrint } from 'utils/logger'
+import { expose } from 'comlink'
 import { query, mutate } from 'api/calls'
 import IDBInterface from './store/idbInterface'
 import bufferInstance from 'utils/instantiationBuffer'
 import dbProm from './store/idb'
 import store from './store'
-import appState from './appState'
 import { deleteDB } from 'idb'
 import * as playback from './playback'
 import { threaded } from 'store'
@@ -29,24 +27,6 @@ async function deleteIDB() {
   })
 }
 
-const state = async <T = unknown>(p: string, f: (v: T) => void) => {
-  const { subscribe } = await appState
-  return proxy(subscribe(p, f))
-}
-
-appState.then(({ subscribe }) => {
-  subscribe('debug.print_logs', togglePrint)
-})
-
-const readState = async <T = any>(path: string): Promise<T> => {
-  return await new Promise<T>(res => {
-    const sp = state<T>(path, state => {
-      res(state)
-      sp.then(unsub => unsub())
-    })
-  })
-}
-
 const api = {
   ...query,
   ...mutate,
@@ -56,8 +36,6 @@ const api = {
   ...accountActions,
   ...threaded,
   pullSubscriptions,
-  state,
-  readState,
   deleteIDB,
   registerUICall,
 } as const

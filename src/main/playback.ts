@@ -1,5 +1,4 @@
 import { wsApi } from './ws'
-import stateProm from './appState'
 import store from './store'
 
 export async function setPlaying(

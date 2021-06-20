@@ -5,7 +5,7 @@ import { ArtworkShowcase } from 'components/composite'
 import { Dialog } from 'components/structure'
 import { lineClamp } from 'styles/mixin'
 import { desktop, mobile } from 'styles/responsive'
-import { useMatchMedia, useAppState } from 'hooks'
+import { useMatchMedia, useStateX } from 'hooks'
 import ContextMenu, { SC as CM } from './ContextMenu'
 import { main } from 'workers'
 import type { Podcast } from 'store/state'
@@ -14,12 +14,12 @@ export default function Info(podcast: Partial<Podcast>) {
   const [showDescription, setShowDescription] = useState(false)
   const isDesktop = useMatchMedia(desktop)
   const [showcaseArt, setShowcaseArt] = useState(false)
-  const [wpSubs = []] = useAppState<string[]>('wpSubs')
+  const [wpSubs] = useStateX('user.wpSubs')
   const [msgSignIn, setMsgSignIn] = useState(false)
 
   if (!podcast?.id) return <S.Info />
 
-  const wpActive = wpSubs.includes(podcast.id!)
+  const wpActive = wpSubs?.includes(podcast.id!)
 
   async function toggleNotifications() {
     if (!podcast.id) return
@@ -46,7 +46,7 @@ export default function Info(podcast: Partial<Podcast>) {
       <Icon
         icon={
           `bell_${
-            wpSubs.includes(podcast.id!) ? 'active' : 'inactive'
+            wpSubs?.includes(podcast.id!) ? 'active' : 'inactive'
           }` as const
         }
         label={`${wpActive ? 'disable' : 'enable'} push notifications`}

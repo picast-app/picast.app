@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import Appbar from 'components/Appbar'
-import { Icon } from 'components/atoms'
 import { ShowCard } from 'components/composite'
 import { Screen } from 'components/structure'
 import Glow from './library/Glow'
@@ -14,21 +13,12 @@ import { cardPadd, mobileQueries, desktopQueries } from './library/grid'
 export default function Library() {
   const isDesktop = useMatchMedia(desktop)
   const theme = useTheme()
-  const [fullscreen, toggleFullscreen] = useFullscreen()
   const [pull, loading] = usePullSubs()
   const [library] = useStateX('library')
 
   return (
     <Screen refreshAction={pull} loading={loading}>
-      <Appbar title="Podcasts" scrollOut>
-        <S.FSWrap>
-          <Icon
-            icon={fullscreen ? 'minimize' : 'maximize'}
-            label="fullscreen"
-            onClick={toggleFullscreen}
-          ></Icon>
-        </S.FSWrap>
-      </Appbar>
+      <Appbar title="Podcasts" scrollOut />
       <S.Grid>
         {library?.list.map(pod => (
           <ShowCard podcast={pod} key={pod.id} eager />
@@ -72,22 +62,6 @@ function usePullSubs() {
   }
 
   return [sync, loading] as const
-}
-
-function useFullscreen() {
-  const [fullscreen, setFullscreen] = useState(!!document.fullscreenElement)
-
-  const toggle = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen()
-      setFullscreen(true)
-    } else {
-      document.exitFullscreen?.()
-      setFullscreen(true)
-    }
-  }
-
-  return [fullscreen, toggle] as const
 }
 
 const queries = [...mobileQueries, ...desktopQueries].map(

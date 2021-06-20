@@ -1,10 +1,11 @@
 import React from 'react'
 import styled from 'styled-components'
-import { useAppState } from 'hooks'
+// import { useAppState } from 'hooks'
 import { EpisodeStrip } from 'components/composite'
 
 export function Queue() {
-  const [queue] = useAppState<EpisodeId[]>('queue')
+  // const [queue] = useAppState<EpisodeId[]>('queue')
+  const queue: any[] = []
 
   if (!queue) return null
   return (

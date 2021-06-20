@@ -5,6 +5,8 @@ import type { Store } from '.'
 import uiThread from 'main/ui'
 import { proxy } from 'comlink'
 import { idbWriter, idbDefaultReader } from './util'
+import { bundle } from 'utils/function'
+import { togglePrint } from 'utils/logger'
 
 const IDBKeys = ['printLogs', 'showTouchPaths', 'extractColor'] as const
 type Key = typeof IDBKeys[number]
@@ -26,7 +28,7 @@ export default class Settings extends MemCache<State['settings']> {
   }
 
   hooks: HookDict<State['settings']> = {
-    'debug.printLogs': idbWriter<Key>('printLogs'),
+    'debug.printLogs': bundle(idbWriter<Key>('printLogs'), togglePrint),
     'debug.showTouchPaths': idbWriter<Key>('showTouchPaths'),
     'appearance.extractColor': idbWriter<Key>('extractColor'),
     'appearance.useSystemTheme': v => {

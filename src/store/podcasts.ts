@@ -23,11 +23,12 @@ export default async (store: Store) => {
   const persisted: (keyof Podcast)[] = ['lastMetaCheck', 'lastEpisodeCheck']
 
   store.handler('podcasts.*').set(async (data, path, meta, id) => {
+    const pods = await podcasts
     if (/^\w+\.\w+$/.test(path)) {
-      if (subs.includes(id) && data)
+      pods[id] = data
+      if (data && (subs.includes(id) || meta.subscribed))
         await (await dbProm).put('podcasts', data, id)
     } else {
-      const pods = await podcasts
       let pod = await pods[id]
       if (pod) {
         pod = pods[id] = set(pod, data, ...path.split('.').slice(2))

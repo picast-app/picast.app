@@ -49,6 +49,7 @@ export class Podcast {
   }
 
   public async subscribe() {
+    if (this.subscribed) return
     logger.info('subscribe to', this.id)
     const tx = this.db.transaction('episodes', 'readwrite')
     await Promise.all([
@@ -61,6 +62,7 @@ export class Podcast {
   }
 
   public async unsubscribe() {
+    if (!this.subscribed) return
     this.writeToCache(
       await this.db.getAllFromIndex('episodes', 'podcast', this.id)
     )
@@ -179,11 +181,11 @@ export class EpisodeStore {
     this.listenSubs()
   }
 
-  public getPodcast = async (id: string) =>
+  public getPodcast = async (id: string, subscribed?: boolean) =>
     await (this.podcasts[id] ??= Podcast.create(
       id,
       this.db,
-      (await this.subscriptions).includes(id)
+      subscribed ?? (await this.subscriptions).includes(id)
     ))
 
   private async listenSubs() {
