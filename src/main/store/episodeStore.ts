@@ -172,7 +172,7 @@ export class Podcast {
 
 export class EpisodeStore {
   private podcasts: Record<string, Promise<Podcast>> = {}
-  private subscribed: string[] = []
+  private subscriptions: Promise<string[]> = store.get('user.subscriptions')
 
   constructor(private readonly db: PromiseType<typeof dbProm>) {
     bindThis(this)
@@ -183,18 +183,19 @@ export class EpisodeStore {
     await (this.podcasts[id] ??= Podcast.create(
       id,
       this.db,
-      this.subscribed.includes(id)
+      (await this.subscriptions).includes(id)
     ))
 
   private async listenSubs() {
-    this.setSubs(await store.get('user.subscriptions'))
+    await this.subscriptions
     store.handler('user.subscriptions').set(this.setSubs)
   }
 
   private async setSubs(subs: string[]) {
-    const addSubs = subs.filter(id => !this.subscribed.includes(id))
-    const delSubs = this.subscribed.filter(id => !subs.includes(id))
-    this.subscribed = subs
+    const subscriptions = await this.subscriptions
+    const addSubs = subs.filter(id => !subscriptions.includes(id))
+    const delSubs = subscriptions.filter(id => !subs.includes(id))
+    this.subscriptions = Promise.resolve(subs)
 
     await Promise.all([
       ...addSubs.map(id => this.getPodcast(id).then(pod => pod.subscribe())),

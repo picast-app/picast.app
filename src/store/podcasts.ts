@@ -34,7 +34,7 @@ export default async (store: Store) => {
       }
       if (
         subs.includes(id) &&
-        persisted.includes(path.replace(/^\w+\.\w+/, '') as keyof Podcast)
+        persisted.includes(path.replace(/^\w+\.\w+\./, '') as keyof Podcast)
       )
         await (await dbProm).put('podcasts', pod!, id)
     }

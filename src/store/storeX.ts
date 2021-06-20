@@ -320,15 +320,18 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
   }
 }
 
-type Getter<T = any> = (path: string, ...subs: string[]) => T | Promise<T>
-type Setter<T = any> = (
+export type Getter<T = any> = (
+  path: string,
+  ...subs: string[]
+) => T | Promise<T>
+export type Setter<T = any> = (
   v: T,
   path: string,
   meta: Record<string, any>,
   ...subs: string[]
 ) => unknown
-type Deleted = (path: string) => unknown
-type Fallback<T = any> = () => T
+export type Deleted = (path: string) => unknown
+export type Fallback<T = any> = () => T
 
 class GetResolver<T, TC extends Schema, TF> extends Promise<T> {
   static get [Symbol.species]() {
@@ -346,7 +349,7 @@ class GetResolver<T, TC extends Schema, TF> extends Promise<T> {
   }
 
   public async join<K extends keyof TF>(path: K): Promise<CondArr<T, TF[K]>> {
-    const inter = await this
+    const inter: any = await this
 
     const assertJoiner = (v: unknown) => {
       if (typeof v !== 'string') throw Error(`can't join on ${v}`)
@@ -358,6 +361,6 @@ class GetResolver<T, TC extends Schema, TF> extends Promise<T> {
       )) as any
 
     assertJoiner(inter)
-    return (await this.store.get(path as any, inter as any)) as any
+    return (await this.store.get(path as any, inter)) as any
   }
 }

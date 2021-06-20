@@ -1,5 +1,4 @@
 import { mutate } from 'api/calls'
-import type * as T from 'types/gql'
 import { store, user } from 'store'
 
 export const signIn = async (creds: SignInCreds, wpSub?: string | null) => {

@@ -14,6 +14,7 @@ import { isPromise } from 'utils/promise'
 import type { API } from 'main/main.worker'
 import * as palette from 'styles/palette'
 import { querySub } from 'utils/css/query'
+import storeX from 'store/threadAPI'
 
 export * from './store'
 
@@ -493,7 +494,7 @@ const artworks = (podcast: string) => {
   return (artCache[podcast] ??= fetchArt(podcast))
 }
 const fetchArt = async (id: string) =>
-  (artCache[id] = (await main.podcast(id))?.covers ?? [])
+  (artCache[id] = (await storeX.getX('podcasts.*', id))?.covers ?? [])
 export const useArtwork = (podcast: string) => {
   const [covers, setCovers] = useState<string[]>(
     isPromise(artCache[podcast]) ? [] : (artCache[podcast] as string[])

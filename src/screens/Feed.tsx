@@ -4,7 +4,7 @@ import { Screen, VirtualList } from 'components/structure'
 import { EpisodeStrip } from 'components/composite'
 import Appbar from 'components/Appbar'
 import { center } from 'styles/mixin'
-import { useAppState, useFeed } from 'hooks'
+import { useFeed, useStateX } from 'hooks'
 import { Link } from '@picast-app/router'
 
 export default function Wrap() {
@@ -17,9 +17,9 @@ export default function Wrap() {
 }
 
 function Main() {
-  const [signedIn, loading] = useAppState<boolean>('user.signedIn')
-  if (loading) return null
-  if (!signedIn) return <Intro />
+  const [user] = useStateX('user')
+  if (user === undefined) return null
+  if (!user) return <Intro />
   return <Feed />
 }
 

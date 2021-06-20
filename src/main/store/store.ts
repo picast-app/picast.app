@@ -9,6 +9,7 @@ import epStore, { EpisodeStore } from './episodeStore'
 import ws, { wsApi } from 'main/ws'
 import type * as T from 'types/gql'
 import * as obj from 'utils/object'
+import { store as storeX } from 'store'
 
 type TotalCB = (v: { total: number; complete: boolean }) => void
 
@@ -181,8 +182,10 @@ export default class Store {
   }
 
   public async feedSubscription(...podcasts: string[]): Promise<string> {
+    const subs = await storeX.get('user.subscriptions')
+
     podcasts = Array.from(
-      new Set(podcasts.flatMap(v => (v === '*' ? this.subscriptions : [v])))
+      new Set(podcasts.flatMap(v => (v === '*' ? subs : [v])))
     )
     const sub: Feed.Base =
       podcasts.length === 1
