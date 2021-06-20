@@ -1,7 +1,9 @@
 import 'jest-extended'
 import Store from './storeX'
+import queueMicrotask from 'queue-microtask'
 
 globalThis.logger = console
+globalThis.queueMicrotask = queueMicrotask
 
 type StoreSchema = {
   settings: {
@@ -288,8 +290,15 @@ test('join state', async () => {
     c: { title: 'baz' },
   }
   store.handler('items.*').get((p, k) => items[k as keyof typeof items])
+  store.handler('items.*').set((v, _, __, k) => {
+    ;(items as any)[k] = v
+  })
   store.handler('idList').get(() => Object.keys(items))
-  store.handler('id').get(() => 'a')
+  let id = 'a'
+  store.handler('id').get(() => id)
+  store.handler('id').set(v => {
+    id = v
+  })
 
   await expect(store.get('items.*', 'a')).resolves.toEqual(items.a)
   await expect(store.get('idList')).resolves.toEqual(['a', 'b', 'c'])
@@ -299,4 +308,60 @@ test('join state', async () => {
   await expect(store.get('idList').join('items.*')).resolves.toEqual(
     Object.values(items)
   )
+
+  // listeners
+
+  const cbId = jest.fn(() => {})
+  const cbList = jest.fn(() => {})
+  store.listenJoined('id', 'items.*', cbId)
+  store.listenJoined('idList', 'items.*', cbList)
+
+  const wait = async () => await new Promise(res => setTimeout(res, 10))
+  await wait()
+
+  expect(cbId).toHaveBeenCalledTimes(1)
+  expect(cbId).toHaveBeenLastCalledWith(items.a, 'items.*', {}, 'a')
+
+  expect(cbList).toHaveBeenCalledTimes(1)
+  expect(cbList).toHaveBeenLastCalledWith(
+    Object.values(items),
+    'items.*',
+    {},
+    ...Object.keys(items)
+  )
+
+  store.set('id', 'b')
+  await wait()
+
+  expect(cbList).toHaveBeenCalledTimes(1)
+  expect(cbId).toHaveBeenCalledTimes(2)
+  expect(cbId).toHaveBeenLastCalledWith(items.b, 'items.*', {}, 'b')
+
+  store.set('items.*', { title: 'test' }, {}, 'a')
+  expect(items.a).toEqual({ title: 'test' })
+  await wait()
+  expect(cbId).toHaveBeenCalledTimes(2)
+  expect(cbList).toHaveBeenCalledTimes(2)
+  expect(cbList).toHaveBeenLastCalledWith(
+    Object.values(items),
+    'items.*',
+    {},
+    ...Object.keys(items)
+  )
+
+  store.set('items.*', { title: 'test2' }, {}, 'b')
+  expect(items.b).toEqual({ title: 'test2' })
+
+  await wait()
+  expect(cbId).toHaveBeenCalledTimes(3)
+  expect(cbId).toHaveBeenLastCalledWith({ title: 'test2' }, 'items.*', {}, 'b')
+  expect(cbList).toHaveBeenCalledTimes(3)
+  expect(cbList).toHaveBeenLastCalledWith(
+    Object.values(items),
+    'items.*',
+    {},
+    ...Object.keys(items)
+  )
 })
+
+// todo register wildcard listener for specific value

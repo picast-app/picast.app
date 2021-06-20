@@ -91,6 +91,59 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     }
   }
 
+  public listenJoined<
+    K extends keyof TF & string,
+    KJ extends keyof TF & string
+  >(on: K, key: KJ, cb: Setter<CondArr<TF[K], TF[KJ]>>) {
+    let cancelled = false
+    let active: string[] = []
+    let joiner: unknown
+
+    const execJoin = async () => {
+      const list = Array.isArray(joiner) ? joiner : [joiner]
+
+      const res = await Promise.all(
+        list.map(k => {
+          if (typeof k !== 'string') throw Error(`can't join on ${k}`)
+          return this.get(key, k)
+        })
+      )
+
+      if (!cancelled)
+        cb(Array.isArray(joiner) ? res : (res[0] as any), key, {}, ...list)
+
+      active = list
+    }
+
+    const cancelSub = this.handler(key).set((v, p, m, k) => {
+      queueMicrotask(() => {
+        if (active.includes(k) && !cancelled) execJoin()
+      })
+    })
+
+    const cancel = [cancelSub]
+
+    const setup = async () => {
+      joiner = await this.get(on)
+      execJoin()
+
+      cancel.push(
+        this.handler(on).set(async (v, k) => {
+          if (k !== on) return
+          await this.handlersDone()
+          joiner = v
+          execJoin()
+        })
+      )
+    }
+    setup()
+
+    return () => {
+      callAll(cancel)
+      cancelled = true
+    }
+  }
+
   public merge<K extends keyof TF & string>(
     key: K,
     value: Partial<TF[K]>,
