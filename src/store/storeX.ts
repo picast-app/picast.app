@@ -1,5 +1,6 @@
 import * as path from 'utils/path'
 import { callAll } from 'utils/function'
+import { promiseCB } from 'utils/promise'
 import type { Flatten } from './types'
 
 export type Schema = { [K: string]: Schema | any }
@@ -14,18 +15,23 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     this.merge = this.locked(this.merge)
   }
 
-  public async get<K extends keyof TF & string>(
+  public get<K extends keyof TF & string>(
     key: K,
     ...subs: string[]
-  ): Promise<TF[K]> {
-    const final = this.substituteWildcards(key, ...subs)
+  ): GetResolver<TF[K], T, TF> {
+    return new GetResolver<TF[K], T, TF>(
+      this,
+      promiseCB(async () => {
+        const final = this.substituteWildcards(key, ...subs)
 
-    for (const [k, { get }] of this.handlers)
-      if (key.startsWith(k) && get) {
-        this.escapeLock?.()
-        return this.pick(await get(final, ...subs), k, key)
-      }
-    throw Error(`no get handler for '${key}' registered`)
+        for (const [k, { get }] of this.handlers)
+          if (key.startsWith(k) && get) {
+            this.escapeLock?.()
+            return this.pick(await get(final, ...subs), k, key)
+          }
+        throw Error(`no get handler for '${key}' registered`)
+      })
+    )
   }
 
   public set<K extends keyof TF & string>(
@@ -270,3 +276,35 @@ type Setter<T = any> = (
 ) => unknown
 type Deleted = (path: string) => unknown
 type Fallback<T = any> = () => T
+
+class GetResolver<T, TC extends Schema, TF> extends Promise<T> {
+  static get [Symbol.species]() {
+    return Promise
+  }
+
+  constructor(
+    private readonly store: Store<TC, TF>,
+    exec: (
+      resolve: (value: T | PromiseLike<T>) => void,
+      reject: (reason?: any) => void
+    ) => any
+  ) {
+    super(exec)
+  }
+
+  public async join<K extends keyof TF>(path: K): Promise<CondArr<T, TF[K]>> {
+    const inter = await this
+
+    const assertJoiner = (v: unknown) => {
+      if (typeof v !== 'string') throw Error(`can't join on ${v}`)
+    }
+
+    if (Array.isArray(inter))
+      return (await Promise.all(
+        inter.map(k => (assertJoiner(k), this.store.get(path as any, k)))
+      )) as any
+
+    assertJoiner(inter)
+    return (await this.store.get(path as any, inter as any)) as any
+  }
+}

@@ -18,3 +18,5 @@ type NullOpt<T> = {
 }
 
 type GqlType<T> = Optional<NullOpt<T>, '__typename'>
+
+type CondArr<T, K> = T extends any[] ? K[] : K

@@ -22,6 +22,8 @@ type StoreSchema = {
       author?: string
     } | null
   }
+  idList: string[]
+  id: string
 }
 
 test('calls getters', async () => {
@@ -230,9 +232,9 @@ test('wildcards', async () => {
   await expect(store.get('items.*', 'a')).resolves.not.toThrow()
   await expect(store.get('items.*', 'a', 'b')).toReject()
 
-  await expect(store.get('items.*', 'a')).resolves.toMatchObject(items.a)
+  await expect(store.get('items.*', 'a')).resolves.toEqual(items.a)
   expect(getter).toHaveBeenLastCalledWith('items.a', 'a')
-  await expect(store.get('items.*', 'b')).resolves.toMatchObject(items.b)
+  await expect(store.get('items.*', 'b')).resolves.toEqual(items.b)
   expect(getter).toHaveBeenLastCalledWith('items.b', 'b')
   await expect(store.get('items.*', 'd')).resolves.toBeNull()
   expect(getter).toHaveBeenLastCalledWith('items.d', 'd')
@@ -277,4 +279,24 @@ test('wildcard merge', () => {
   expect(authSet).toHaveBeenLastCalledWith('bar', 'items.a.author', {}, 'a')
 })
 
-// todo: wildcard merge
+test('join state', async () => {
+  const store = new Store<StoreSchema>()
+
+  const items = {
+    a: { title: 'foo' },
+    b: { title: 'bar' },
+    c: { title: 'baz' },
+  }
+  store.handler('items.*').get((p, k) => items[k as keyof typeof items])
+  store.handler('idList').get(() => Object.keys(items))
+  store.handler('id').get(() => 'a')
+
+  await expect(store.get('items.*', 'a')).resolves.toEqual(items.a)
+  await expect(store.get('idList')).resolves.toEqual(['a', 'b', 'c'])
+  await expect(store.get('id')).resolves.toBe('a')
+
+  await expect(store.get('id').join('items.*')).resolves.toEqual(items.a)
+  await expect(store.get('idList').join('items.*')).resolves.toEqual(
+    Object.values(items)
+  )
+})
