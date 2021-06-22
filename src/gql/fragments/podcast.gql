@@ -3,7 +3,7 @@
 
 fragment PodcastPageInfo on Podcast {
   ...PodcastInfo
-  episodes(last: 50) {
+  episodes(last: $limit) {
     pageInfo {
       total
       hasPreviousPage
