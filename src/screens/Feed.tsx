@@ -25,6 +25,7 @@ function Main() {
 
 function Feed() {
   const feed = useFeed('*')
+  const [total] = useStateX('library.totalEpisodeCount')
 
   const props = useCallback(
     (index: number) => ({ index, feed: feed!, artwork: true }),
@@ -33,7 +34,7 @@ function Feed() {
 
   if (!feed) return null
   return (
-    <VirtualList length={10000} itemProps={props}>
+    <VirtualList length={total ?? 1000} itemProps={props}>
       {EpisodeStrip}
     </VirtualList>
   )

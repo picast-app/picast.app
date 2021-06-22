@@ -25,6 +25,7 @@ export type State = {
   library: {
     sorting: string
     list: Podcast[]
+    totalEpisodeCount: number
   }
   player: {
     current: string

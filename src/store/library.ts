@@ -6,8 +6,8 @@ export default (store: Store) => {
   store.handler('library')
 
   let podcasts: Podcast[] = []
-
   let sorting = 'title'
+  let totalEpisodeCount: number
 
   store.handler('library.sorting').set(v => {
     if (sorting === v) return false
@@ -16,12 +16,24 @@ export default (store: Store) => {
 
   store
     .handler('library')
-    .get(() => ({ sorting, list: sort(sorting, podcasts) }))
+    .get(() => ({ sorting, list: sort(sorting, podcasts), totalEpisodeCount }))
+
+  store.handler('library.totalEpisodeCount').get(() => totalEpisodeCount)
+  store.handler('library.totalEpisodeCount').set(v => {
+    totalEpisodeCount = v
+  })
 
   store.listen('user.subscriptions', async ids => {
     await store.handlersDone()
     const pods = await Promise.all(ids.map(id => store.get('podcasts.*', id)))
     store.set('library.list', (podcasts = sort(sorting, pods as Podcast[])))
+
+    const total = pods.reduce(
+      (a, c) =>
+        a + (c?.episodeCount ?? (logger.warn('no episode count for', c), 1000)),
+      0
+    )
+    store.set('library.totalEpisodeCount', total)
   })
 }
 
