@@ -1,7 +1,6 @@
 import content from './template.html'
 import Component from '../base.comp'
 import { main } from 'workers'
-import { playerSub } from 'utils/playerHooks'
 import type Progress from 'components/webcomponents/progressBar/progress.comp'
 import { bindThis } from 'utils/proto'
 import MediaSession from './components/mediaSession'
@@ -25,7 +24,6 @@ export default class Player extends Component {
     super()
     bindThis(this)
     // state('playing.id', this.onStateChange)
-    playerSub.setState(this)
   }
 
   connectedCallback() {
@@ -171,11 +169,11 @@ export default class Player extends Component {
     }
 
     if (!this.current) {
-      await main.playbackCompleted()
+      // await main.playbackCompleted()
     } else {
       const { src, time } = this.audioService ?? {}
       if (this.current?.[1].file !== src) throw Error('episode mismatch')
-      if (time) await main.setProgress(time)
+      // if (time) await main.setProgress(time)
       if (this.isPlaying())
         this.syncId = window.setTimeout(this.syncProgress, 5000)
     }
@@ -183,8 +181,8 @@ export default class Player extends Component {
 
   private async forcedSync() {
     const time = this.audioService?.time
-    if (time !== undefined) await main.setProgress(time, true)
-    else throw Error("couldn't force sync (unknown time)")
+    // if (time !== undefined) await main.setProgress(time, true)
+    // else throw Error("couldn't force sync (unknown time)")
   }
 
   private select<T extends HTMLElement>(selector: string): T[] {

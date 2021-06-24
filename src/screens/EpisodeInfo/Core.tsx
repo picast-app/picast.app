@@ -2,8 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Artwork, PlayButton } from 'components/atoms'
 import { Shownotes } from 'components/composite'
-import { useAPICall, useThemeRef } from 'hooks'
-import { useEpisodeToggle } from 'utils/playerHooks'
+import { useAPICall, useThemeRef, useEpisodeToggle } from 'hooks'
 import { mobile, desktop } from 'styles/responsive'
 
 export const Core: React.FC<{ id: EpisodeId }> = ({ id }) => {

@@ -1,8 +1,7 @@
 import React from 'react'
 import Controls from './player/Controls'
 import Fullscreen from './player/fullscreen/Container'
-import { useTheme } from 'hooks'
-import { useCurrent } from 'utils/playerHooks'
+import { useTheme, useCurrent } from 'hooks'
 import Info from './player/Info'
 
 export function Player() {

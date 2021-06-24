@@ -13,6 +13,8 @@ type IDBMeta = {
   currentUser: string
   subscriptions: string[]
   libSort: string
+  playerCurrent: string
+  playerQueue: string[]
 }
 
 export const idbDefaultReader = async <T extends keyof IDBMeta>(

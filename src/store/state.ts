@@ -29,6 +29,7 @@ export type State = {
   }
   player: {
     current: string
+    status: 'playing' | 'paused' | 'waiting'
     queue: string[]
   }
 }

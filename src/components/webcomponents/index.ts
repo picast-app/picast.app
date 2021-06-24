@@ -9,4 +9,4 @@ function register<T extends new () => Component>(component: T) {
 register(Player)
 register(ProgressBar)
 
-export type { Player, ProgressBar }
+export type { ProgressBar }

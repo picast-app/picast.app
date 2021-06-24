@@ -5,11 +5,11 @@ import bufferInstance from 'utils/instantiationBuffer'
 import dbProm from './store/idb'
 import store from './store'
 import { deleteDB } from 'idb'
-import * as playback from './playback'
-import { threaded } from 'store'
+import { threaded, player } from 'store'
 import { registerUICall } from './ui'
 import { actions as accountActions } from './account'
 import { pullSubscriptions } from './sync'
+import { methods } from 'utils/proto'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const self: DedicatedWorkerGlobalScope
@@ -32,9 +32,9 @@ const api = {
   ...mutate,
   ...idbInterface,
   ...store,
-  ...playback,
   ...accountActions,
   ...threaded,
+  ...methods(player),
   pullSubscriptions,
   deleteIDB,
   registerUICall,

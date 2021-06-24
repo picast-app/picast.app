@@ -17,6 +17,7 @@ import { querySub } from 'utils/css/query'
 import storeX from 'store/threadAPI'
 
 export * from './store'
+export * from './player'
 
 export const useTheme = () => useContext(Theme)
 

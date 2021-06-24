@@ -4,3 +4,22 @@ export const bindThis = (target: any) => {
   ))
     if (!get && typeof value === 'function') target[key] = value.bind(target)
 }
+
+type Methods<
+  T,
+  KM extends keyof T = Exclude<
+    FilterKeys<T, (...args: any[]) => any>,
+    'construct' | 'destruct'
+  >
+> = {
+  [K in KM]: T[K]
+}
+
+export const methods = <T>(target: T): Methods<T> =>
+  Object.fromEntries(
+    Object.getOwnPropertyNames(Object.getPrototypeOf(target))
+      .filter(
+        n => typeof target[n as keyof T] === 'function' && n !== 'constructor'
+      )
+      .map(n => [n, (target as any)[n].bind(target)])
+  ) as any

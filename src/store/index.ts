@@ -1,8 +1,9 @@
 import StoreX from './storeX'
 import Settings from './settings'
+import Account from 'main/account/state'
 import podcasts from './podcasts'
 import library from './library'
-import Account from 'main/account/state'
+import Player from 'main/player'
 import { proxy } from 'comlink'
 import type { State, FlatState } from './state'
 
@@ -29,3 +30,6 @@ user.construct()
 
 podcasts(store)
 library(store)
+
+export const player = new Player(store)
+player.construct()
