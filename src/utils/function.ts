@@ -15,3 +15,10 @@ export const bundle = <TA extends any[]>(
   const res = funcs.map(func => func(...args))
   if (res.some(isPromise)) await Promise.all(res)
 }
+
+export const forward = <T extends (...args: any[]) => any, P extends any[]>(
+  func: T,
+  ...argsR: P
+) => (
+  ...argsL: Parameters<T> extends [...infer PR, ...P] ? PR : never
+): ReturnType<T> => func(...argsL, ...argsR)
