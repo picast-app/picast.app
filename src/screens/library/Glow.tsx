@@ -24,9 +24,9 @@ export default function Glow() {
     const grid = ref.previousElementSibling!
 
     const update = () => {
-      const boxes = (Array.from(grid.children).filter(
-        node => node.nodeName === 'A'
-      ) as any).map((v: HTMLElement) => {
+      const boxes = (
+        Array.from(grid.children).filter(node => node.nodeName === 'A') as any
+      ).map((v: HTMLElement) => {
         const el: HTMLElement = v.firstElementChild as any
         const x = el.offsetLeft * devicePixelRatio
         const y = el.offsetTop * devicePixelRatio

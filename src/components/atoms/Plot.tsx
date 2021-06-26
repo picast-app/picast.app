@@ -76,10 +76,10 @@ export function Plot({
 
 export type Datum = [x: number, y: number]
 
-const bound = (func: 'min' | 'max', i: number) => (
-  data: Datum[] | number
-): number =>
-  typeof data === 'number' ? data : Math[func](...data.map(v => v[i]))
+const bound =
+  (func: 'min' | 'max', i: number) =>
+  (data: Datum[] | number): number =>
+    typeof data === 'number' ? data : Math[func](...data.map(v => v[i]))
 
 const S = {
   Plot: styled.svg<{ fill?: string }>`

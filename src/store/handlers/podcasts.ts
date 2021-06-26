@@ -9,9 +9,8 @@ import { set } from 'utils/path'
 import { waiter } from 'utils/promise'
 
 export default async (store: Store) => {
-  const [podcasts, init] = waiter<
-    Record<string, Promise<Podcast | null> | Podcast | null>
-  >()
+  const [podcasts, init] =
+    waiter<Record<string, Promise<Podcast | null> | Podcast | null>>()
   let subs: string[] = []
 
   store.handler('podcasts.*').get(async (_, id) => {

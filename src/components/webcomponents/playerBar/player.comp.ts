@@ -190,10 +190,9 @@ export default class Player extends Component {
   }
 
   private barObserver = new MutationObserver(records => {
-    const [addedBars, removedBars] = ([
-      'addedNodes',
-      'removedNodes',
-    ] as const).map(l =>
+    const [addedBars, removedBars] = (
+      ['addedNodes', 'removedNodes'] as const
+    ).map(l =>
       records
         .flatMap(v => [...v[l]])
         .flatMap(v => [

@@ -10,7 +10,7 @@ const calls: Partial<MapProm<API>> = {}
 type CachedCall = [res: (v: any) => any, args: any[]]
 const callCache: { [K in keyof API]?: CachedCall[] } = {}
 
-const uiCalls = (new Proxy(calls, {
+const uiCalls = new Proxy(calls, {
   get(_, key: keyof API) {
     return (calls[key] ??= (...args: any[]) =>
       new Promise<any>(res => {
@@ -18,7 +18,7 @@ const uiCalls = (new Proxy(calls, {
         callCache[key]?.push([res, args])
       }))
   },
-}) as unknown) as MapProm<API>
+}) as unknown as MapProm<API>
 export default uiCalls
 
 export const registerUICall = <T extends keyof API>(name: T, call: API[T]) => {

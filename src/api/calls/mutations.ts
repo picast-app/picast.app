@@ -37,17 +37,17 @@ export const subscribe = API<'Subscribe'>(mSubscribe)((...ids: string[]) => ({
   ids,
 }))
 
-export const unsubscribe = API<'Unsubscribe'>(
-  mUnsubscribe
-)((...ids: string[]) => ({ ids }))
+export const unsubscribe = API<'Unsubscribe'>(mUnsubscribe)(
+  (...ids: string[]) => ({ ids })
+)
 
 export const parse = API<'Parse'>(mParse)((id: string) => ({ id }))
 
 export const deletePodcast = API<'Delete'>(mDelete)((id: string) => ({ id }))
 
-export const wpSub = API<'AddWebPushSubscription'>(
-  mAddWpSub
-)((sub: string) => ({ sub }))
+export const wpSub = API<'AddWebPushSubscription'>(mAddWpSub)(
+  (sub: string) => ({ sub })
+)
 
 export const wpUnsub = API<'RemoveWebPushSubscription'>(mRemoveWpSub)(
   (sub: string) => ({

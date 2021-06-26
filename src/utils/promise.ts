@@ -29,16 +29,18 @@ export const waiter = <T>(): [Promise<T>, (v: T) => void] => {
   return [asr, initializer!]
 }
 
-export const promiseCB = <T>(func: () => Promise<T>) => async (
-  resolve: (value: T | PromiseLike<T>) => void,
-  reject: (reason?: any) => void
-) => {
-  try {
-    resolve(await func())
-  } catch (e) {
-    reject(e)
+export const promiseCB =
+  <T>(func: () => Promise<T>) =>
+  async (
+    resolve: (value: T | PromiseLike<T>) => void,
+    reject: (reason?: any) => void
+  ) => {
+    try {
+      resolve(await func())
+    } catch (e) {
+      reject(e)
+    }
   }
-}
 
 export const allFlat = async <T>(proms: Promise<T[]>[]): Promise<T[]> =>
   (await Promise.all(proms)).flat()

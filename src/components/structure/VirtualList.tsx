@@ -36,10 +36,10 @@ function _VirtualList<T>({ length, itemProps, children: item }: Props<T>) {
     useMemo(() => ol?.offsetTop! / itemHeight + numVisible / 4, [ol, isDesktop])
   )
 
-  const createChild = useCallback(i => createElement(item, itemProps?.(i)), [
-    item,
-    itemProps,
-  ])
+  const createChild = useCallback(
+    i => createElement(item, itemProps?.(i)),
+    [item, itemProps]
+  )
 
   const slots = useRef(new WeakMap<HTMLElement, [number, JSX.Element]>())
 

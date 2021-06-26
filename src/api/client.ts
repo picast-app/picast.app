@@ -7,16 +7,17 @@ export const client = new GraphQLClient(process.env.REACT_APP_API as string, {
   credentials: 'include',
 })
 
-export const APICall = <T extends Calls>(query: DocumentNode) => <
-  TP extends any[],
-  TR = undefined
->(
-  p2a: (...args: TP) => GQL[`${T}Variables`],
-  format: (res: GQL[T]) => TR = () => (undefined as unknown) as TR
-) => (client: GraphQLClient) => async (...args: TP): Promise<TR> =>
-  format(
-    await client.request<GQL[T], GQL[`${T}Variables`]>(query, p2a(...args))
-  )
+export const APICall =
+  <T extends Calls>(query: DocumentNode) =>
+  <TP extends any[], TR = undefined>(
+    p2a: (...args: TP) => GQL[`${T}Variables`],
+    format: (res: GQL[T]) => TR = () => undefined as unknown as TR
+  ) =>
+  (client: GraphQLClient) =>
+  async (...args: TP): Promise<TR> =>
+    format(
+      await client.request<GQL[T], GQL[`${T}Variables`]>(query, p2a(...args))
+    )
 
 type WhereVar<T> = {
   [K in keyof T]: K extends string

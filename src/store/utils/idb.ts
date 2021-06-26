@@ -2,9 +2,10 @@ import dbProm from 'main/store/idb'
 import equal from 'utils/equal'
 import { forEach } from 'utils/object'
 
-export const idbWriter = <T extends string = string>(key: T) => async (
-  value: any
-) => (await dbProm).put('meta', value, key as string)
+export const idbWriter =
+  <T extends string = string>(key: T) =>
+  async (value: any) =>
+    (await dbProm).put('meta', value, key as string)
 
 type IDBMeta = {
   printLogs: boolean

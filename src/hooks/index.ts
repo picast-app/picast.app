@@ -293,7 +293,7 @@ export function useAPICall<
       (v: R) => {
         setValue(v)
         setLoading(false)
-        setParams((args as unknown) as P)
+        setParams(args as unknown as P)
       }
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps

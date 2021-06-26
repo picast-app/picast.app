@@ -28,13 +28,12 @@ export default class Interaction extends Service {
   enable() {
     this.playerHeight = this.player.offsetHeight
     this.mainnav = document.getElementById('mainnav')!
-    this.fullscreen = this.player.shadowRoot!.querySelector<HTMLElement>(
-      '.fullscreen'
-    )!
+    this.fullscreen =
+      this.player.shadowRoot!.querySelector<HTMLElement>('.fullscreen')!
 
-    const container = (this.player.shadowRoot!.getElementById(
-      'touchbox'
-    ) as HTMLTemplateElement).content
+    const container = (
+      this.player.shadowRoot!.getElementById('touchbox') as HTMLTemplateElement
+    ).content
     this.touchBoxes.push(container.getElementById('closed')!)
     this.touchBoxes.push(container.getElementById('extended')!)
 

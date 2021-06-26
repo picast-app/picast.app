@@ -176,29 +176,28 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     }
     type Accessor = ReturnType<typeof accessor>
 
-    const handlerFactory = <
-      T extends (acc: Accessor, ...rest: R) => void,
-      R extends any[]
-    >({
-      attach,
-      detach,
-    }: {
-      attach: T
-      detach: (acc: Accessor, accArgs: R) => void
-    }) => (...args: R) => {
-      let acc: Accessor
-      const apply = () => {
-        acc = accessor()
-        attach(acc, ...args)
+    const handlerFactory =
+      <T extends (acc: Accessor, ...rest: R) => void, R extends any[]>({
+        attach,
+        detach,
+      }: {
+        attach: T
+        detach: (acc: Accessor, accArgs: R) => void
+      }) =>
+      (...args: R) => {
+        let acc: Accessor
+        const apply = () => {
+          acc = accessor()
+          attach(acc, ...args)
+        }
+        if (this.handlerQueue) this.handlerQueue.push(apply)
+        else apply()
+        return () => {
+          if (acc) detach(acc, args)
+          else if (this.handlerQueue?.includes(apply))
+            this.handlerQueue.splice(this.handlerQueue.indexOf(apply, 1))
+        }
       }
-      if (this.handlerQueue) this.handlerQueue.push(apply)
-      else apply()
-      return () => {
-        if (acc) detach(acc, args)
-        else if (this.handlerQueue?.includes(apply))
-          this.handlerQueue.splice(this.handlerQueue.indexOf(apply, 1))
-      }
-    }
 
     return {
       get: handlerFactory({
@@ -252,25 +251,27 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
   private escapeLock?: () => void
   private locked<T extends (...args: any[]) => any>(meth: T): T {
     meth = meth.bind(this) as any
-    return (((...args: Parameters<T>) => {
-      let escaped = false
-      this.escapeLock = () => {
-        this.unlockHandler()
-        escaped = true
-      }
-      const noErr = Symbol()
-      let err: unknown = noErr
-      try {
-        this.lockHandler()
-        return meth(...args)
-      } catch (e) {
-        err = e
-      } finally {
-        if (!escaped) this.unlockHandler()
-      }
-      if (err !== noErr)
-        throw Error(`error in [${meth.name}](${args.join(', ')}): ${err}`)
-    }) as any).bind(this)
+    return (
+      ((...args: Parameters<T>) => {
+        let escaped = false
+        this.escapeLock = () => {
+          this.unlockHandler()
+          escaped = true
+        }
+        const noErr = Symbol()
+        let err: unknown = noErr
+        try {
+          this.lockHandler()
+          return meth(...args)
+        } catch (e) {
+          err = e
+        } finally {
+          if (!escaped) this.unlockHandler()
+        }
+        if (err !== noErr)
+          throw Error(`error in [${meth.name}](${args.join(', ')}): ${err}`)
+      }) as any
+    ).bind(this)
   }
 
   public afterHandlers(cb: () => any) {

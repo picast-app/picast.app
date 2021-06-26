@@ -29,9 +29,9 @@ export default function Debug() {
 function usePlaybackLoading(loading?: boolean) {
   useEffect(() => {
     if (loading === undefined) return
-    for (const bar of [
-      ...document.querySelectorAll('picast-player'),
-    ].flatMap(v => [...v.shadowRoot!.querySelectorAll('player-progress')]))
+    for (const bar of [...document.querySelectorAll('picast-player')].flatMap(
+      v => [...v.shadowRoot!.querySelectorAll('player-progress')]
+    ))
       bar.setAttribute('loading', loading.toString())
   }, [loading])
 }
