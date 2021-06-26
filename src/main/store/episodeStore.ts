@@ -7,7 +7,6 @@ import { bindThis } from 'utils/proto'
 type Key = [id: string, published: number]
 
 export class Podcast {
-  private cache?: Record<string, EpisodeBase>
   public hasFeedStart = false
   private tasks: Promise<any>[] = []
   private listeners: ((...i: number[]) => void)[] = []
@@ -17,9 +16,7 @@ export class Podcast {
     private readonly db: PromiseType<typeof dbProm>,
     private keys: Key[],
     private subscribed: boolean
-  ) {
-    if (!subscribed) this.cache = {}
-  }
+  ) {}
 
   public static async create(
     id: string,
@@ -50,27 +47,13 @@ export class Podcast {
 
   public async subscribe() {
     if (this.subscribed) return
-    logger.info('subscribe to', this.id)
-    const tx = this.db.transaction('episodes', 'readwrite')
-    await Promise.all([
-      ...Object.values(this.cache!).map(v => tx.store.put(v)),
-      tx.done as any,
-    ])
-    delete this.cache
     this.subscribed = true
     while (!this.hasFeedStart) await this.fetch(1000)
   }
 
-  public async unsubscribe() {
+  public unsubscribe() {
     if (!this.subscribed) return
-    this.writeToCache(
-      await this.db.getAllFromIndex('episodes', 'podcast', this.id)
-    )
-    const tx = this.db.transaction('episodes', 'readwrite')
-    await Promise.all([
-      ...this.keys.map(key => tx.store.delete(key[0])),
-      tx.done,
-    ])
+    this.subscribed = false
   }
 
   public get = async (index: number) =>
@@ -81,23 +64,10 @@ export class Podcast {
       return this.read(index)
     })
 
-  public getById = async (id: string): Promise<EpisodeMin | undefined> => {
-    if (!this.subscribed) return this.cache![id]
-    if (this.keys.find(([k]) => k === id))
-      return await this.db.get('episodes', id)
-  }
-
-  public waitFor(episodes: Promise<EpisodeBase[]>) {
-    this.addTask(async () => {
-      await this.addEpisodes(await episodes)
-    })
-  }
-
   public async read(index: number) {
     const id = this.keys[index]?.[0]
     if (!id) return
-    if (!this.subscribed) return this.cache![id]
-    return await this.db.get('episodes', id)
+    return await store.get('episodes.*.*', this.id, id)
   }
 
   private async fetch(n: number) {
@@ -115,17 +85,12 @@ export class Podcast {
     if (!data.pageInfo.hasNextPage) this.hasFeedStart = true
     const nodes = data.edges.map(({ node }) => node)
     const episodes = nodes.map(node => convert.episode(node as any, this.id)!)
-    await this.addEpisodes(episodes)
+    this.addEpisodes(episodes)
   }
 
-  public async addEpisodes(episodes: EpisodeBase[], notify = false) {
-    logger.info('add', episodes.length, 'episodes for', this.id)
+  public addEpisodes(episodes: EpisodeBase[], notify = false) {
     this.addKeys(Podcast.keys(episodes.map(({ id }) => id)))
-    if (!this.subscribed) this.writeToCache(episodes)
-    else {
-      const tx = this.db.transaction('episodes', 'readwrite')
-      await Promise.all<any>([...episodes.map(v => tx.store.put(v)), tx.done])
-    }
+    episodes.map(data => store.set('episodes.*.*', data, {}, this.id, data.id))
     if (!notify) return
     const indices = episodes.map(v =>
       this.keys.findIndex(([id]) => id === v.id)
@@ -135,10 +100,6 @@ export class Podcast {
 
   public set onEpisode(listener: (...i: number[]) => void) {
     this.listeners.push(listener)
-  }
-
-  private writeToCache(episodes: EpisodeBase[]) {
-    for (const episode of episodes) (this.cache ??= {})[episode.id] = episode
   }
 
   private addTask<T>(task: () => Promise<T>): Promise<T> {
@@ -155,7 +116,7 @@ export class Podcast {
     })
   }
 
-  private static keys(ids: string[]) {
+  private static keys(ids: string[]): Key[] {
     return ids
       .map(id => [id, parseInt(id.slice(0, 6), 36) * 1000] as Key)
       .sort(([, a], [, b]) => b - a)

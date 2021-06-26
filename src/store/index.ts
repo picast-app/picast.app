@@ -4,6 +4,7 @@ import Account from 'main/account/state'
 import podcasts from './podcasts'
 import library from './library'
 import Player from 'main/player'
+import episodes from './episodes'
 import { proxy } from 'comlink'
 import type { State, FlatState } from './state'
 
@@ -29,6 +30,7 @@ export const user = new Account(store)
 user.construct()
 
 podcasts(store)
+episodes(store)
 library(store)
 
 export const player = new Player(store)

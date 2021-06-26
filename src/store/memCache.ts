@@ -11,6 +11,9 @@ export type HookDict<T, F = Flatten<T>> = {
 } & { $?: (v: T) => any }
 
 export type FBDict<T, F = Flatten<T>> = { [K in keyof F]?: () => F[K] }
+export type GetDict<T, F = Flatten<T>> = {
+  [K in keyof F]?: (...subs: string[]) => MaybeProm<F[K]>
+}
 
 export default abstract class MemCache<T> {
   constructor(protected readonly store: Store) {
@@ -46,6 +49,7 @@ export default abstract class MemCache<T> {
   protected hooks: HookDict<T> = {}
   protected fbs: FBDict<T> = {}
   protected sync?: string
+  protected cstGet: GetDict<T> = {}
 
   protected init(): Promise<any> | any {}
   private resolveInit!: (v: T) => void
@@ -64,10 +68,13 @@ export default abstract class MemCache<T> {
     )
     const attachNode = (node: any = this.state, path = this.root) => {
       for (const key of Object.keys(node)) {
+        const keyPath = `${path}.${key}` as any
         this.cleanupCBs.push(
-          this.store.handler(`${path}.${key}` as any).get(async () => {
+          this.store.handler(keyPath).get(async (_, ...subs) => {
             await this.initialized
-            return node[key]
+            return (node[key] ??= await (this.cstGet as any)[keyPath]?.(
+              ...subs
+            ))
           })
         )
         if (typeof node[key] === 'object' && node[key] !== null)

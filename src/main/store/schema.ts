@@ -1,4 +1,4 @@
-import type { Podcast as _Podcast } from 'store/state'
+import type { Podcast as _Podcast, Episode } from 'store/state'
 
 type Podcast = Omit<_Podcast, 'subscribed'>
 
@@ -22,16 +22,3 @@ type IDBSchema = {
   }
 }
 export default IDBSchema
-
-type Episode = {
-  id: string
-  podcast: string
-  title: string
-  file: string
-  published: number
-  duration: number
-  currentTime?: number
-  relProg?: number
-  completed?: boolean
-  shownotes: string
-}

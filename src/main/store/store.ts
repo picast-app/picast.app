@@ -91,11 +91,11 @@ export default class Store {
     if (id in this.podcasts) return this.podcasts[id]
 
     let resolve: (v: EpisodeBase[]) => void
-    ;(await this.epStore.getPodcast(id)).waitFor(
-      new Promise<EpisodeBase[]>(res => {
-        resolve = res
-      })
-    )
+    // ;(await this.epStore.getPodcast(id)).waitFor(
+    //   new Promise<EpisodeBase[]>(res => {
+    //     resolve = res
+    //   })
+    // )
 
     const remote = await api.query.podcast(id)
     const episodes =
@@ -153,9 +153,8 @@ export default class Store {
   }
 
   public async episode([podId, epId]: EpisodeId): Promise<EpisodeBase | null> {
-    const pod = await this.epStore.getPodcast(podId)
     return (
-      (await pod.getById(epId)) ??
+      (await storeX.get('episodes.*.*', podId, epId)) ??
       (convert.episode(await api.query.episode([podId, epId]), podId) as any) ??
       null
     )

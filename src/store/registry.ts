@@ -3,6 +3,11 @@ import { callAll } from 'utils/function'
 import type { FlatState } from './state'
 import type { Setter } from './storeX'
 
+// instead of subscribing to the same storeX state through comlink multiple
+// times, this interface exposes the same api but only sets up the subscription
+// once for every requested path and cancels it once the last subscribers
+// has cancelled the subscription
+
 const paths: Record<
   string,
   { cbs: Setter<any>[]; last?: Parameters<Setter>; cancel?: Cancel }
@@ -20,7 +25,6 @@ export const listen = <T extends keyof FlatState>(
     paths[key].cbs.push(cb)
     if ('last' in paths[key]) cb(...paths[key].last!)
   } else {
-    logger.info('start', key)
     paths[key] = { cbs: [cb] }
     main
       .listenX(
@@ -29,7 +33,8 @@ export const listen = <T extends keyof FlatState>(
           if (!(key in paths)) return
           paths[key].last = [v, p, {}]
           callAll(paths[key].cbs, ...paths[key].last!)
-        })
+        }),
+        ...subs
       )
       .then(cancel => {
         if (key in paths) paths[key].cancel = cancel
@@ -40,7 +45,6 @@ export const listen = <T extends keyof FlatState>(
   return () => {
     paths[key].cbs.splice(paths[key].cbs.indexOf(cb), 1)
     if (paths[key].cbs.length) return
-    logger.info('stop', key)
     if (paths[key].cancel) paths[key].cancel!()
     delete paths[key]
   }

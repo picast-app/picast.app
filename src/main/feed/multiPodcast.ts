@@ -38,7 +38,8 @@ export class MultiPodcast extends Base {
       for (const store of this.stores) {
         const info = this.storeInfo.get(store)!
         if (info.exhausted) continue
-        const last = (info.last ??= await store.read(++info.lastIndex))
+        const last = (info.last ??=
+          (await store.read(++info.lastIndex)) ?? undefined)
         if (!last) info.exhausted = true
         else if (last.published > (candidate?.last?.published ?? -Infinity))
           candidate = info

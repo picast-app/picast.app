@@ -23,3 +23,13 @@ export const collection = <T, K extends string | number, R = T>(
   value?: (v: T) => R
 ): Record<K, R> =>
   Object.fromEntries(list.map(v => [key(v), value ? value(v) : v])) as any
+
+export const sum = (...ns: number[]) => ns.reduce((a, c) => a + c, 0)
+
+export const diff = <T>(
+  oldSet: T[],
+  newSet: T[]
+): [added: T[], removed: T[]] => [
+  newSet.filter(v => !oldSet.includes(v)),
+  oldSet.filter(v => !newSet.includes(v)),
+]

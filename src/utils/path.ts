@@ -1,3 +1,5 @@
+import { sum } from 'utils/array'
+
 export const none = Symbol('none')
 
 export const pick = <T = unknown>(
@@ -38,3 +40,20 @@ export const mutate = (
   if (typeof obj[next] !== 'object' || obj[next] === null) obj[next] = {}
   return mutate(obj[next], value, ...rest)
 }
+
+export const mergeInPlace = (
+  obj: Record<string | number, any>,
+  value: unknown,
+  ...[next, ...rest]: string[]
+) => {
+  if (!next) Object.assign(obj, value)
+  else if ((!rest.length && typeof value !== 'object') || value === null)
+    obj[next] = value
+  else {
+    if (typeof obj[next] !== 'object' || obj[next] === null) obj[next] = {}
+    mergeInPlace(obj[next], value, ...rest)
+  }
+}
+
+export const seg = (input: string, skip = 0, ...skipped: string[]) =>
+  input.split('.').slice(skip + skipped.flatMap(v => v.split('.')).length)

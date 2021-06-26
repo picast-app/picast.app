@@ -22,6 +22,11 @@ export type State = {
   podcasts: {
     '*': Podcast | null
   }
+  episodes: {
+    '*': {
+      '*': EpisodeBase | null
+    }
+  }
   library: {
     sorting: string
     list: Podcast[]
@@ -62,9 +67,19 @@ export type Podcast = {
   lastEpisodeCheck?: number
 }
 
-// type Episode = {
-//   podcast: Podcast
-//   id: string
-//   title: string
-//   file: string
-// }
+export type EpisodeBase = {
+  id: string
+  podcast: string
+  title: string
+  file: string
+  published: number
+  duration: number
+}
+
+export type Episode = EpisodeBase &
+  Partial<{
+    shownotes: string
+    currentTime: number
+    relProg: number
+    completed: boolean
+  }>

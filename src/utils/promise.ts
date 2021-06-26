@@ -39,3 +39,6 @@ export const promiseCB = <T>(func: () => Promise<T>) => async (
     reject(e)
   }
 }
+
+export const allFlat = async <T>(proms: Promise<T[]>[]): Promise<T[]> =>
+  (await Promise.all(proms)).flat()
