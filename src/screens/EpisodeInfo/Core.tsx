@@ -2,12 +2,12 @@ import React from 'react'
 import styled from 'styled-components'
 import { Artwork, PlayButton } from 'components/atoms'
 import { Shownotes } from 'components/composite'
-import { useAPICall, useThemeRef, useEpisodeToggle } from 'hooks'
+import { useThemeRef, useEpisodeToggle, useStateX } from 'hooks'
 import { mobile, desktop } from 'styles/responsive'
 
 export const Core: React.FC<{ id: EpisodeId }> = ({ id }) => {
-  const [podcast] = useAPICall('podcast', id[0])
-  const [episode] = useAPICall('episodeInfo', id)
+  const [podcast] = useStateX('podcasts.*', id[0])
+  const [episode] = useStateX('episodes.*.*', ...id)
   const themeRef = useThemeRef(podcast?.palette)
   const [playing, toggle] = useEpisodeToggle(id)
 
@@ -26,7 +26,7 @@ export const Core: React.FC<{ id: EpisodeId }> = ({ id }) => {
       <S.Actions>
         <PlayButton playing={playing} onPress={toggle} round />
       </S.Actions>
-      <Shownotes className="notes">{episode?.shownotes}</Shownotes>
+      <Shownotes id={id} className="notes" />
     </S.Container>
   )
 }

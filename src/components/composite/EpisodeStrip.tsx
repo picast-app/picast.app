@@ -26,7 +26,7 @@ export function EpisodeStrip({ artwork, clamp, ...props }: Props) {
       <Link to={`?info=${episode.podcast}-${episode.id}`}>
         {artwork && episode?.podcast && <Thumbnail podcast={episode.podcast} />}
         <S.Title data-style={clamp ? 'clamp' : undefined}>
-          [{(props as any).index}] {episode.title}
+          {episode.title}
         </S.Title>
         <Published>{episode.published}</Published>
         <Duration>{episode.duration}</Duration>

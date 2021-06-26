@@ -52,7 +52,7 @@ export function EpisodeInfo({ podcast, episode, touchCtrl }: Props) {
             <Link to={`/show/${podcast.id}`}>{podcast.title}</Link>
           </address>
           <S.NoteContainer>
-            <Shownotes>{episode.shownotes}</Shownotes>
+            <Shownotes id={[podcast.id, episode.id]} />
           </S.NoteContainer>
         </>
       )}

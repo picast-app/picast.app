@@ -20,5 +20,13 @@ type IDBSchema = {
     value: Episode
     indexes: { published: string; podcast: string }
   }
+  episodeInfo: {
+    key: string
+    value: EpisodeInfo
+  }
 }
 export default IDBSchema
+
+type EpisodeInfo = {
+  shownotes?: string
+}

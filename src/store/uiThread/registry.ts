@@ -1,7 +1,7 @@
 import { main, proxy } from 'workers'
 import { callAll } from 'utils/function'
-import type { FlatState } from './state'
-import type { Setter } from './storeX'
+import type { FlatState } from 'store/state'
+import type { Setter } from 'store/core/storeX'
 
 // instead of subscribing to the same storeX state through comlink multiple
 // times, this interface exposes the same api but only sets up the subscription

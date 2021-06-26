@@ -1,4 +1,4 @@
-import type { Flatten } from './types'
+import type { Flatten } from 'store/core/types'
 
 export type State = {
   settings: {
@@ -24,7 +24,7 @@ export type State = {
   }
   episodes: {
     '*': {
-      '*': EpisodeBase | null
+      '*': Episode | null
     }
   }
   library: {
@@ -67,19 +67,15 @@ export type Podcast = {
   lastEpisodeCheck?: number
 }
 
-export type EpisodeBase = {
+export type Episode = {
   id: string
   podcast: string
   title: string
   file: string
   published: number
   duration: number
+  shownotes?: string
+  currentTime?: number
+  relProg?: number
+  completed?: boolean
 }
-
-export type Episode = EpisodeBase &
-  Partial<{
-    shownotes: string
-    currentTime: number
-    relProg: number
-    completed: boolean
-  }>

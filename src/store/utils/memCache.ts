@@ -1,7 +1,7 @@
 import * as f from 'utils/function'
 import { mutate } from 'utils/path'
-import type { Store } from '.'
-import type { Flatten, Schema } from './types'
+import type { Store } from 'store'
+import type { Flatten, Schema } from 'store/core/types'
 import { Synchronized } from './tabSync'
 
 export const _ = Symbol('deferred')

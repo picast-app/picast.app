@@ -1,6 +1,6 @@
-import MemCache, { OptPrim, _ } from 'store/memCache'
+import MemCache, { OptPrim, _ } from 'store/utils/memCache'
 import type { State } from 'store/state'
-import { idbDefaultReader } from 'store/util'
+import { idbDefaultReader } from 'store/utils/idb'
 
 export default class Player extends MemCache<State['player']> {
   root = 'player'

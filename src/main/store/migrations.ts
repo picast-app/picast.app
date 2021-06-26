@@ -27,6 +27,9 @@ const migrations: Record<number, Migration> = {
       'subscriptions'
     )
   },
+  5: db => {
+    db.createObjectStore('episodeInfo', { keyPath: 'id' })
+  },
 }
 
 export default migrations

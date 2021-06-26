@@ -86,32 +86,6 @@ export default class Store {
     return this.subscriptions
   }
 
-  public async podcast(id: string): Promise<Podcast | null> {
-    debugger
-    if (id in this.podcasts) return this.podcasts[id]
-
-    let resolve: (v: EpisodeBase[]) => void
-    // ;(await this.epStore.getPodcast(id)).waitFor(
-    //   new Promise<EpisodeBase[]>(res => {
-    //     resolve = res
-    //   })
-    // )
-
-    const remote = await api.query.podcast(id)
-    const episodes =
-      remote?.episodes?.edges.map(
-        ({ node }) => convert.episode(node as any, id)!
-      ) ?? []
-    resolve!(episodes)
-    if (!episodes.length) wsApi.notify('subscribeEpisodes', id)
-
-    if (!remote) return null
-
-    const podcast = await this.writePodcastMeta(remote)
-    // podcast.incomplete = episodes.length === 0
-    return podcast
-  }
-
   public async writePodcastMeta(meta: T.PodcastInfo): Promise<Podcast> {
     const podcast = convert.podcast(meta) as any
     this.podcasts[podcast.id] = podcast
@@ -158,26 +132,6 @@ export default class Store {
       (convert.episode(await api.query.episode([podId, epId]), podId) as any) ??
       null
     )
-  }
-
-  public async episodeInfo(
-    id: EpisodeId
-  ): Promise<(Episode & { podcast: Podcast }) | null> {
-    let episode: any = await this.episode(id)
-    if (episode.shownotes) return episode
-    try {
-      const remote = await api.query.episode(id)
-      if (!remote) throw 0
-      episode = convert.episode(remote, id[0])
-    } catch (e) {
-      logger.error('failed to fetch remote episode', e)
-      episode = await this.episode(id)
-    }
-    if (!episode) return null
-    await this.db.put('episodes', episode)
-    if (episode.podcast) episode.podcast = await this.podcast(episode.podcast)
-    episode.shownotes ??= 'failed to fetch shownotes'
-    return episode
   }
 
   public async feedSubscription(...podcasts: string[]): Promise<string> {

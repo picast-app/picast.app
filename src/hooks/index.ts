@@ -14,7 +14,7 @@ import { isPromise } from 'utils/promise'
 import type { API } from 'main/main.worker'
 import * as palette from 'styles/palette'
 import { querySub } from 'utils/css/query'
-import storeX from 'store/threadAPI'
+import storeX from 'store/uiThread/api'
 
 export * from './store'
 export * from './player'

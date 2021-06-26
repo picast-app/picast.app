@@ -4,7 +4,7 @@ import 'components/webcomponents'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import 'i18n/strings'
-import store from 'store/threadAPI'
+import store from 'store/uiThread/api'
 import App from './App'
 import 'store/uiStateHooks'
 

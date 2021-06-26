@@ -1,12 +1,12 @@
-import type { EpisodeBase } from 'store/state'
-import type { Store } from '.'
+import type { Episode } from 'store/state'
+import type { Store } from 'store'
 import idb from 'main/store/idb'
 import { mergeInPlace, seg } from 'utils/path'
 import { diff } from 'utils/array'
 import { allFlat } from 'utils/promise'
 
 export default (store: Store) => {
-  const cache: { [pod: string]: { [ep: string]: EpisodeBase } } = {}
+  const cache: { [pod: string]: { [ep: string]: Episode } } = {}
 
   let subscriptions: Promise<string[]> = store.get('user.subscriptions')
 
@@ -27,7 +27,7 @@ export default (store: Store) => {
     return data ?? null
   }
 
-  async function writeToDB(episode: EpisodeBase) {
+  async function writeToDB(episode: Episode) {
     await (await idb).put('episodes', episode)
   }
 
@@ -38,7 +38,7 @@ export default (store: Store) => {
     )
     if (!keys.length) return
 
-    // write uncached episodes in db to cache
+    // write uncached episodes from db to cache
     const known = new Set(podcasts.flatMap(id => Object.keys(cache[id] ?? {})))
     const unknown = keys.filter(key => !known.has(key))
     await readToCache(unknown)

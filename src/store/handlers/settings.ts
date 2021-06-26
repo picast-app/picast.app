@@ -1,10 +1,9 @@
-import MemCache, { _, OptPrim, HookDict } from './memCache'
+import MemCache, { _, OptPrim, HookDict } from 'store/utils/memCache'
 import { pick } from 'utils/object'
-import type { State } from './state'
-import type { Store } from '.'
+import type { Store, State } from 'store'
 import uiThread from 'main/ui'
 import { proxy } from 'comlink'
-import { idbWriter, idbDefaultReader } from './util'
+import { idbWriter, idbDefaultReader } from 'store/utils/idb'
 import { bundle } from 'utils/function'
 import { togglePrint } from 'utils/logger'
 
