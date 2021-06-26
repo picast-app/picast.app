@@ -9,8 +9,7 @@ module.exports = {
   ],
   modulePathIgnorePatterns: ['src/typings'],
   testEnvironment: 'jsdom',
-  testRunner:
-    '/Users/mathis/projects/echo/app/node_modules/jest-circus/runner.js',
+  testRunner: './node_modules/jest-circus/runner.js',
   transform: {
     '^.+\\.(js|jsx|mjs|cjs|ts|tsx)$': '<rootDir>/node_modules/babel-jest',
     '^.+\\.css$': '<rootDir>/config/jest/cssTransform.js',
@@ -21,7 +20,7 @@ module.exports = {
     '[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs|cjs|ts|tsx)$',
     '^.+\\.module\\.(css|sass|scss)$',
   ],
-  modulePaths: ['/Users/mathis/projects/echo/app/src'],
+  modulePaths: ['./src'],
   moduleNameMapper: {
     '^react-native$': 'react-native-web',
     '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
