@@ -1,9 +1,9 @@
 import { oneOf } from 'utils/equal'
 
-const caches = new Map<(...args: any[]) => any, Record<number | string, any>>()
+const caches = new Map<λ, Record<number | string, any>>()
 
 export const memoize =
-  <T extends (...args: any[]) => any>(
+  <T extends λ>(
     func: T,
     key: (...args: Parameters<T>) => number | string = (...args: any[]) =>
       args.length === 1 && oneOf(typeof args[0], 'string', 'number')

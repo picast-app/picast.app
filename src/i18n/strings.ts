@@ -10,10 +10,7 @@ const lookup = (key: TemplateStringsArray | Key): string => {
 }
 
 const wrap =
-  <T extends (...args: any[]) => any>(
-    func: T,
-    mod: (v: ReturnType<T>) => ReturnType<T>
-  ) =>
+  <T extends λ>(func: T, mod: (v: ReturnType<T>) => ReturnType<T>) =>
   (...args: Parameters<T>) =>
     mod(func(...args))
 

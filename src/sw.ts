@@ -1,4 +1,5 @@
 import { togglePrint } from 'utils/logger'
+import { asyncNullChain } from 'utils/function'
 import { wrap, proxy } from 'comlink'
 import type { Remote } from 'comlink'
 import type { API as MainAPI } from 'main/main.worker'
@@ -92,11 +93,7 @@ async function handleNotificationClick({
   else await self.clients.openWindow(url)
 }
 
-type FetchHandler<T extends boolean = false> = (
-  e: FetchEvent
-) => T extends false ? Promise<Response | void> : Promise<Response>
-
-const staticHandler: FetchHandler = async e => {
+const staticHandler = async (e: FetchEvent) => {
   if (e.request.method !== 'GET' || IS_LOCAL) return
   const isNav = e.request.mode === 'navigate'
   if (isNav) e.waitUntil(checkForUpdate())
@@ -104,7 +101,7 @@ const staticHandler: FetchHandler = async e => {
   return await cache.match(isNav ? '/index.html' : e.request)
 }
 
-const coverHandler: FetchHandler = async e => {
+const coverHandler = async (e: FetchEvent) => {
   if (!e.request.url.includes(process.env.IMG_HOST!)) return
   const cache = await caches.open(PHOTO_CACHE)
   return (
@@ -117,14 +114,9 @@ const coverHandler: FetchHandler = async e => {
   )
 }
 
-const defaultHandler: FetchHandler<true> = async e => await fetch(e.request)
+const defaultHandler = async (e: FetchEvent) => await fetch(e.request)
 
-// prettier-ignore
-const handleFetch = async (e: FetchEvent): Promise<Response> =>
-  // @ts-ignore
-  await staticHandler(e) ?? 
-  await coverHandler(e) ??
-  await defaultHandler(e)
+const handleFetch = asyncNullChain(staticHandler, coverHandler, defaultHandler)
 
 self.addEventListener('fetch', event => {
   if (/audio|video|font|style/.test(event.request.destination)) return

@@ -7,7 +7,6 @@ import MediaSession from './components/mediaSession'
 import Interaction from './components/interaction'
 import Audio from './components/audio'
 import EventDispatcher from './components/events'
-import store from 'store/threadAPI'
 
 export default class Player extends Component {
   static tagName = 'picast-player'

@@ -1,5 +1,5 @@
 import * as debug from './debug'
-import store from 'store/threadAPI'
+import store from 'store/uiThread/api'
 import EventManager from 'utils/event'
 import { bindThis } from 'utils/proto'
 

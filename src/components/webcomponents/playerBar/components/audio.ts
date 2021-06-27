@@ -164,7 +164,7 @@ export default class Audio extends Service implements PlaybackController {
 
   // private utils
 
-  private audioGuard<T extends (...args: any[]) => any>(method: T): T {
+  private audioGuard<T extends λ>(method: T): T {
     return ((...args: Parameters<T>) => {
       if (!this.audio) throw Error('no audio element connected')
       return method(...args)

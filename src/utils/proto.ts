@@ -7,10 +7,7 @@ export const bindThis = (target: any) => {
 
 type Methods<
   T,
-  KM extends keyof T = Exclude<
-    FilterKeys<T, (...args: any[]) => any>,
-    'construct' | 'destruct'
-  >
+  KM extends keyof T = Exclude<FilterKeys<T, λ>, 'construct' | 'destruct'>
 > = {
   [K in KM]: T[K]
 }

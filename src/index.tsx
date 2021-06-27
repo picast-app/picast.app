@@ -6,7 +6,7 @@ import ReactDOM from 'react-dom'
 import 'i18n/strings'
 import store from 'store/uiThread/api'
 import App from './App'
-import 'store/uiStateHooks'
+import 'store/uiThread/hooks'
 
 store.listenX('settings.debug.printLogs', togglePrint)
 

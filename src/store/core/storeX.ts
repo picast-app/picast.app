@@ -249,7 +249,7 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
   }
 
   private escapeLock?: () => void
-  private locked<T extends (...args: any[]) => any>(meth: T): T {
+  private locked<T extends λ>(meth: T): T {
     meth = meth.bind(this) as any
     return (
       ((...args: Parameters<T>) => {

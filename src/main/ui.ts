@@ -1,7 +1,7 @@
 import type { API } from 'uiThreadAPI'
 
 type Promisify<T> = T extends PromiseLike<infer I> ? Promise<I> : Promise<T>
-type MapProm<T extends { [K: string]: (...args: any[]) => any }> = {
+type MapProm<T extends { [K: string]: λ }> = {
   [K in keyof T]: (...args: Parameters<T[K]>) => Promisify<ReturnType<T[K]>>
 }
 
