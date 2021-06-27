@@ -116,14 +116,18 @@ test('propagate updates down', () => {
     useSystemTheme: false,
   })
   expect(thSet).toHaveBeenCalledTimes(1)
-  expect(thSet).toHaveBeenLastCalledWith('light', 'settings.appearance', {})
+  expect(thSet).toHaveBeenLastCalledWith(
+    'light',
+    'settings.appearance',
+    expect.anything()
+  )
 
   store.set('settings.appearance.colorTheme', 'dark')
   expect(thSet).toHaveBeenCalledTimes(2)
   expect(thSet).toHaveBeenLastCalledWith(
     'dark',
     'settings.appearance.colorTheme',
-    {}
+    expect.anything()
   )
 })
 
@@ -148,7 +152,11 @@ test('optional property & merge', () => {
   })
   expect(optDel).toHaveBeenCalledTimes(0)
   expect(optSet).toHaveBeenCalledTimes(1)
-  expect(optSet).toHaveBeenLastCalledWith(0, 'settings.appearance', {})
+  expect(optSet).toHaveBeenLastCalledWith(
+    0,
+    'settings.appearance',
+    expect.anything()
+  )
   expect(glSet).toHaveBeenCalledTimes(1)
 
   store.set('settings.appearance', {
@@ -163,7 +171,11 @@ test('optional property & merge', () => {
   store.merge('settings.appearance', { opt: 1, colorTheme: 'light' })
   expect(optDel).toHaveBeenCalledTimes(1)
   expect(optSet).toHaveBeenCalledTimes(2)
-  expect(optSet).toHaveBeenLastCalledWith(1, 'settings.appearance.opt', {})
+  expect(optSet).toHaveBeenLastCalledWith(
+    1,
+    'settings.appearance.opt',
+    expect.anything()
+  )
   expect(glSet).toHaveBeenCalledTimes(4)
 
   // diff merge
@@ -254,9 +266,19 @@ test('wildcards', async () => {
   expect(() => store.set('items.*.title', 'foo')).toThrow()
 
   expect(() => store.set('items.*', { title: 'foo' }, {}, 'a')).not.toThrow()
-  expect(setter).toHaveBeenLastCalledWith({ title: 'foo' }, 'items.a', {}, 'a')
+  expect(setter).toHaveBeenLastCalledWith(
+    { title: 'foo' },
+    'items.a',
+    expect.anything(),
+    'a'
+  )
   expect(() => store.set('items.*.title', 'foo', {}, 'a')).not.toThrow()
-  expect(setter).toHaveBeenLastCalledWith('foo', 'items.a.title', {}, 'a')
+  expect(setter).toHaveBeenLastCalledWith(
+    'foo',
+    'items.a.title',
+    expect.anything(),
+    'a'
+  )
   expect(() => store.set('items.*.title', 'foo', {}, 'a', 'b')).toThrow()
 })
 
@@ -273,12 +295,22 @@ test('wildcard merge', () => {
 
   expect(authSet).toHaveBeenCalledTimes(0)
   expect(titleSet).toHaveBeenCalledTimes(1)
-  expect(titleSet).toHaveBeenLastCalledWith('foo', 'items.a.title', {}, 'a')
+  expect(titleSet).toHaveBeenLastCalledWith(
+    'foo',
+    'items.a.title',
+    expect.anything(),
+    'a'
+  )
 
   expect(() => store.merge('items.*', { author: 'bar' }, 'a')).not.toThrow()
   expect(titleSet).toHaveBeenCalledTimes(1)
   expect(authSet).toHaveBeenCalledTimes(1)
-  expect(authSet).toHaveBeenLastCalledWith('bar', 'items.a.author', {}, 'a')
+  expect(authSet).toHaveBeenLastCalledWith(
+    'bar',
+    'items.a.author',
+    expect.anything(),
+    'a'
+  )
 })
 
 test('join state', async () => {
