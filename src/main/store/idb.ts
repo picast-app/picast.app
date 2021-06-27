@@ -5,7 +5,7 @@ import migrations from './migrations'
 // tmp
 import { podcast, episode } from 'api/convert'
 
-const VERSION = 4
+const VERSION = 5
 
 export default openDB<IDBSchema>(self.location.hostname, VERSION, {
   async upgrade(db, oldVersion, newVersion, transaction) {

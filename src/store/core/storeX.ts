@@ -1,6 +1,7 @@
 import * as path from 'utils/path'
 import { callAll } from 'utils/function'
 import { promiseCB } from 'utils/promise'
+import { flag } from 'utils/state'
 import type { Flatten } from './types'
 
 export type Schema = { [K: string]: Schema | any }
@@ -41,11 +42,13 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     ...subs: string[]
   ) {
     const final = this.substituteWildcards(key, ...subs)
+    const [skip, noChange] = flag()
+    const m = { ...meta, noChange }
 
     for (let i = 0; i < this.handlers.length; i++) {
       if (!key.startsWith(this.handlers[i][0])) continue
       for (const handler of this.handlers[i][1].set)
-        if (handler(value, final, meta, ...subs) === false) return
+        if (handler(value, final, m, ...subs) === false || skip) return
     }
     // propagate down into children
     for (let i = this.handlers.length - 1; i >= 0; i--) {
@@ -57,7 +60,7 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
       const sub = this.pick(value, key, this.handlers[i][0], true)
       if (sub !== path.none) {
         for (const handler of this.handlers[i][1].set)
-          handler(sub, final, meta, ...subs)
+          handler(sub, final, m, ...subs)
       } else {
         let o = 0
         while (
@@ -150,11 +153,13 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     ...subs: string[]
   ) {
     tips: for (const [tip, v] of Store.tips(value, key + '.')) {
+      const [skip, noChange] = flag()
       const final = this.substituteWildcards(tip, ...subs)
       for (const [path, { set }] of this.handlers) {
         if (!tip.startsWith(path)) continue
         for (const handler of set)
-          if (handler(v, final, {}, ...subs) === false) continue tips
+          if (handler(v, final, { noChange }, ...subs) === false || skip)
+            continue tips
       }
     }
   }
@@ -328,7 +333,7 @@ export type Getter<T = any> = (
 export type Setter<T = any> = (
   v: T,
   path: string,
-  meta: Record<string, any>,
+  meta: Record<string, any> & { noChange?(): void },
   ...subs: string[]
 ) => unknown
 export type Deleted = (path: string) => unknown

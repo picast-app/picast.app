@@ -4,18 +4,49 @@ import idb from 'main/store/idb'
 import { mergeInPlace, seg } from 'utils/path'
 import { diff } from 'utils/array'
 import { allFlat } from 'utils/promise'
+import * as o from 'utils/object'
+import equals from 'utils/equal'
+
+function writeEpisodeData(
+  cache: Record<string, Episode>,
+  data: unknown,
+  ...path: string[]
+): boolean {
+  const before = { ...cache[path[0]] }
+
+  mergeInPlace(cache, data, ...path)
+  cache[path[0]] = o.filter(
+    o.pick(
+      cache[path[0]],
+      'id',
+      'podcast',
+      'title',
+      'file',
+      'published',
+      'duration',
+      'currentTime',
+      'relProg'
+    ),
+    (_, v) => typeof v !== 'object' || v === null
+  ) as Episode
+
+  return equals(before, cache[path[0]])
+}
 
 export default (store: Store) => {
   const cache: { [pod: string]: { [ep: string]: Episode } } = {}
 
   let subscriptions: Promise<string[]> = store.get('user.subscriptions')
 
-  store.handler('episodes.*.*').set(async (data, path, { known }, pod, id) => {
-    if (!data) return
-    mergeInPlace((cache[pod] ??= {}), data, ...seg(path, 2))
-    if (!known && (await subscriptions).includes(pod))
-      await writeToDB(cache[pod][id])
-  })
+  store
+    .handler('episodes.*.*')
+    .set(async (data, path, { known, noChange }, pod, id) => {
+      if (!data) return
+      if (writeEpisodeData((cache[pod] ??= {}), data, ...seg(path, 2)))
+        return noChange?.()
+      if (!known && (await subscriptions).includes(pod))
+        await writeToDB(cache[pod][id])
+    }, true)
 
   store
     .handler('episodes.*.*')
@@ -52,7 +83,6 @@ export default (store: Store) => {
     const episodes = podcasts.flatMap(id => Object.values(cache[id] ?? {}))
     if (!episodes.length) return
     logger.info(`store ${episodes.length} episodes in db`)
-    logger.info(episodes)
     const tx = (await idb).transaction('episodes', 'readwrite')
     await Promise.all<any>([episodes.map(v => tx.store.put(v)), tx.done])
   }
