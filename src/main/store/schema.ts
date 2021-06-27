@@ -28,5 +28,7 @@ type IDBSchema = {
 export default IDBSchema
 
 type EpisodeInfo = {
+  id: string
   shownotes?: string
+  fetched: number
 }
