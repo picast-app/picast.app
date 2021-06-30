@@ -20,7 +20,7 @@ export const mapValues = <T extends obj, R>(
 export const mapValuesAsync = async <T extends obj, R extends Promise<any>>(
   o: T,
   func: <K extends keyof T>(v: typeof o[K], k: K) => R
-): Promise<{ [K in keyof T]: PromiseType<R> }> =>
+): Promise<{ [K in keyof T]: PromType<R> }> =>
   Object.fromEntries(
     await Promise.all(
       Object.entries(o).map(([k, v]) => func(v, k as keyof T).then(r => [k, r]))

@@ -1,17 +1,27 @@
 import React, { useState } from 'react'
 import { Switch, Route, Redirect, Link } from '@picast-app/router'
 import { Screen } from 'components/structure'
-import Elevation from './sandbox/Elevation'
-import Ease from './sandbox/Ease'
-import Components from './sandbox/Components'
+import elevation from './sandbox/Elevation'
+import ease from './sandbox/Ease'
+import components from './sandbox/Components'
+import audio from './sandbox/Audio'
+
+const routes = {
+  elevation,
+  components,
+  ease,
+  audio,
+}
 
 export default function Routes() {
   return (
     <Switch>
       <Route path="/sandbox">{Sandbox}</Route>
-      <Route path="/sandbox/elevation">{Elevation}</Route>
-      <Route path="/sandbox/ease">{Ease}</Route>
-      <Route path="/sandbox/components">{Components}</Route>
+      {Object.entries(routes).map(([k, v]) => (
+        <Route key={k} path={`/sandbox/${k}`}>
+          {v}
+        </Route>
+      ))}
       <Redirect to="/sandbox" />
     </Switch>
   )
@@ -23,15 +33,11 @@ function Sandbox() {
   return (
     <Screen padd loading={loading}>
       <ol>
-        <li>
-          <Link to="/sandbox/elevation">Elevation</Link>
-        </li>
-        <li>
-          <Link to="/sandbox/ease">Ease</Link>
-        </li>
-        <li>
-          <Link to="/sandbox/components">Components</Link>
-        </li>
+        {Object.entries(routes).map(([k, v]) => (
+          <li key={k}>
+            <Link to={`/sandbox/${k}`}>{k}</Link>
+          </li>
+        ))}
       </ol>
       <button onClick={() => setLoading(!loading)}>toggle loading</button>
     </Screen>
