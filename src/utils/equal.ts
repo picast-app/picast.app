@@ -1,5 +1,6 @@
 export default function equals(a: unknown, b: unknown): boolean {
   if (typeof a !== 'object' && typeof b !== 'object') return a === b
+  if ((typeof a === 'object') !== (typeof b === 'object')) return false
   if (a === b) return true // null or ref equality
   if (Array.isArray(a) !== Array.isArray(b)) return false
 

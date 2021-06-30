@@ -1,5 +1,3 @@
-import { sum } from 'utils/array'
-
 export const none = Symbol('none')
 
 export const pick = <T = unknown>(

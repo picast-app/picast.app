@@ -2,11 +2,6 @@ type ReactProps<
   T extends (...args: any[]) => JSX.Element | import('react').Component | null
 > = Parameters<T>[0]
 
-type PromiseType<T> = T extends PromiseLike<infer I> ? I : T
-
-type PickOpt<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
-type PickReq<T, K extends keyof T> = Required<Pick<T, K>> & Partial<Omit<T, K>>
-
 type RGBA = number
 type RGBA_ = [number, number, number, number]
 
@@ -52,15 +47,3 @@ declare namespace Intl {
     public format(list: string[]): string
   }
 }
-
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I
-) => void
-  ? I
-  : never
-
-type MergeDistr<U> = UnionToIntersection<U> extends infer O
-  ? { [K in keyof O]: O[K] }
-  : never
-
-type Primitive = string | number | boolean | symbol | null | undefined
