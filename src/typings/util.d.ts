@@ -1,5 +1,4 @@
 type PromType<T> = T extends PromiseLike<infer U> ? U : T
-
 type MaybeProm<T> = T extends PromiseLike<infer U> ? U | T : T | Promise<T>
 
 type FilterKeys<T, U> = { [P in keyof T]: T[P] extends U ? P : never }[keyof T]

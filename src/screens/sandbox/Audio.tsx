@@ -126,6 +126,10 @@ const S = {
 
     li:nth-child(2n) {
       background-color: #eee;
+
+      html[data-theme='dark'] & {
+        background-color: #fff1;
+      }
     }
   `,
 }

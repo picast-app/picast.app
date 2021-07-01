@@ -95,6 +95,7 @@ export default class Progress extends Component {
   }
 
   attributeChangedCallback(name: string, old: string, current: string) {
+    logger.info('progress attr', name, current)
     switch (name) {
       case 'current':
         this.current = parseFloat(current)
@@ -112,6 +113,7 @@ export default class Progress extends Component {
         break
       case 'loading':
         this.loading = /true/i.test(current)
+        logger.info('loading:', this.loading)
         this.loadToggle = performance.now()
         if (this.loading) this.loadStart = this.loadToggle
         break

@@ -21,6 +21,13 @@ export const asyncQueue = <TArgs extends any[], TReturn>(
   }
 }
 
+export const asyncQueued = () => {
+  const queue = asyncQueue((f: λ, ...args: any[]) => f(...args))
+  return <T extends λ>(f: T, immediate?: λ<Parameters<T>>) =>
+    async (...args: Parameters<T>): Promise<PromType<ReturnType<T>>> =>
+      (immediate?.(...args), await queue(f, ...args)) as any
+}
+
 export const waiter = <T>(): [Promise<T>, (v: T) => void] => {
   let initializer: (v: T) => void
   const asr = new Promise<T>(res => {

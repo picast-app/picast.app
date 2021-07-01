@@ -13,14 +13,14 @@ export class Podcast {
 
   constructor(
     private readonly id: string,
-    private readonly db: PromiseType<typeof dbProm>,
+    private readonly db: PromType<typeof dbProm>,
     private keys: Key[],
     private subscribed: boolean
   ) {}
 
   public static async create(
     id: string,
-    db: PromiseType<typeof dbProm>,
+    db: PromType<typeof dbProm>,
     subscribed: boolean
   ) {
     const ids = await db.getAllKeysFromIndex('episodes', 'podcast', id)
@@ -137,7 +137,7 @@ export class EpisodeStore {
   private podcasts: Record<string, Promise<Podcast>> = {}
   private subscriptions: Promise<string[]> = store.get('user.subscriptions')
 
-  constructor(private readonly db: PromiseType<typeof dbProm>) {
+  constructor(private readonly db: PromType<typeof dbProm>) {
     bindThis(this)
     this.listenSubs()
   }

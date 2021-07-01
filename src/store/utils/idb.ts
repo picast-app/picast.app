@@ -14,7 +14,7 @@ type IDBMeta = {
   currentUser: string
   subscriptions: string[]
   libSort: string
-  playerCurrent: string
+  playerCurrent: EpisodeId
   playerQueue: string[]
 }
 

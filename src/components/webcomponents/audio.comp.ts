@@ -1,6 +1,5 @@
-import { Machine } from 'utils/state'
-
-type PlayState = 'paused' | 'waiting' | 'playing'
+import makeState, { PlayState } from 'utils/audioState'
+import { asyncQueued } from 'utils/promise'
 
 interface Events extends HTMLElementEventMap {
   state: CustomEvent<PlayState>
@@ -9,12 +8,15 @@ interface Events extends HTMLElementEventMap {
 
 export default class Audio extends HTMLElement {
   private audio: HTMLAudioElement
-  private state = Audio.makeState()
+  public readonly state = makeState()
 
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
-    this.shadowRoot!.append((this.audio = document.createElement('audio')))
+    this.audio = document.createElement('audio')
+    this.audio.toggleAttribute('preload', true)
+    this.audio.volume = 0.2
+    this.shadowRoot!.append(this.audio)
 
     for (const [k, v] of Object.entries(this.handlers))
       this.audio.addEventListener(k, v)
@@ -27,7 +29,6 @@ export default class Audio extends HTMLElement {
     )
 
     this.state.onChange(state => {
-      logger.info({ state })
       this.dispatch('state', state)
     })
   }
@@ -36,7 +37,7 @@ export default class Audio extends HTMLElement {
     return ['src', 'controls']
   }
 
-  private attributeChangedCallback(name: string, old: any, current: any) {
+  attributeChangedCallback(name: string, old: any, current: any) {
     switch (name) {
       case 'src':
         if (current) this.audio.setAttribute(name, current)
@@ -68,32 +69,47 @@ export default class Audio extends HTMLElement {
     return this.audio.src
   }
 
-  public set src(src: string) {
-    this.setAttribute('src', src)
+  public set src(src: string | null) {
+    logger.info('set src', src)
+    if (src) this.setAttribute('src', src)
+    else {
+      this.removeAttribute('src')
+      this.pause()
+    }
   }
 
-  public play() {
-    this.audio.play()
-  }
+  // private queue = asyncQueue(async (f: λ) => await f())
+  private queue = asyncQueued()
 
-  public pause() {
-    this.audio.pause()
+  public play = this.queue(async () => {
+    logger.info('audio play')
+    if (this.src) await this.audio.play()
+    else logger.warn('ignore play')
+  })
+
+  public pause = this.queue(
+    () => {
+      logger.info('audio pause')
+      this.audio.pause()
+      this.audio.addEventListener('playing', this.handlers.playing!)
+    },
+    () => this.audio.removeEventListener('playing', this.handlers.playing!)
+  )
+
+  public get buffered(): [start: number, end: number][] {
+    const buffers = this.audio?.buffered
+    const duration = this.audio?.duration ?? Infinity
+    return [...Array(buffers?.length ?? 0)].map((_, i) => [
+      buffers!.start(i) / duration,
+      buffers!.end(i) / duration,
+    ])
   }
 
   private handlers: { [K in AudioEvent]?: λ<[]> } = {
     play: () => this.state.transition('waiting'),
     playing: () => this.state.transition('playing'),
     pause: () => this.state.transition('paused'),
-  }
-
-  private static makeState(): Machine<PlayState> {
-    const sm = new Machine<PlayState>('paused')
-    sm.addTransition('paused', 'waiting')
-    sm.addTransition('waiting', 'playing')
-    sm.addTransition('playing', 'paused')
-    sm.addTransition('playing', 'waiting')
-    sm.addTransition('waiting', 'paused')
-    return sm
+    emptied: () => this.state.transition('paused'),
   }
 }
 

@@ -13,7 +13,7 @@ export function useEpisodeToggle(
       current?.[0] === episode[0] &&
       current?.[1] === episode[1],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    useCallback(() => main.playEpisode(episode), episode),
+    useCallback(() => main.playerPlayEpisode(episode), episode),
   ]
 }
 
@@ -24,12 +24,4 @@ export function useEpisodeState(
   initialProgress = 0
 ): EpisodeState {
   return { progress: 0, duration: 100, _progAbs: 0 }
-}
-
-export function useCurrent(): CurrentPlayback {
-  return null
-}
-
-export function useIsPlaying(): boolean {
-  return false
 }

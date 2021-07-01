@@ -6,7 +6,7 @@ type DB = IDBPDatabase<Schema>
 
 // interface for accessing IDB from other threads
 export default class IDBInterface {
-  constructor(private readonly db: PromiseType<DB>) {}
+  constructor(private readonly db: PromType<DB>) {}
 
   public static async create(): Promise<IDBInterface> {
     const db = await dbProm

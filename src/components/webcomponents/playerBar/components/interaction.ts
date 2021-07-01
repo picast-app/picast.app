@@ -168,11 +168,11 @@ export default class Interaction extends Service {
   }
 
   private showEpisodeInfo() {
-    if (!this.player.current) return
-    const [{ id: pod }, { id: ep }] = this.player.current
-    history.push({
-      search: SearchParams.merge({ info: `${pod}-${ep}` }, location.search),
-    })
+    // if (!this.player.current) return
+    // const [{ id: pod }, { id: ep }] = this.player.current
+    // history.push({
+    //   search: SearchParams.merge({ info: `${pod}-${ep}` }, location.search),
+    // })
   }
 
   private onPlayerClick(e: PointerEvent) {

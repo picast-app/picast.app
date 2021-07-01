@@ -1,8 +1,9 @@
 import * as f from 'utils/function'
-import { mutate } from 'utils/path'
+import { mutate, pick } from 'utils/path'
 import type { Store } from 'store'
 import type { Flatten, Schema } from 'store/core/types'
 import { Synchronized } from './tabSync'
+import equals from 'utils/equal'
 
 export const _ = Symbol('deferred')
 
@@ -99,6 +100,9 @@ export default abstract class MemCache<T> {
 
   private onSet(v: any, path: string, meta?: Record<string, any>) {
     path = path.slice(this.root.length + 1)
+
+    if (equals(pick(this.state as any, ...path.split('.')), v)) return false
+
     if (!path) {
       this.state = v
       this.hooks.$?.(v)

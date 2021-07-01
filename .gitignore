@@ -11,3 +11,4 @@ tmp
 src/**/*.md
 /*.*profile
 /trace*
+cypress*

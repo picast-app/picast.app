@@ -3,16 +3,20 @@ import styled from 'styled-components'
 import { Artwork, Icon } from 'components/atoms'
 import { Link } from '@picast-app/router'
 import { mobile, desktop } from 'styles/responsive'
+import { useStateX } from 'hooks'
 
 interface Props {
-  podcast: Podcast
+  podcast: string
 }
 
-export default function Info({ podcast }: Props) {
+export default function Info({ podcast: podId }: Props) {
+  const [podcast] = useStateX('podcasts.*', podId)
+
+  if (!podcast) return null
   return (
     <S.Container slot="info">
       <Icon icon="list" label="queue" linkTo="#queue" />
-      <S.Thumbnail to={`/show/${podcast?.id}`} slot="info">
+      <S.Thumbnail to={`/show/${podcast.id}`} slot="info">
         <Artwork
           src={podcast.artwork}
           title={podcast.title}

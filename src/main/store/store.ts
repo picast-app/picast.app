@@ -20,7 +20,7 @@ export default class Store {
   private totalListeners: Record<Podcast['id'], TotalCB[]> = {}
 
   constructor(
-    private readonly db: PromiseType<typeof dbProm>,
+    private readonly db: PromType<typeof dbProm>,
     private readonly epStore: EpisodeStore,
     subs: Podcast[],
     private wpSubs: string[]

@@ -79,6 +79,7 @@
       grid-column: center;
       justify-content: space-around;
       overflow: hidden;
+      height: var(--player-height);
     }
 
     .ctrl {
@@ -125,7 +126,7 @@
   <player-progress inline></player-progress>
 </div>
 <slot name="info" class="info"></slot>
-<audio preload></audio>
+<picast-audio></picast-audio>
 <div class="fullscreen"><slot name="fullscreen"></slot></div>
 
 <template id="touchbox">

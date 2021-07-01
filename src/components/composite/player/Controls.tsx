@@ -3,20 +3,26 @@ import styled from 'styled-components'
 import { mobile } from 'styles/responsive'
 import Skip from './SkipControl'
 import { PlayButton } from 'components/atoms'
-import { useIsPlaying } from 'hooks'
+import { useStateX } from 'hooks'
+import { main } from 'workers'
 
 type Props = { slot?: string; round?: boolean }
 
 const PlayControls: React.FC<Props> = ({ round = false, ...props }) => {
-  const playing = useIsPlaying()
+  const [state] = useStateX('player.status')
+
+  function toggle() {
+    if (!state) return
+    if (state === 'paused') main.playerResume()
+    else main.playerPause()
+  }
 
   return (
     <SC {...props}>
       <Skip ms={-15000} onJump={n => {}} />
       <PlayButton
-        playing={playing}
-        // onPress={() => player?.[playing ? 'pause' : 'resume']()}
-        onPress={() => {}}
+        playing={!!state && state !== 'paused'}
+        onPress={toggle}
         round={round}
       />
       <Skip ms={30000} onJump={n => {}} />

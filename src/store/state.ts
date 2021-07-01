@@ -1,4 +1,5 @@
 import type { Flatten } from 'store/core/types'
+import type { PlayState } from 'utils/audioState'
 
 export type State = {
   settings: {
@@ -33,8 +34,8 @@ export type State = {
     totalEpisodeCount: number
   }
   player: {
-    current: string
-    status: 'playing' | 'paused' | 'waiting'
+    current: EpisodeId
+    status: PlayState
     queue: string[]
   }
 }

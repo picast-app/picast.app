@@ -1,12 +1,14 @@
 import content from './template.html'
 import Component from '../base.comp'
-import { main } from 'workers'
 import type Progress from 'components/webcomponents/progressBar/progress.comp'
+import type Audio from 'components/webcomponents/audio.comp'
 import { bindThis } from 'utils/proto'
 import MediaSession from './components/mediaSession'
 import Interaction from './components/interaction'
-import Audio from './components/audio'
 import EventDispatcher from './components/events'
+import StateListener from './components/stateListener'
+import store from 'store/uiThread/api'
+import { PlayState } from 'utils/audioState'
 
 export default class Player extends Component {
   static tagName = 'picast-player'
@@ -14,23 +16,28 @@ export default class Player extends Component {
 
   private mediaSession = new MediaSession(this)
   private interaction = new Interaction(this)
-  private audioService = new Audio(this)
+  private stateListener = new StateListener(this)
   private events = new EventDispatcher()
+  private audio = this.shadowRoot!.querySelector<Audio>('picast-audio')!
 
-  private _current: CurrentPlayback = null
+  // private _current: CurrentPlayback = null
 
   constructor() {
     super()
     bindThis(this)
     // state('playing.id', this.onStateChange)
+
+    this.audio.addEventListener('state', ({ detail }) =>
+      this.onAudioStateChange(detail)
+    )
   }
 
   connectedCallback() {
     this.interaction.enable()
     this.mediaSession.enable()
-    this.audioService.enable()
+    this.stateListener.enable()
 
-    this.audioService.volume = 0.4
+    // this.audioService.volume = 0.4
     window.addEventListener('pagehide', this.forcedSync)
     this.progressBars.forEach(bar =>
       bar.addEventListener('jump', this.onBarJump as any)
@@ -42,6 +49,7 @@ export default class Player extends Component {
   disconnectedCallback() {
     this.interaction.disable()
     this.mediaSession.disable()
+    this.stateListener.disable()
 
     window.removeEventListener('pagehide', this.forcedSync)
     this.progressBars.forEach(bar =>
@@ -61,12 +69,23 @@ export default class Player extends Component {
     }
   }
 
-  private async onStateChange(id: EpisodeId) {
-    if (id?.[1] === this.current?.[1].id) return
-    const [podcast, episode] = await this.getInfo(id)
-    if (!podcast || !episode) throw Error("couldn't read current info")
-    this.setCurrent([podcast, episode])
+  private _visible = false
+  public get visible() {
+    return this._visible
   }
+  public set visible(v: boolean) {
+    if (this._visible === v) return
+    this._visible = v
+    if (v) this.removeAttribute('hidden')
+    else this.setAttribute('hidden', '')
+  }
+
+  // private async onStateChange(id: EpisodeId) {
+  //   if (id?.[1] === this.current?.[1].id) return
+  //   const [podcast, episode] = await this.getInfo(id)
+  //   if (!podcast || !episode) throw Error("couldn't read current info")
+  //   this.setCurrent([podcast, episode])
+  // }
 
   get progressBars() {
     return [
@@ -92,101 +111,100 @@ export default class Player extends Component {
   public addEventListener = this.events.addEventListener.bind(this.events)
   public removeEventListener = this.events.removeEventListener.bind(this.events)
 
-  public pause = this.audioService.pause
-  public resume = this.audioService.resume
-  public isPlaying = this.audioService.isPlaying
-  public get time() {
-    return this.audioService.time
-  }
-  public get duration() {
-    return this.audioService.duration
-  }
+  // public pause = this.audioService.pause
+  // public resume = this.audioService.resume
+  // public isPlaying = this.audioService.isPlaying
+  // public get time() {
+  //   return this.audioService.time
+  // }
+  // public get duration() {
+  //   return this.audioService.duration
+  // }
 
-  public async play(id: EpisodeId) {
-    const [podcast, episode] = await this.getInfo(id)
-    if (!episode?.file)
-      throw Error(`can't find src for episode ${id.join('-')}`)
-    await this.setCurrent([podcast!, episode], this.audioService.play)
-    await main.setPlaying(id)
-  }
+  // public async play(id: EpisodeId) {
+  //   const [podcast, episode] = await this.getInfo(id)
+  //   if (!episode?.file)
+  //     throw Error(`can't find src for episode ${id.join('-')}`)
+  //   await this.setCurrent([podcast!, episode], this.audioService.play)
+  //   await main.setPlaying(id)
+  // }
 
-  private async setCurrent(
-    [podcast, episode]: [Podcast, EpisodeMin],
-    set: (src: string, pos?: number) => any = this.audioService.setSrc
-  ) {
-    this.current = [podcast, episode]
-    await set(episode.file, episode.currentTime)
-    this.setProgressAttr('current', episode.currentTime ?? 0)
-    this.events.call('current', [podcast, episode])
-    this.events.call('jump', episode.currentTime ?? 0, this.currentId)
-  }
+  // private async setCurrent(
+  //   [podcast, episode]: [Podcast, EpisodeMin],
+  //   set: (src: string, pos?: number) => any = this.audioService.setSrc
+  // ) {
+  //   this.current = [podcast, episode]
+  //   await set(episode.file, episode.currentTime)
+  //   this.setProgressAttr('current', episode.currentTime ?? 0)
+  //   this.events.call('current', [podcast, episode])
+  //   this.events.call('jump', episode.currentTime ?? 0, this.currentId)
+  // }
 
-  public get current(): CurrentPlayback {
-    return this._current
-  }
+  // public get current(): CurrentPlayback {
+  //   return this._current
+  // }
 
-  public set current(current: CurrentPlayback) {
-    if (
-      (!current && !this._current) ||
-      (current &&
-        this._current &&
-        current.every(({ id }, i) => this._current![i].id === id))
-    )
-      return
-    this._current = current
-    if (!current) {
-      this.setAttribute('hidden', '')
-      return
-    }
-    this.removeAttribute('hidden')
-    for (const title of this.select('.title'))
-      title.textContent = current[1].title
-    this.mediaSession.showInfo()
-  }
+  // public set current(current: CurrentPlayback) {
+  //   if (
+  //     (!current && !this._current) ||
+  //     (current &&
+  //       this._current &&
+  //       current.every(({ id }, i) => this._current![i].id === id))
+  //   )
+  //     return
+  //   this._current = current
+  //   if (!current) {
+  //     this.setAttribute('hidden', '')
+  //     return
+  //   }
+  //   this.removeAttribute('hidden')
+  //   for (const title of this.select('.title'))
+  //     title.textContent = current[1].title
+  //   this.mediaSession.showInfo()
+  // }
 
-  public get currentId(): EpisodeId | undefined {
-    return this._current
-      ? [this._current[0].id, this._current[1].id]
-      : undefined
-  }
+  // public get currentId(): EpisodeId | undefined {
+  //   return this._current
+  //     ? [this._current[0].id, this._current[1].id]
+  //     : undefined
+  // }
 
   public jump(pos: number, relative = false) {
-    if (relative) pos = this.audioService.time + pos
-    this.audioService.time = pos
-    logger.info('jump to', pos)
-    this.setProgressAttr('current', pos)
-    this.events.call('jump', pos, this.currentId)
-    this.syncProgress()
+    // if (relative) pos = this.audioService.time + pos
+    // this.audioService.time = pos
+    // logger.info('jump to', pos)
+    // this.setProgressAttr('current', pos)
+    // this.events.call('jump', pos, this.currentId)
+    // this.syncProgress()
   }
 
   private syncId?: number
 
   public async syncProgress() {
-    if (this.syncId) {
-      clearTimeout(this.syncId)
-      delete this.syncId
-    }
-
-    if (!this.current) {
-      // await main.playbackCompleted()
-    } else {
-      const { src, time } = this.audioService ?? {}
-      if (this.current?.[1].file !== src) throw Error('episode mismatch')
-      // if (time) await main.setProgress(time)
-      if (this.isPlaying())
-        this.syncId = window.setTimeout(this.syncProgress, 5000)
-    }
+    // if (this.syncId) {
+    //   clearTimeout(this.syncId)
+    //   delete this.syncId
+    // }
+    // if (!this.current) {
+    //   // await main.playbackCompleted()
+    // } else {
+    //   const { src, time } = this.audioService ?? {}
+    //   if (this.current?.[1].file !== src) throw Error('episode mismatch')
+    //   // if (time) await main.setProgress(time)
+    //   if (this.isPlaying())
+    //     this.syncId = window.setTimeout(this.syncProgress, 5000)
+    // }
   }
 
   private async forcedSync() {
-    const time = this.audioService?.time
+    // const time = this.audioService?.time
     // if (time !== undefined) await main.setProgress(time, true)
     // else throw Error("couldn't force sync (unknown time)")
   }
 
-  private select<T extends HTMLElement>(selector: string): T[] {
-    return Array.from(this.shadowRoot!.querySelectorAll<T>(selector))
-  }
+  // private select<T extends HTMLElement>(selector: string): T[] {
+  //   return Array.from(this.shadowRoot!.querySelectorAll<T>(selector))
+  // }
 
   private barObserver = new MutationObserver(records => {
     const [addedBars, removedBars] = (
@@ -200,52 +218,80 @@ export default class Player extends Component {
     )
     for (const bar of addedBars) {
       bar.addEventListener('jump', this.onBarJump as any)
-      bar.setAttribute('current', this.audioService.time)
+      // bar.setAttribute('current', this.audioService.time)
     }
     for (const bar of removedBars)
       bar.removeEventListener('jump', this.onBarJump as any)
   })
 
-  private async getInfo(
-    id: EpisodeId
-  ): Promise<[Podcast | null, EpisodeMin | null]> {
-    return await Promise.all([main.podcast(id[0]), main.episode(id)])
-  }
+  // private async getInfo(
+  //   id: EpisodeId
+  // ): Promise<[Podcast | null, EpisodeMin | null]> {
+  //   return await Promise.all([main.podcast(id[0]), main.episode(id)])
+  // }
 
   // events
 
-  onDurationChange(duration: number) {
-    if (this.currentId) main.setEpisodeDuration(this.currentId[1], duration)
-    this.setProgressAttr('duration', duration)
-    this.events.call('duration', duration, this.currentId)
-  }
-
-  onBufferedChange() {
-    const buffered = this.audioService.buffered
-    for (const bar of this.progressBars) {
-      bar.buffered = buffered
-      bar.scheduleFrame()
+  async onPlayStateChange(state: PlayState) {
+    logger.info('state:', state, this.audio.state.current)
+    this.setProgressAttr('loading', state === 'waiting')
+    if ((state === 'paused') !== (this.audio.state.current === 'paused')) {
+      if (state === 'paused') this.audio.pause()
+      else {
+        await new Promise(res => setTimeout(res))
+        logger.info('PLAY')
+        this.audio.play()
+      }
     }
   }
 
+  onAudioStateChange(state: PlayState) {
+    logger.info('audio status', state)
+    store.setX('player.status', state)
+  }
+
+  async onEpisodeChange(id: EpisodeId | null) {
+    if (!id) return (this.audio.src = null)
+
+    this.audio.pause()
+    const episode = await store.getX('episodes.*.*', ...id)
+    if (!episode?.file) throw Error(`can't find file for ${id[0]} ${id[1]}`)
+    this.audio.src = episode.file
+    // this.audio.play()
+  }
+
+  onDurationChange(duration: number) {
+    // if (this.currentId) main.setEpisodeDuration(this.currentId[1], duration)
+    // this.setProgressAttr('duration', duration)
+    // this.events.call('duration', duration, this.currentId)
+  }
+
+  onBufferedChange() {
+    // const buffered = this.audioService.buffered
+    // for (const bar of this.progressBars) {
+    //   bar.buffered = buffered
+    //   bar.scheduleFrame()
+    // }
+  }
+
   onPlaying() {
-    this.events.call('play')
-    this.setProgressAttr('current', this.audioService.time!)
-    this.setProgressAttr('playing', true)
-    this.syncProgress()
+    // this.events.call('play')
+    // this.setProgressAttr('current', this.audioService.time!)
+    // this.setProgressAttr('playing', true)
+    // this.syncProgress()
   }
 
   onPaused() {
-    this.events.call('pause')
-    this.setProgressAttr('current', this.audioService.time!)
-    this.setProgressAttr('playing', false)
-    this.syncProgress()
+    // this.events.call('pause')
+    // this.setProgressAttr('current', this.audioService.time!)
+    // this.setProgressAttr('playing', false)
+    // this.syncProgress()
   }
 
   async onEnded() {
-    this.current = null
-    this.audioService.setSrc(null)
-    await this.syncProgress()
+    // this.current = null
+    // this.audioService.setSrc(null)
+    // await this.syncProgress()
   }
 
   onLoading(loading: boolean) {
