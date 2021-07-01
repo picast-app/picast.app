@@ -10,6 +10,7 @@ import { registerUICall } from './ui'
 import { actions as accountActions } from './account'
 import { pullSubscriptions } from './sync'
 import { methods } from 'utils/proto'
+import { prefix } from 'utils/object'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const self: DedicatedWorkerGlobalScope
@@ -34,7 +35,7 @@ const api = {
   ...store,
   ...accountActions,
   ...threaded,
-  ...methods(player),
+  ...prefix(methods(player), 'player', 'camel'),
   pullSubscriptions,
   deleteIDB,
   registerUICall,

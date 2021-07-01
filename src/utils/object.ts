@@ -1,3 +1,5 @@
+import * as str from 'utils/string'
+
 type obj = Record<string | number | symbol, any>
 
 export const map = <T extends obj>(
@@ -63,4 +65,17 @@ export const omit = <T extends obj, K extends keyof T>(
     Object.entries(v).flatMap(([k, v]) =>
       keys.includes(k as any) ? [] : [[k, v]]
     )
+  ) as any
+
+export const prefix = <
+  T extends obj,
+  TP extends string,
+  C extends str.Case | void = void
+>(
+  obj: T,
+  prefix: TP,
+  caseMod?: C
+): { [K in keyof T as str.Prefix<K extends string ? K : '?', TP, C>]: T[K] } =>
+  Object.fromEntries(
+    Object.entries(obj).map(([k, v]) => [str.prefix(prefix, k, caseMod), v])
   ) as any
