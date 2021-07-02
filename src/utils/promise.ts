@@ -51,3 +51,14 @@ export const promiseCB =
 
 export const allFlat = async <T>(proms: Promise<T[]>[]): Promise<T[]> =>
   (await Promise.all(proms)).flat()
+
+export const wait = <
+  T extends (cb: () => void, ...rest: U) => any,
+  U extends any[]
+>(
+  f: T,
+  ...args: U
+) => new Promise<void>(res => f(res, ...args))
+
+export const timeLimit = <T extends Promise<any>>(ms: number, ...proms: T[]) =>
+  Promise.race<T>([...proms, new Promise((_, rej) => setTimeout(rej, ms))])

@@ -2,14 +2,15 @@ import React from 'react'
 import styled from 'styled-components'
 import { Artwork, PlayButton } from 'components/atoms'
 import { Shownotes } from 'components/composite'
-import { useThemeRef, useEpisodeToggle, useStateX } from 'hooks'
+import { useThemeRef, useStateX, useIsEpisodePlaying } from 'hooks'
 import { mobile, desktop } from 'styles/responsive'
+import { main } from 'workers'
 
 export const Core: React.FC<{ id: EpisodeId }> = ({ id }) => {
   const [podcast] = useStateX('podcasts.*', id[0])
   const [episode] = useStateX('episodes.*.*', ...id)
   const themeRef = useThemeRef(podcast?.palette)
-  const [playing, toggle] = useEpisodeToggle(id)
+  const isPlaying = useIsEpisodePlaying(id)
 
   if (!podcast) return null
   return (
@@ -24,7 +25,11 @@ export const Core: React.FC<{ id: EpisodeId }> = ({ id }) => {
       </S.Podcast>
       <S.Title>{episode?.title}</S.Title>
       <S.Actions>
-        <PlayButton playing={playing} onPress={toggle} round />
+        <PlayButton
+          playing={isPlaying}
+          onPress={() => main.playerToggleEpisode(id)}
+          round
+        />
       </S.Actions>
       <Shownotes id={id} className="notes" />
     </S.Container>

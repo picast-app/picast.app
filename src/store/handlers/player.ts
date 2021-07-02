@@ -2,6 +2,7 @@ import MemCache, { OptPrim, _, HookDict } from 'store/utils/memCache'
 import type { State } from 'store/state'
 import { idbDefaultReader } from 'store/utils/idb'
 import makePlayState from 'utils/audioState'
+import equals from 'utils/equal'
 
 export default class Player extends MemCache<State['player']> {
   root = 'player'
@@ -40,5 +41,11 @@ export default class Player extends MemCache<State['player']> {
   public pause() {
     if (!this.state.current) return
     this.store.set('player.status', 'paused')
+  }
+
+  public toggleEpisode(id: EpisodeId) {
+    if (!equals(this.state.current, id)) return this.playEpisode(id)
+    if (this.status.current === 'paused') this.resume()
+    else this.pause()
   }
 }

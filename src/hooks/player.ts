@@ -1,21 +1,6 @@
-import { useCallback } from 'react'
-import { main } from 'workers'
-import { useStateX } from 'hooks/store'
-
-export function useEpisodeToggle(
-  episode: EpisodeId
-): [playing: boolean, toggle: () => void] {
-  const [current] = useStateX('player.current')
-  const [status] = useStateX('player.status')
-
-  return [
-    status === 'playing' &&
-      current?.[0] === episode[0] &&
-      current?.[1] === episode[1],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    useCallback(() => main.playerPlayEpisode(episode), episode),
-  ]
-}
+import { useState, useEffect, useRef } from 'react'
+import { bundleSync } from 'utils/function'
+import store from 'store/uiThread/api'
 
 type EpisodeState = { progress: number; duration: number; _progAbs: number }
 
@@ -24,4 +9,36 @@ export function useEpisodeState(
   initialProgress = 0
 ): EpisodeState {
   return { progress: 0, duration: 100, _progAbs: 0 }
+}
+
+export function useIsEpisodePlaying([, id]: EpisodeId) {
+  const [isPlaying, setPlaying] = useState<boolean>()
+  const initial = useRef(false)
+
+  // yes, all of this just exists to prevent unnecessary renders
+  useEffect(() => {
+    let isIntitial = true
+    let stopStatus: (() => void) | undefined
+
+    const set = (v: boolean) => {
+      if (initial.current === v) return false
+      initial.current = v
+      if (!isIntitial) setPlaying(v)
+      return true
+    }
+
+    const unsub = store.listenX('player.current', v => {
+      if (v?.[1] !== id) if (!set(false)) return
+      stopStatus?.()
+      if (v?.[1] === id)
+        stopStatus = store.listenX('player.status', status => {
+          set(status !== 'paused')
+        })
+    })
+
+    isIntitial = false
+    return bundleSync(unsub, stopStatus)
+  }, [id])
+
+  return isPlaying ?? initial.current
 }

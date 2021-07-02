@@ -7,7 +7,7 @@ import type { EpisodeBase } from 'main/store/types'
 import { proxy } from 'comlink'
 import { mobile } from 'styles/responsive'
 import { center, transition } from 'styles/mixin'
-import { useArtwork, useEpisodeToggle, useEpisodeState } from 'hooks'
+import { useArtwork, useEpisodeState, useIsEpisodePlaying } from 'hooks'
 
 type Props = (
   | {
@@ -94,14 +94,14 @@ const getEpisodeFromId: EpGetter<{ id: EpisodeId }> = async ({ id }, cb) =>
   cb(await main.episode(id))
 
 function PlayButton({ id, progress }: { id: EpisodeId; progress: number }) {
-  const [playing, toggle] = useEpisodeToggle(id)
+  const isPlaying = useIsEpisodePlaying(id)
   return (
     <S.Play>
-      <EpisodeProgress episode={id} initial={progress} playing={playing} />
+      <EpisodeProgress episode={id} initial={progress} playing={isPlaying} />
       <Icon
-        icon={playing ? 'pause' : 'play'}
-        label={playing ? 'pause' : 'play'}
-        onClick={toggle}
+        icon={isPlaying ? 'pause' : 'play'}
+        label={isPlaying ? 'pause' : 'play'}
+        onClick={() => main.playerToggleEpisode(id)}
       />
     </S.Play>
   )

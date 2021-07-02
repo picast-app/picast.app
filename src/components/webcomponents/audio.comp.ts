@@ -4,6 +4,7 @@ import { asyncQueued } from 'utils/promise'
 interface Events extends HTMLElementEventMap {
   state: CustomEvent<PlayState>
   event: CustomEvent<AudioEvent>
+  src: CustomEvent<string | null>
 }
 
 export default class Audio extends HTMLElement {
@@ -38,10 +39,12 @@ export default class Audio extends HTMLElement {
   }
 
   attributeChangedCallback(name: string, old: any, current: any) {
+    if (old === current) return
     switch (name) {
       case 'src':
         if (current) this.audio.setAttribute(name, current)
         else this.audio.removeAttribute(name)
+        this.dispatch('src', current || null)
         break
       case 'controls':
         this.audio.toggleAttribute(name, current)
@@ -78,22 +81,23 @@ export default class Audio extends HTMLElement {
     }
   }
 
-  // private queue = asyncQueue(async (f: λ) => await f())
-  private queue = asyncQueued()
+  private toggleQueue = asyncQueued()
 
-  public play = this.queue(async () => {
-    logger.info('audio play')
+  public play = this.toggleQueue(async () => {
+    logger.info('audio.play')
     if (this.src) await this.audio.play()
     else logger.warn('ignore play')
   })
 
-  public pause = this.queue(
+  private playAborted = false
+
+  public pause = this.toggleQueue(
     () => {
-      logger.info('audio pause')
+      logger.info('audio.pause')
       this.audio.pause()
-      this.audio.addEventListener('playing', this.handlers.playing!)
+      this.playAborted = false
     },
-    () => this.audio.removeEventListener('playing', this.handlers.playing!)
+    () => (this.playAborted = true)
   )
 
   public get buffered(): [start: number, end: number][] {
@@ -107,7 +111,7 @@ export default class Audio extends HTMLElement {
 
   private handlers: { [K in AudioEvent]?: λ<[]> } = {
     play: () => this.state.transition('waiting'),
-    playing: () => this.state.transition('playing'),
+    playing: () => !this.playAborted && this.state.transition('playing'),
     pause: () => this.state.transition('paused'),
     emptied: () => this.state.transition('paused'),
   }

@@ -4,6 +4,7 @@ import { desktop, mobile } from 'styles/responsive'
 import Appbar, { AppbarSC } from 'components/Appbar'
 import { Progress, ProgressSC, Icon } from 'components/atoms'
 import { animateTo } from 'utils/animate'
+import { wait } from 'utils/promise'
 
 type Props = {
   style?: AnyStyledComponent
@@ -85,7 +86,7 @@ function usePullEffect(node: HTMLElement | null, action?: () => void) {
     let cancelled = false
 
     const onTouchEnd = async () => {
-      await new Promise(res => setTimeout(res, 100))
+      await wait(setTimeout, 100)
       if (cancelled) return
 
       if (lastOff > actionOff && content.scrollTop === 0) action()
