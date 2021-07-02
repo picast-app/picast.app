@@ -55,3 +55,11 @@ export const mergeInPlace = (
 
 export const seg = (input: string, skip = 0, ...skipped: string[]) =>
   input.split('.').slice(skip + skipped.flatMap(v => v.split('.')).length)
+
+export const paths = (obj: unknown, ...segs: string[]): string[][] =>
+  typeof obj !== 'object' || obj === null || Array.isArray(obj)
+    ? []
+    : Object.entries(obj).flatMap(([k, v]) => [
+        [...segs, k],
+        ...paths(v, ...segs, k),
+      ])

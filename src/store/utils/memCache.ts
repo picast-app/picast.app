@@ -1,5 +1,5 @@
 import * as f from 'utils/function'
-import { mutate, pick } from 'utils/path'
+import { mutate, pick, paths } from 'utils/path'
 import type { Store } from 'store'
 import type { Flatten, Schema } from 'store/core/types'
 import { Synchronized } from './tabSync'
@@ -27,8 +27,7 @@ export default abstract class MemCache<T> {
   }
 
   public construct() {
-    this.attachGetters()
-    this.attachSetter()
+    this.attachHandlers()
     this.attachFBs()
   }
 
@@ -41,8 +40,7 @@ export default abstract class MemCache<T> {
     await this.store.handlersDone()
     f.callAll(this.cleanupCBs)
     this.assertComplete(this.state)
-    this.attachGetters()
-    this.attachSetter()
+    this.attachHandlers()
   }
 
   protected abstract readonly root: string
@@ -50,7 +48,6 @@ export default abstract class MemCache<T> {
   protected hooks: HookDict<T> = {}
   protected fbs: FBDict<T> = {}
   protected sync?: string
-  protected cstGet: GetDict<T> = {}
 
   protected init(): Promise<any> | any {}
   private resolveInit!: (v: T) => void
@@ -60,35 +57,22 @@ export default abstract class MemCache<T> {
 
   private cleanupCBs: (() => any)[] = []
 
-  private attachGetters() {
-    this.cleanupCBs.push(
-      this.store.handler(this.root as any).get(async () => {
-        await this.initialized
-        return this.state
-      })
-    )
-    const attachNode = (node: any = this.state, path = this.root) => {
-      for (const key of Object.keys(node)) {
-        const keyPath = `${path}.${key}` as any
-        this.cleanupCBs.push(
-          this.store.handler(keyPath).get(async (_, ...subs) => {
-            await this.initialized
-            return (node[key] ??= await (this.cstGet as any)[keyPath]?.(
-              ...subs
-            ))
-          })
-        )
-        if (typeof node[key] === 'object' && node[key] !== null)
-          attachNode(node[key], `${path}.${key}`)
-      }
-    }
-    if (typeof this.state === 'object' && this.state !== null) attachNode()
-  }
+  private attachHandlers() {
+    this.forEachNode((path, sub) => {
+      this.cleanupCBs.push(
+        this.store.handler(path as any).get(async () => {
+          await this.initialized
+          return pick(this.state as any, ...sub)
+        }),
 
-  private attachSetter() {
-    this.cleanupCBs.push(
-      this.store.handler(this.root as any).set(this.onSet.bind(this), true)
-    )
+        this.store.handler(path as any).set((v, p, meta) => {
+          if (p !== path) return
+          if (equals(mutate({ _: this.state }, v, '_', ...sub), v)) return false
+          ;(this.hooks as any)[sub.join('.') || '$']?.(v)
+          if (!meta?.reflection) this.syncer?.broadcast({ path, v })
+        })
+      )
+    })
   }
 
   private attachFBs() {
@@ -96,20 +80,6 @@ export default abstract class MemCache<T> {
       this.cleanupCBs.push(
         this.store.handler(`${this.root}.${k}` as any).fallback(fb as any)
       )
-  }
-
-  private onSet(v: any, path: string, meta?: Record<string, any>) {
-    path = path.slice(this.root.length + 1)
-
-    if (equals(pick(this.state as any, ...path.split('.')), v)) return false
-
-    if (!path) {
-      this.state = v
-      this.hooks.$?.(v)
-    } else if (mutate(this.state as any, v, ...path.split('.')) !== v)
-      (this.hooks as any)[path]?.(v)
-
-    if (!meta?.reflection) this.syncer?.broadcast({ path, v })
   }
 
   private assertComplete<TN>(node: TN, ...path: string[]) {
@@ -132,6 +102,12 @@ export default abstract class MemCache<T> {
       logger.info('memcache sync', path, v)
       this.store.set(`${this.root}.${path}` as any, v, { reflection: true })
     }
+  }
+
+  private forEachNode(cb: (path: string, sub: string[]) => any) {
+    const root = this.root.split('.')
+    for (const path of [root, ...paths(this.state, ...root)])
+      cb(path.join('.'), path.slice(root.length))
   }
 }
 

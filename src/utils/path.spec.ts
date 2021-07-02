@@ -38,3 +38,18 @@ test('mutate path', () => {
   expect(path.mutate(v, 'x', 'a', 'b')).toBe('c')
   expect(v).toMatchObject({ a: { b: 'x', d: 'e' } })
 })
+
+test('paths', () => {
+  expect(path.paths(null)).toEqual([])
+  expect(path.paths('')).toEqual([])
+  expect(path.paths([1, 2, 3])).toEqual([])
+  expect(path.paths({})).toEqual([])
+  expect(path.paths({ foo: 'bar' })).toEqual([['foo']])
+  expect(path.paths({ a: { b: 'c', d: { e: 'f' } }, g: 0 })).toEqual([
+    ['a'],
+    ['a', 'b'],
+    ['a', 'd'],
+    ['a', 'd', 'e'],
+    ['g'],
+  ])
+})
