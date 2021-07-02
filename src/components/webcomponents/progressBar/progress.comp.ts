@@ -7,6 +7,7 @@ import { bindThis } from 'utils/proto'
 import * as cl from 'utils/css/color'
 import { clamp } from 'utils/math'
 import { easeOutSine, easeInOutCubic } from 'utils/ease'
+import { DelayMachine } from 'utils/state'
 
 export default class Progress extends Component {
   private readonly canvas: HTMLCanvasElement
@@ -18,7 +19,7 @@ export default class Progress extends Component {
   private current?: number
   private playing = false
   private playStart?: number
-  private loading = false
+  private loading = this.makeLoadState()
   private loadStart?: number
   private loadToggle?: number
   private dragX?: number
@@ -95,6 +96,7 @@ export default class Progress extends Component {
   }
 
   attributeChangedCallback(name: string, old: string, current: string) {
+    if (old === current) return
     logger.info('progress attr', name, current)
     switch (name) {
       case 'current':
@@ -112,10 +114,7 @@ export default class Progress extends Component {
 
         break
       case 'loading':
-        this.loading = /true/i.test(current)
-        logger.info('loading:', this.loading)
-        this.loadToggle = performance.now()
-        if (this.loading) this.loadStart = this.loadToggle
+        this.loading.transition(/true/i.test(current))
         break
       case 'theme':
         this.setColors(current as any)
@@ -199,9 +198,9 @@ export default class Progress extends Component {
     let loadTrans = this.loadToggle
       ? Math.min((performance.now() - this.loadToggle!) / 500, 1)
       : 1
-    if (!this.loading) loadTrans = 1 - loadTrans
+    if (!this.loading.current) loadTrans = 1 - loadTrans
     if (loadTrans > 0 && loadTrans < 1) loadTrans = easeInOutCubic(loadTrans)
-    if (!this.loading && loadTrans === 0) delete this.loadToggle
+    if (!this.loading.current && loadTrans === 0) delete this.loadToggle
 
     if (loadTrans < 1) {
       this.ctx.globalAlpha = 1 - loadTrans
@@ -415,5 +414,20 @@ export default class Progress extends Component {
     this._labelRemains = n
     this.tsRemains.textContent = formatDuration(n)
     this.tsRemains.setAttribute('datetime', durAttr(n))
+  }
+
+  private makeLoadState() {
+    const state = new DelayMachine<boolean>(false)
+    state.addTransition(false, true, 100)
+    state.addTransition(true, false)
+
+    state.onChange(loading => {
+      this.loadToggle = performance.now()
+      if (!loading) return
+      this.loadStart = this.loadToggle
+      this.scheduleFrame()
+    })
+
+    return state
   }
 }
