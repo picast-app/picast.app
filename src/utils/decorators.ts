@@ -1,4 +1,5 @@
 import { asyncQueue as aq } from './promise'
+import { wrap } from 'utils/profile'
 
 export const asyncQueue: MethodDecorator = (
   target,
@@ -10,4 +11,12 @@ export const asyncQueue: MethodDecorator = (
   descriptor.value = function (...args: any[]) {
     return queue(this, ...args)
   }
+}
+
+export const time: MethodDecorator = (
+  target,
+  key,
+  descriptor: PropertyDescriptor
+) => {
+  descriptor.value = wrap(descriptor.value, target.constructor.name)
 }

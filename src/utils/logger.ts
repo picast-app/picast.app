@@ -1,4 +1,5 @@
 import * as ts from 'utils/time'
+import * as dec from 'utils/decorators'
 
 // eslint-disable-next-line no-console
 export default globalThis.logger = { assert: console.assert }
@@ -27,6 +28,8 @@ function defineMethods(shouldPrint: boolean) {
     )
   )
 }
+;(logger as any).time = (...args: Parameters<typeof dec.time>) =>
+  logger.info !== noop ? dec.time(...args) : noop()
 
 defineMethods(process.env.NODE_ENV === 'development')
 
