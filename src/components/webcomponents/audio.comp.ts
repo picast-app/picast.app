@@ -15,7 +15,7 @@ export default class Audio extends HTMLElement {
     super()
     this.attachShadow({ mode: 'open' })
     this.audio = document.createElement('audio')
-    this.audio.toggleAttribute('preload', true)
+    this.audio.preload = 'auto'
     this.audio.volume = 0.2
     this.shadowRoot!.append(this.audio)
 
@@ -57,8 +57,12 @@ export default class Audio extends HTMLElement {
     listener: (event: Events[T]) => any,
     options?: boolean | AddEventListenerOptions
   ) {
-    super.addEventListener(type, listener as λ, options)
-    return () => super.removeEventListener(type, listener as λ)
+    const target = ['state', 'event', 'src'].includes(type)
+      ? Object.getPrototypeOf(Object.getPrototypeOf(this))
+      : this.audio
+    const ctx = target === this.audio ? target : this
+    target.addEventListener.call(ctx, type, listener as λ, options)
+    return () => target.removeEventListener.call(ctx, type, listener as λ)
   }
 
   private dispatch<T extends keyof Events>(
@@ -109,6 +113,14 @@ export default class Audio extends HTMLElement {
     ])
   }
 
+  public get duration() {
+    return this.audio.duration
+  }
+
+  public get time() {
+    return this.audio.currentTime
+  }
+
   private handlers: { [K in AudioEvent]?: λ<[]> } = {
     play: () => this.state.transition('waiting'),
     playing: () => !this.playAborted && this.state.transition('playing'),
@@ -129,7 +141,6 @@ const events = [
   'pause',
   'play',
   'playing',
-  'progress',
   'ratechange',
   'seeked',
   'seeking',

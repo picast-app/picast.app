@@ -5,9 +5,10 @@ import Audio from './audio.comp'
 
 function register<T extends new () => Component>(
   component: T,
-  name: string = (component as any).tagName
+  name: string = (component as any).tagName,
+  opts?: ElementDefinitionOptions
 ) {
-  customElements.define(name, component)
+  customElements.define(name, component, opts)
 }
 
 register(Player)

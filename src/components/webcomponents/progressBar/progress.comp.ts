@@ -47,6 +47,13 @@ export default class Progress extends Component {
   private get progress(): number {
     return (this.current ?? 0) / this.duration!
   }
+  private get compProgress(): number {
+    return (
+      (this.progress * this.duration! +
+        (performance.now() - this.playStart!) / 1000) /
+      this.duration!
+    )
+  }
   private get remaining(): number {
     return this.duration! - (this.current ?? 0)
   }
@@ -97,9 +104,9 @@ export default class Progress extends Component {
 
   attributeChangedCallback(name: string, old: string, current: string) {
     if (old === current) return
-    logger.info('progress attr', name, current)
     switch (name) {
       case 'current':
+        logger.info('set current', current)
         this.current = parseFloat(current)
         this.labelProg = this.current
         this.playStart = performance.now()
@@ -111,7 +118,7 @@ export default class Progress extends Component {
       case 'playing':
         this.playing = current === 'true'
         if (this.playing) this.playStart = performance.now()
-
+        else this.current = this.compProgress * this.duration!
         break
       case 'loading':
         this.loading.transition(/true/i.test(current))
@@ -166,9 +173,7 @@ export default class Progress extends Component {
         ? this.dragProgress
         : !this.playing
         ? this.progress
-        : (this.progress * this.duration! +
-            (performance.now() - this.playStart!) / 1000) /
-          this.duration!
+        : this.compProgress
 
     progress = clamp(0, progress, 1)
 

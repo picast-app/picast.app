@@ -1,12 +1,14 @@
 import { isPromise } from './promise'
 
-export const wrap =
-  <T extends λ>(func: T, prefix = '') =>
-  (...args: Parameters<T>): ReturnType<T> => {
+export const wrap = <T extends λ>(func: T, prefix = '', fName = func.name) =>
+  ((...args: Parameters<T>): ReturnType<T> => {
     const t0 = performance.now()
     const log = () => {
+      if (typeof fName !== 'string') fName = '[?]'
       logger.info(
-        `${prefix}.${func.name}(${args.join(',')}) took ${
+        `${prefix}${fName}(${args
+          .map(v => JSON.stringify(v))
+          .join(', ')}) took ${
           Math.round((performance.now() - t0) * 100) / 100
         } ms`
       )
@@ -20,4 +22,4 @@ export const wrap =
     } finally {
       if (!isProm) log()
     }
-  }
+  }) as T

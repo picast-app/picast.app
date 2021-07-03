@@ -18,5 +18,5 @@ export const time: MethodDecorator = (
   key,
   descriptor: PropertyDescriptor
 ) => {
-  descriptor.value = wrap(descriptor.value, target.constructor.name)
+  descriptor.value = wrap(descriptor.value, `${target.constructor.name}.`)
 }

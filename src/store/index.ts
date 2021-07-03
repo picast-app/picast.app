@@ -28,13 +28,9 @@ export const threaded = {
         ...subs
       )
     ),
-  setX: proxy(store.set.bind(store)),
-  // setX: (async (...args: any[]) => {
-  //   await store.handlersDone()
-  //   ;(store as any).set(...args)
-  // }) as typeof store['set'],
-  mergeX: proxy(store.merge.bind(store)),
-  getX: proxy(store.get.bind(store)),
+  setX: store.set.bind(store),
+  mergeX: store.merge.bind(store),
+  getX: store.get.bind(store),
 }
 
 export const settings = new Settings(store)

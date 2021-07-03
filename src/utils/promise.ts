@@ -1,4 +1,4 @@
-export const isPromise = <T = any>(v: unknown): v is PromiseLike<T> =>
+export const isPromise = <T = any>(v: unknown): v is Promise<T> =>
   typeof v === 'object' && v !== null && typeof (v as any).then === 'function'
 
 export const asyncQueue = <TArgs extends any[], TReturn>(
