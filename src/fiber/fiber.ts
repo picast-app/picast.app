@@ -18,13 +18,17 @@ export function expose<T>(api: T, endpoint: Endpoint = self as any) {
   const select = (node: any, path: string[]): any =>
     !path.length ? node : select(node[path[0]], path.slice(1))
 
-  self.addEventListener('message', e => {
+  self.addEventListener('message', async e => {
     if (!isFiberMsg<'request'>(e.data)) return
 
     let data: any
     let isError = false
     try {
-      data = select(api, e.data.path)
+      const isRoot = e.data.path.length === 0
+      const ctx = isRoot ? undefined : select(api, e.data.path.slice(0, -1))
+      const node = isRoot ? api : select(ctx, e.data.path.slice(-1))
+      if (e.data.type === 'GET') data = node
+      else data = await node.call(ctx)
     } catch (e) {
       data = pick(e instanceof Error ? e : Error(e), 'message', 'name', 'stack')
       isError = true
@@ -39,20 +43,20 @@ const proxy = (
   send: (msg: Omit<FiberRequest, '__fid'>) => Promise<any>,
   ...path: string[]
 ): any =>
-  new Proxy(
-    {},
-    {
-      get(_, p) {
-        if (typeof p === 'symbol')
-          throw Error(`can't access symbol ${String(p)}`)
+  new Proxy(() => {}, {
+    get(_, p) {
+      if (typeof p === 'symbol') throw Error(`can't access symbol ${String(p)}`)
 
-        if (oneOf(p, ...(['then', 'catch', 'finally'] as const)))
-          return bound(send({ type: 'GET', path }), p)
+      if (oneOf(p, ...(['then', 'catch', 'finally'] as const)))
+        return bound(send({ type: 'GET', path }), p)
 
-        return proxy(send, ...path, p)
-      },
-    }
-  )
+      return proxy(send, ...path, p)
+    },
+
+    apply() {
+      return send({ type: 'INV', path })
+    },
+  })
 
 export function wrap<T>(endpoint: Endpoint): Wrapped<T> {
   const pending: Record<number, [res: λ, rej: λ]> = {}
@@ -89,7 +93,7 @@ interface Endpoint {
   removeEventListener: λ<[string, EventListenerOrEventListenerObject, any?]>
 }
 
-type FiberRequest = { __fid: number; type: 'GET'; path: string[] }
+type FiberRequest = { __fid: number; type: 'GET' | 'INV'; path: string[] }
 type FiberReponse = { __fid: number; data: unknown; isError?: boolean }
 
 type Wrapped<T> = T extends λ<infer TA, infer TR>
