@@ -8,13 +8,20 @@ const api = {
   incr() {
     return ++this.count
   },
-  fetch() {
-    return new Promise<string>(res => res('foo'))
+  async promStr(err = false): Promise<string> {
+    return err ? Promise.reject('error') : Promise.resolve('success')
   },
   nested: {
     foo: {
       bar: 'baz',
     },
+  },
+  add: (a: number, b: number) => a + b,
+  sum: (...ns: number[]) => ns.reduce((a, c) => a + c),
+  async callCB(cb: (msg: string) => Promise<string>) {
+    const answer = await cb('hello from worker')
+    console.log({ answer })
+    return { answer }
   },
 }
 export type API = typeof api
