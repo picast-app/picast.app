@@ -1,3 +1,6 @@
+import { oneOf } from 'utils/equal'
+import { bound } from 'utils/function'
+
 const isFiberMsg = <T extends 'request' | 'response'>(
   msg: unknown
 ): msg is T extends 'request' ? FiberRequest : FiberReponse =>
@@ -30,12 +33,8 @@ const proxy = (
         if (typeof p === 'symbol')
           throw Error(`can't access symbol ${String(p)}`)
 
-        if (p === 'then') {
-          return (res: λ, rej?: λ) => {
-            const prom = send({ type: 'GET', path }).then(res)
-            return rej ? prom.catch(rej) : prom
-          }
-        }
+        if (oneOf(p, ...(['then', 'catch', 'finally'] as const)))
+          return bound(send({ type: 'GET', path }), p)
 
         return proxy(send, ...path, p)
       },
@@ -49,7 +48,10 @@ export function wrap<T>(endpoint: Endpoint): Wrapped<T> {
     const data = (e as any).data
     if (!isFiberMsg<'response'>(data)) return
     logger.info('got back', data)
-    pending[data.__fid]?.[0](data.data)
+    if (!(data.__fid in pending)) return
+    const [res, rej] = pending[data.__fid]
+    delete pending[data.__fid]
+    res(data.data)
   })
 
   const send = (msg: Omit<FiberRequest, '__fid'>): Promise<any> => {

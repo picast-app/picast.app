@@ -12,4 +12,5 @@ export default function equals(a: unknown, b: unknown): boolean {
   )
 }
 
-export const oneOf = <T>(v: T, ...cmps: T[]): boolean => cmps.some(c => c === v)
+export const oneOf = <T>(v: unknown, ...cmps: T[]): v is T =>
+  cmps.some(c => c === v)
