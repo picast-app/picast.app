@@ -57,3 +57,9 @@ navigator.serviceWorker.onmessage = e => {
 
 //
 ;(window as any).idb = { get: main.idbGet, put: main.idbPut }
+
+// setTimeout(async () => {
+//   const v = await (main as any).nested.bar.baz
+//   // v.then(console.log).catch(console.warn)
+//   console.log('foo:', v)
+// }, 10000)
