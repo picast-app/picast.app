@@ -51,11 +51,7 @@ export const pick = <T extends obj, K extends keyof T>(
   v: T,
   ...keys: K[]
 ): Pick<T, K> =>
-  Object.fromEntries(
-    Object.entries(v).flatMap(([k, v]) =>
-      keys.includes(k as any) ? [[k, v]] : []
-    )
-  ) as any
+  Object.fromEntries(keys.filter(k => k in v).map(k => [k, v[k]])) as any
 
 export const omit = <T extends obj, K extends keyof T>(
   v: T,
