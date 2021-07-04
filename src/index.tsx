@@ -7,6 +7,7 @@ import 'i18n/strings'
 import store from 'store/uiThread/api'
 import App from './App'
 import 'store/uiThread/hooks'
+import 'fiber'
 
 store.listenX('settings.debug.printLogs', togglePrint)
 
