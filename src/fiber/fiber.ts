@@ -28,7 +28,7 @@ export function expose<T>(api: T, endpoint: Endpoint = self as any) {
       const ctx = isRoot ? undefined : select(api, e.data.path.slice(0, -1))
       const node = isRoot ? api : select(ctx, e.data.path.slice(-1))
       if (e.data.type === 'GET') data = node
-      else data = await node.call(ctx)
+      else data = await node.call(ctx, ...(e.data.args ?? []))
     } catch (e) {
       data = pick(e instanceof Error ? e : Error(e), 'message', 'name', 'stack')
       isError = true
@@ -53,8 +53,8 @@ const proxy = (
       return proxy(send, ...path, p)
     },
 
-    apply() {
-      return send({ type: 'INV', path })
+    apply(_, __, args) {
+      return send({ type: 'INV', path, args })
     },
   })
 
@@ -93,7 +93,12 @@ interface Endpoint {
   removeEventListener: λ<[string, EventListenerOrEventListenerObject, any?]>
 }
 
-type FiberRequest = { __fid: number; type: 'GET' | 'INV'; path: string[] }
+type FiberRequest = {
+  __fid: number
+  type: 'GET' | 'INV'
+  path: string[]
+  args?: any[]
+}
 type FiberReponse = { __fid: number; data: unknown; isError?: boolean }
 
 type Wrapped<T> = T extends λ<infer TA, infer TR>
