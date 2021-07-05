@@ -9,3 +9,6 @@ export const isError = (
   v: unknown,
   b?: boolean
 ): v is Pick<Error, 'message' | 'name' | 'stack'> => !!b
+
+export const select = (node: any, path: (string | number)[]): any =>
+  !path.length ? node : select(node[path[0]], path.slice(1))

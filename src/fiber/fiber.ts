@@ -1,6 +1,7 @@
 import { oneOf } from 'utils/equal'
 import { bound } from 'utils/function'
 import { mapValues, pick } from 'utils/object'
+import { isFiberMsg, isError, genId, select } from './util'
 import {
   FiberResponse,
   FiberRequest,
@@ -8,13 +9,16 @@ import {
   Endpoint,
   proxied,
 } from './wellKnown'
-import { isFiberMsg, isError, genId } from './util'
 
 export const wrap = <T>(endpoint: Endpoint): Wrapped<T> =>
   expose(undefined, endpoint)
 
 export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
   const pending: Record<number, [res: λ, rej: λ]> = {}
+  const proxyMap: Record<number, WeakRef<any>> = {}
+  const registry = new FinalizationRegistry((id: number) => {
+    delete proxyMap[id]
+  })
 
   const send = (msg: any) => {
     const __fid = genId()
@@ -23,12 +27,14 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
     return new Promise((res, rej) => (pending[__fid] = [res, rej]))
   }
 
-  const proxyMap: Record<number, any> = {}
-
   const packArg = (arg: any): any => {
     if (!oneOf(typeof arg, 'object', 'function') || arg === null) return arg
-    if (!(proxied in arg)) return mapValues(arg, packArg)
-    proxyMap[arg[proxied]] ??= arg
+    if (!(proxied in arg)) {
+      if (typeof arg === 'function') proxy(arg)
+      else return mapValues(arg, packArg)
+    }
+    proxyMap[arg[proxied]] ??=
+      (registry.register(arg, arg[proxied]), new WeakRef(arg))
     return { __proxy: arg[proxied] }
   }
 
@@ -37,9 +43,6 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
     if ('__proxy' in arg) return createProxy(send, arg.__proxy)
     return mapValues(arg, unpackArg)
   }
-
-  const select = (node: any, path: (string | number)[]): any =>
-    !path.length ? node : select(node[path[0]], path.slice(1))
 
   endpoint.addEventListener('message', async e => {
     const msg = (e as any).data
@@ -54,8 +57,17 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
 
     try {
       const isRoot = msg.path.length === 0
-      const ctx = isRoot ? undefined : select(api, msg.path.slice(0, -1))
-      const node = isRoot ? api : select(ctx, msg.path.slice(-1))
+      const root = typeof msg.path[0] === 'number' ? proxyMap : api
+      const ctx = isRoot ? undefined : select(root, msg.path.slice(0, -1))
+      let node = isRoot ? api : select(ctx, msg.path.slice(-1))
+      if (
+        (root === proxyMap && node === undefined) ||
+        (node instanceof WeakRef && (node = node.deref()) === undefined)
+      )
+        throw new ReferenceError(
+          `tried to access unreferenced proxy ${msg.path[0]}`
+        )
+
       if (msg.type === 'GET') data = node
       else data = await node.call(ctx, ...(msg.args?.map(unpackArg) ?? []))
     } catch (e) {
@@ -97,11 +109,12 @@ const createProxy = (
 
       return createProxy(send, ...path, p)
     },
-
     apply: (_, __, args) => send({ type: 'INV', path, args }),
   })
 
-export const proxy = <T>(value: T): T & { [proxied]: number } =>
+export const proxy = <T extends Record<any, any>>(
+  value: T
+): T & { [proxied]: number } =>
   proxied in value
     ? value
     : (Object.assign(value, { [proxied]: genId() }) as any)

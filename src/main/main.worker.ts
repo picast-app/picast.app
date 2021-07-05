@@ -1,3 +1,4 @@
+import 'polyfills'
 import 'utils/logger'
 import { expose } from 'comlink'
 import { query, mutate } from 'api/calls'

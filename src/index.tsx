@@ -1,4 +1,5 @@
 import 'styles'
+import 'polyfills'
 import { togglePrint } from 'utils/logger'
 import 'components/webcomponents'
 import React from 'react'
