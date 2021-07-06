@@ -1,4 +1,7 @@
 export const proxied = Symbol('proxied')
+export const release = Symbol('release')
+
+export type Proxied<T> = T & { [proxied]: number; [release]?: () => void }
 
 export type FiberRequest = {
   __fid: number

@@ -6,8 +6,10 @@ import {
   FiberResponse,
   FiberRequest,
   Wrapped,
+  Proxied,
   Endpoint,
   proxied,
+  release,
 } from './wellKnown'
 
 export const wrap = <T>(endpoint: Endpoint): Wrapped<T> =>
@@ -22,23 +24,31 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
 
   const send = (msg: any) => {
     const __fid = genId()
-    if (msg.args) msg.args = msg.args.map(pack)
+    if (msg.args) msg.args = msg.args.map(pack, false)
     endpoint.postMessage({ __fid, ...msg })
     return new Promise((res, rej) => (pending[__fid] = [res, rej]))
   }
 
+  const proxyRefs: Record<number, any> = {}
+
   const pack = (arg: any): any => {
     if (!oneOf(typeof arg, 'object', 'function') || arg === null) return arg
     if (!(proxied in arg)) {
-      if (typeof arg === 'function') proxy(arg)
+      if (typeof arg === 'function') proxy(arg, false)
       else return Array.isArray(arg) ? arg.map(pack) : mapValues(arg, pack)
     }
-    proxyMap[arg[proxied]] ??=
-      (registry.register(arg, arg[proxied]), new WeakRef(arg))
 
     if (!(arg[proxied] in proxyMap)) {
       proxyMap[arg[proxied]] = new WeakRef(arg)
       registry.register(arg, arg[proxied])
+      if (release in arg && !arg[release]) {
+        proxyRefs[arg[proxied]] = arg
+        arg[release] = () => {
+          delete proxyRefs[arg[release]]
+          arg[release] = undefined
+        }
+      }
+      if (debug) proxyStrs[arg[proxied]] = String(arg)
     }
 
     return { __proxy: arg[proxied] }
@@ -54,8 +64,10 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
     const msg = (e as any).data
     if (!isFiberMsg(msg)) return
     // todo: investigate scope behavior of proxied return
-    if ('type' in msg) endpoint.postMessage(pack(await handleRequest(msg)))
-    else handleResponse(msg)
+    if ('type' in msg) {
+      const res = await handleRequest(msg)
+      endpoint.postMessage(pack(res))
+    } else handleResponse(msg)
   })
 
   async function handleRequest(msg: FiberRequest): Promise<FiberResponse> {
@@ -72,7 +84,13 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
         (node instanceof WeakRef && (node = node.deref()) === undefined)
       )
         throw new ReferenceError(
-          `tried to access unreferenced proxy ${msg.path[0]}`
+          `tried to access unreferenced proxy ${msg.path[0]}` +
+            (!debug || !(msg.path[0] in proxyStrs)
+              ? ''
+              : `\n\n${proxyStrs[msg.path[0] as number].replace(
+                  /(^|\n)/g,
+                  '$1| '
+                )}\n`)
         )
 
       if (msg.type === 'GET') data = node
@@ -122,8 +140,15 @@ const createProxy = (
   })
 
 export const proxy = <T extends Record<any, any>>(
-  value: T
-): T & { [proxied]: number } =>
+  value: T,
+  keepRef = true
+): Proxied<T> =>
   proxied in value
     ? value
-    : (Object.assign(value, { [proxied]: genId() }) as any)
+    : (Object.assign(value, {
+        [proxied]: genId(),
+        ...(keepRef && { [release]: undefined }),
+      }) as any)
+
+const debug = process.env.NODE_ENV === 'development'
+const proxyStrs: Record<number, string> = {}
