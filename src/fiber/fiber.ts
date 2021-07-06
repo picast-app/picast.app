@@ -22,32 +22,39 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
 
   const send = (msg: any) => {
     const __fid = genId()
-    if (msg.args) msg.args = msg.args.map(packArg)
+    if (msg.args) msg.args = msg.args.map(pack)
     endpoint.postMessage({ __fid, ...msg })
     return new Promise((res, rej) => (pending[__fid] = [res, rej]))
   }
 
-  const packArg = (arg: any): any => {
+  const pack = (arg: any): any => {
     if (!oneOf(typeof arg, 'object', 'function') || arg === null) return arg
     if (!(proxied in arg)) {
       if (typeof arg === 'function') proxy(arg)
-      else return mapValues(arg, packArg)
+      else return Array.isArray(arg) ? arg.map(pack) : mapValues(arg, pack)
     }
     proxyMap[arg[proxied]] ??=
       (registry.register(arg, arg[proxied]), new WeakRef(arg))
+
+    if (!(arg[proxied] in proxyMap)) {
+      proxyMap[arg[proxied]] = new WeakRef(arg)
+      registry.register(arg, arg[proxied])
+    }
+
     return { __proxy: arg[proxied] }
   }
 
-  const unpackArg = (arg: any): any => {
+  const unpack = (arg: any): any => {
     if (typeof arg !== 'object' || arg === null) return arg
     if ('__proxy' in arg) return createProxy(send, arg.__proxy)
-    return mapValues(arg, unpackArg)
+    return Array.isArray(arg) ? arg.map(unpack) : mapValues(arg, unpack)
   }
 
   endpoint.addEventListener('message', async e => {
     const msg = (e as any).data
     if (!isFiberMsg(msg)) return
-    if ('type' in msg) endpoint.postMessage(await handleRequest(msg))
+    // todo: investigate scope behavior of proxied return
+    if ('type' in msg) endpoint.postMessage(pack(await handleRequest(msg)))
     else handleResponse(msg)
   })
 
@@ -69,7 +76,7 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
         )
 
       if (msg.type === 'GET') data = node
-      else data = await node.call(ctx, ...(msg.args?.map(unpackArg) ?? []))
+      else data = await node.call(ctx, ...(msg.args?.map(unpack) ?? []))
     } catch (e) {
       data = pick(e instanceof Error ? e : Error(e), 'message', 'name', 'stack')
       isError = true
@@ -82,7 +89,7 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
     if (!(msg.__fid in pending)) return
     const [resolve, reject] = pending[msg.__fid]
     delete pending[msg.__fid]
-    if (!isError(msg.data, msg.isError)) return resolve(msg.data)
+    if (!isError(msg.data, msg.isError)) return resolve(unpack(msg.data))
     const err = new Error(msg.data.message)
     err.name = msg.data.name
     if (err.stack && msg.data.stack) {
@@ -105,7 +112,9 @@ const createProxy = (
       if (typeof p === 'symbol') throw Error(`can't access symbol ${String(p)}`)
 
       if (oneOf(p, ...(['then', 'catch', 'finally'] as const)))
-        return bound(send({ type: 'GET', path }), p)
+        return typeof path.slice(-1)[0] === 'string'
+          ? bound(send({ type: 'GET', path }), p)
+          : undefined
 
       return createProxy(send, ...path, p)
     },
