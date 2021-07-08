@@ -1,16 +1,19 @@
 import { oneOf } from 'utils/equal'
 import { bound } from 'utils/function'
 import { mapValues, pick } from 'utils/object'
+import { unzipWith } from 'utils/array'
 import { isFiberMsg, isError, genId, select } from './util'
 import {
   FiberResponse,
   FiberRequest,
-  Wrapped,
+  Wrapped as _Wrapped,
   Proxied,
   Endpoint,
   proxied,
   release,
+  transfer as symTransfer,
 } from './wellKnown'
+export * from './wellKnown'
 
 export const wrap = <T>(endpoint: Endpoint): Wrapped<T> =>
   expose(undefined, endpoint)
@@ -24,18 +27,47 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
 
   const send = (msg: any) => {
     const __fid = genId()
-    if (msg.args) msg.args = msg.args.map(pack, false)
-    endpoint.postMessage({ __fid, ...msg })
+    const transfer: Transferable[] = []
+    if (msg.args)
+      msg.args = unzipWith(
+        (msg.args as any[]).map(pack),
+        (c, a = []) => [...a, c],
+        v => transfer.push(...v)
+      )[0]
+    endpoint.postMessage({ __fid, ...msg }, transfer)
     return new Promise((res, rej) => (pending[__fid] = [res, rej]))
   }
 
   const proxyRefs: Record<number, any> = {}
 
-  const pack = (arg: any): any => {
-    if (!oneOf(typeof arg, 'object', 'function') || arg === null) return arg
+  const pack = (arg: any): [arg: any, transfer: Transferable[]] => {
+    if (!oneOf(typeof arg, 'object', 'function') || arg === null)
+      return [arg, []]
     if (!(proxied in arg)) {
       if (typeof arg === 'function') proxy(arg, false)
-      else return Array.isArray(arg) ? arg.map(pack) : mapValues(arg, pack)
+      else {
+        if (!Array.isArray(arg)) {
+          const transfers: Transferable[] = []
+          return [
+            mapValues(arg, v => {
+              const [p, t] = pack(v)
+              transfers.push(...t)
+              return p
+            }),
+            transfers,
+          ]
+        }
+
+        if (symTransfer in arg) return [arg, [arg as any]]
+
+        return arg.length
+          ? unzipWith(
+              arg.map(pack),
+              (v, a = []) => [...a, v],
+              (v, a: Transferable[] = []) => [...a, ...v]
+            )
+          : [[], []]
+      }
     }
 
     if (!(arg[proxied] in proxyMap)) {
@@ -51,7 +83,7 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
       if (debug) proxyStrs[arg[proxied]] = String(arg)
     }
 
-    return { __proxy: arg[proxied] }
+    return [{ __proxy: arg[proxied] }, []]
   }
 
   const unpack = (arg: any): any => {
@@ -66,7 +98,9 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
     // todo: investigate scope behavior of proxied return
     if ('type' in msg) {
       const res = await handleRequest(msg)
-      endpoint.postMessage(pack(res))
+      const [data, transfer] = pack(res.data)
+      res.data = data
+      endpoint.postMessage(res, transfer)
     } else handleResponse(msg)
   })
 
@@ -75,26 +109,30 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
     let isError = false
 
     try {
-      const isRoot = msg.path.length === 0
-      const root = typeof msg.path[0] === 'number' ? proxyMap : api
-      const ctx = isRoot ? undefined : select(root, msg.path.slice(0, -1))
-      let node = isRoot ? api : select(ctx, msg.path.slice(-1))
-      if (
-        (root === proxyMap && node === undefined) ||
-        (node instanceof WeakRef && (node = node.deref()) === undefined)
-      )
-        throw new ReferenceError(
-          `tried to access unreferenced proxy ${msg.path[0]}` +
-            (!debug || !(msg.path[0] in proxyStrs)
-              ? ''
-              : `\n\n${proxyStrs[msg.path[0] as number].replace(
-                  /(^|\n)/g,
-                  '$1| '
-                )}\n`)
+      if (msg.path.length === 1 && msg.path[0] in internal) {
+        data = internal[msg.path[0] as keyof typeof internal](api)
+      } else {
+        const isRoot = msg.path.length === 0
+        const root = typeof msg.path[0] === 'number' ? proxyMap : api
+        const ctx = isRoot ? undefined : select(root, msg.path.slice(0, -1))
+        let node = isRoot ? api : select(ctx, msg.path.slice(-1))
+        if (
+          (root === proxyMap && node === undefined) ||
+          (node instanceof WeakRef && (node = node.deref()) === undefined)
         )
+          throw new ReferenceError(
+            `tried to access unreferenced proxy ${msg.path[0]}` +
+              (!debug || !(msg.path[0] in proxyStrs)
+                ? ''
+                : `\n\n${proxyStrs[msg.path[0] as number].replace(
+                    /(^|\n)/g,
+                    '$1| '
+                  )}\n`)
+          )
 
-      if (msg.type === 'GET') data = node
-      else data = await node.call(ctx, ...(msg.args?.map(unpack) ?? []))
+        if (msg.type === 'GET') data = node
+        else data = await node.call(ctx, ...(msg.args?.map(unpack) ?? []))
+      }
     } catch (e) {
       data = pick(e instanceof Error ? e : Error(e), 'message', 'name', 'stack')
       isError = true
@@ -120,6 +158,16 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
 
   return createProxy(send)
 }
+
+const internal = {
+  createPort(api: any) {
+    const channel = new MessageChannel()
+    expose(api, channel.port1)
+    return transfer(channel.port2)
+  },
+}
+
+type Wrapped<T> = _Wrapped<T> & typeof internal
 
 const createProxy = (
   send: (msg: Omit<FiberRequest, '__fid'>) => Promise<any>,
@@ -149,6 +197,9 @@ export const proxy = <T extends Record<any, any>>(
         [proxied]: genId(),
         ...(keepRef && { [release]: undefined }),
       }) as any)
+
+export const transfer = <T>(v: T): T & { [symTransfer]: true } =>
+  Object.assign(v, { [symTransfer]: true } as any)
 
 const debug = process.env.NODE_ENV === 'development'
 const proxyStrs: Record<number, string> = {}
