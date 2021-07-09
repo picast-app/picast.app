@@ -1,6 +1,6 @@
-import { wrap, proxy, createEndpoint } from 'comlink'
 import MainWorker from 'main/main.worker'
 import type { API } from 'main/main.worker'
+import { wrap, proxy } from 'fiber'
 import { snack } from 'utils/notification'
 import uiAPI from './uiThreadAPI'
 
@@ -9,18 +9,16 @@ export { proxy }
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')
 
 const mainWorker: Worker = new (MainWorker as any)()
+
 export const main = wrap<API>(mainWorker)
 
 async function init() {
-  const [{ active }, port] = await Promise.all([
-    navigator.serviceWorker.ready,
-    main[createEndpoint](),
-  ])
-
+  const { active } = await navigator.serviceWorker.ready
   if (!active) return
-
-  active!.postMessage({ type: 'MAIN_WORKER_PORT', port }, [port])
+  const port = await main.createPort()
+  active.postMessage({ type: 'MAIN_WORKER_PORT', port }, [port])
 }
+
 init()
 
 Object.entries(uiAPI).forEach(([k, v]) => {
@@ -57,9 +55,3 @@ navigator.serviceWorker.onmessage = e => {
 
 //
 ;(window as any).idb = { get: main.idbGet, put: main.idbPut }
-
-// setTimeout(async () => {
-//   const v = await (main as any).nested.bar.baz
-//   // v.then(console.log).catch(console.warn)
-//   console.log('foo:', v)
-// }, 10000)

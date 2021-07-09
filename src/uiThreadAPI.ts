@@ -1,5 +1,5 @@
 import { querySub } from 'utils/css/query'
-import { proxy } from 'comlink'
+import { proxy } from 'fiber'
 
 const api = {
   alert: (msg?: any) => {

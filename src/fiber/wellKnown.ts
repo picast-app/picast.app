@@ -1,5 +1,6 @@
 export const proxied = Symbol('proxied')
 export const release = Symbol('release')
+export const transfer = Symbol('transfer')
 
 export type Proxied<T> = T & { [proxied]: number; [release]?: () => void }
 
@@ -31,6 +32,5 @@ type ProxyReturn<T> = T extends PromiseLike<infer I>
 
 export interface Endpoint {
   postMessage(message: any, transfer?: Transferable[]): void
-  addEventListener: λ<[string, EventListenerOrEventListenerObject, any?]>
-  removeEventListener: λ<[string, EventListenerOrEventListenerObject, any?]>
+  onmessage: λ | null
 }

@@ -1,6 +1,6 @@
 import 'polyfills'
 import 'utils/logger'
-import { expose } from 'comlink'
+import { expose } from 'fiber'
 import { query, mutate } from 'api/calls'
 import IDBInterface from './store/idbInterface'
 import bufferInstance from 'utils/instantiationBuffer'

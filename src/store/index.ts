@@ -7,7 +7,7 @@ import library from 'store/handlers/library'
 import Player from 'store/handlers/player'
 import episodes from 'store/handlers/episodes'
 import shownotes from 'store/handlers/shownotes'
-import { proxy } from 'comlink'
+import { proxy } from 'fiber'
 import { omit } from 'utils/object'
 
 export type Store = StoreX<State>
