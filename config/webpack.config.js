@@ -325,7 +325,6 @@ const shared =
 
           {
             test: /\.worker\.ts$/,
-            // use: { loader: 'worker-loader' },
             loader: 'worker-loader',
             options: {
               filename: '[id].worker.js',

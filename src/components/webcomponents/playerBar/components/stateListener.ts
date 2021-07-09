@@ -1,5 +1,7 @@
 import Service from './base'
 import store from 'store/uiThread/api'
+import { main } from 'workers'
+import { proxy, release } from 'fiber'
 import { callAll } from 'utils/function'
 
 export default class StateListener extends Service {
@@ -11,6 +13,10 @@ export default class StateListener extends Service {
       }),
       store.listenX('player.status', this.player.onPlayStateChange)
     )
+
+    const cb = proxy(this.player.onJump)
+    main.playerOnJump(cb)
+    this.cancellers.push(() => main.playerUnsubJump(cb), cb[release])
   }
 
   disable() {
@@ -18,5 +24,5 @@ export default class StateListener extends Service {
     this.cancellers = []
   }
 
-  private cancellers: (() => void)[] = []
+  private cancellers: ((() => void) | undefined)[] = []
 }

@@ -16,8 +16,9 @@ export default class Audio extends HTMLElement {
     this.attachShadow({ mode: 'open' })
     this.audio = document.createElement('audio')
     this.audio.preload = 'auto'
-    this.audio.volume = 0.2
+    this.audio.volume = 0.4
     this.shadowRoot!.append(this.audio)
+    this.style.display = 'none'
 
     for (const [k, v] of Object.entries(this.handlers))
       this.audio.addEventListener(k, v)
@@ -47,6 +48,7 @@ export default class Audio extends HTMLElement {
         this.dispatch('src', current || null)
         break
       case 'controls':
+        this.style.display = current ? 'initial' : 'none'
         this.audio.toggleAttribute(name, current)
         break
     }
@@ -119,6 +121,10 @@ export default class Audio extends HTMLElement {
 
   public get time() {
     return this.audio.currentTime
+  }
+
+  public set time(seconds: number) {
+    this.audio.currentTime = seconds
   }
 
   private handlers: { [K in AudioEvent]?: λ<[]> } = {

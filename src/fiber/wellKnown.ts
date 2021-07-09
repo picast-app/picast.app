@@ -1,8 +1,13 @@
 export const proxied = Symbol('proxied')
 export const release = Symbol('release')
 export const transfer = Symbol('transfer')
+export const key = Symbol('key')
 
-export type Proxied<T> = T & { [proxied]: number; [release]?: () => void }
+export type Proxied<T> = T & {
+  [proxied]: number
+  [release]?: () => void
+  [key]: T extends λ ? [...(string | number)[], number] : (string | number)[]
+}
 
 export type FiberRequest = {
   __fid: number

@@ -12,6 +12,7 @@ import {
   proxied,
   release,
   transfer as symTransfer,
+  key,
 } from './wellKnown'
 export * from './wellKnown'
 
@@ -180,6 +181,7 @@ const createProxy = (
 ): any =>
   new Proxy(() => {}, {
     get(_, p) {
+      if (p === key) return [...path]
       if (typeof p === 'symbol') throw Error(`can't access symbol ${String(p)}`)
 
       if (oneOf(p, ...(['then', 'catch', 'finally'] as const)))

@@ -10,7 +10,7 @@ import { bindThis } from 'utils/proto'
 import { PlayState } from 'utils/audioState'
 import { timeLimit } from 'utils/promise'
 import Job from 'utils/job'
-// import { time } from 'utils/decorators'
+import { main } from 'workers'
 
 export default class Player extends Component {
   static tagName = 'picast-player'
@@ -19,7 +19,6 @@ export default class Player extends Component {
   private mediaSession = new MediaSession(this)
   private interaction = new Interaction(this)
   private stateListener = new StateListener(this)
-  // private events = new EventDispatcher()
   private audio = this.shadowRoot!.querySelector<Audio>('picast-audio')!
 
   constructor() {
@@ -43,10 +42,7 @@ export default class Player extends Component {
     this.mediaSession.enable()
     this.stateListener.enable()
 
-    // window.addEventListener('pagehide', this.forcedSync)
-    this.progressBars.forEach(bar =>
-      bar.addEventListener('jump', this.onBarJump as any)
-    )
+    this.getProgressBars().forEach(this.attachBar)
     this.setAttribute('hidden', '')
     this.barObserver.observe(this, { childList: true, subtree: true })
   }
@@ -56,10 +52,7 @@ export default class Player extends Component {
     this.mediaSession.disable()
     this.stateListener.disable()
 
-    // window.removeEventListener('pagehide', this.forcedSync)
-    this.progressBars.forEach(bar =>
-      bar.removeEventListener('jump', this.onBarJump as any)
-    )
+    this.progressBars.forEach(this.detachBar)
     this.barObserver.disconnect()
   }
 
@@ -88,15 +81,6 @@ export default class Player extends Component {
   private currentTimeJob = new Job(30000, () => {
     this.setProgressAttr('current', this.audio.time)
   })
-
-  public jump(pos: number, relative = false) {
-    // if (relative) pos = this.audioService.time + pos
-    // this.audioService.time = pos
-    // logger.info('jump to', pos)
-    // this.setProgressAttr('current', pos)
-    // this.events.call('jump', pos, this.currentId)
-    // this.syncProgress()
-  }
 
   // events
 
@@ -172,8 +156,10 @@ export default class Player extends Component {
     // await this.syncProgress()
   }
 
-  private onBarJump(e: CustomEvent<number>) {
-    this.jump((e as CustomEvent<number>).detail)
+  onJump(seconds: number) {
+    logger.info('on jump', seconds)
+    this.audio.time = seconds
+    this.setProgressAttr('current', seconds)
   }
 
   // utils
@@ -189,9 +175,33 @@ export default class Player extends Component {
       this.audio.addEventListener('src', onChange)
     })
 
-  private progressBars = this.getProgressBars()
+  @logger.time
+  private async getSrc(id?: EpisodeId) {
+    id ??= await store.getX('player.current')
+    if (!id) throw Error(`can't get src (no episode playing)`)
+    const episode = await store.getX('episodes.*.*', ...id)
+    if (!episode?.file)
+      throw Error(`can't get src (no episode ${id[0]} ${id[1]})`)
+    return episode.file
+  }
 
-  private getProgressBars() {
+  private progressBars: Progress[] = []
+
+  private attachBar(bar: Progress) {
+    bar.addEventListener('jump', this.onBarJump as any)
+    this.progressBars.push(bar)
+  }
+
+  private detachBar(bar: Progress) {
+    bar.removeEventListener('jump', this.onBarJump as any)
+    this.progressBars = this.progressBars.filter(v => v !== bar)
+  }
+
+  private async onBarJump(e: CustomEvent<number>) {
+    await main.playerJump((e as CustomEvent<number>).detail)
+  }
+
+  private getProgressBars(): Progress[] {
     return [
       ...Array.from(
         this.shadowRoot!.querySelectorAll<Progress>('player-progress')
@@ -216,15 +226,9 @@ export default class Player extends Component {
           ...((v as any).querySelectorAll?.('player-progress') ?? []),
         ])
     )
-    for (const bar of addedBars) {
-      bar.addEventListener('jump', this.onBarJump as any)
-      // bar.setAttribute('current', this.audioService.time)
-      this.progressBars.push(bar)
-    }
-    for (const bar of removedBars) {
-      bar.removeEventListener('jump', this.onBarJump as any)
-      this.progressBars = this.progressBars.filter(v => v !== bar)
-    }
+    // for (const bar of addedBars) this.attachBar(bar)
+    addedBars.forEach(this.attachBar)
+    removedBars.forEach(this.detachBar)
   })
 
   private setProgressAttr(name: string, value: string | number | boolean) {
@@ -235,15 +239,5 @@ export default class Player extends Component {
 
   private select<T extends HTMLElement>(selector: string): T[] {
     return Array.from(this.shadowRoot!.querySelectorAll<T>(selector))
-  }
-
-  @logger.time
-  private async getSrc(id?: EpisodeId) {
-    id ??= await store.getX('player.current')
-    if (!id) throw Error(`can't get src (no episode playing)`)
-    const episode = await store.getX('episodes.*.*', ...id)
-    if (!episode?.file)
-      throw Error(`can't get src (no episode ${id[0]} ${id[1]})`)
-    return episode.file
   }
 }

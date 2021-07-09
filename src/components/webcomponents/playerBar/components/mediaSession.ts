@@ -9,8 +9,8 @@ export default class Session extends Service {
     ms.setActionHandler('play', () => main.playerResume())
     ms.setActionHandler('pause', () => main.playerPause())
     ms.setActionHandler('stop', () => main.playerPause())
-    ms.setActionHandler('nexttrack', () => this.player.jump(30, true))
-    ms.setActionHandler('previoustrack', () => this.player.jump(-15, true))
+    ms.setActionHandler('nexttrack', () => main.playerJump(30, true))
+    ms.setActionHandler('previoustrack', () => main.playerJump(-15, true))
   }
 
   public disable() {

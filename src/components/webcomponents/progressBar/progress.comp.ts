@@ -106,7 +106,6 @@ export default class Progress extends Component {
     if (old === current) return
     switch (name) {
       case 'current':
-        logger.info('set current', current)
         this.current = parseFloat(current)
         this.labelProg = this.current
         this.playStart = performance.now()
