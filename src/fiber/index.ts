@@ -46,6 +46,8 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
     if (!(proxied in arg)) {
       if (typeof arg === 'function') proxy(arg, false)
       else {
+        if (symTransfer in arg) return [arg, [arg as any]]
+
         if (!Array.isArray(arg)) {
           const transfers: Transferable[] = []
           return [
@@ -57,8 +59,6 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
             transfers,
           ]
         }
-
-        if (symTransfer in arg) return [arg, [arg as any]]
 
         return arg.length
           ? unzipWith(
@@ -89,10 +89,14 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
   const unpack = (arg: any): any => {
     if (typeof arg !== 'object' || arg === null) return arg
     if ('__proxy' in arg) return createProxy(send, arg.__proxy)
-    return Array.isArray(arg) ? arg.map(unpack) : mapValues(arg, unpack)
+    return Array.isArray(arg)
+      ? arg.map(unpack)
+      : arg.constructor === Object
+      ? mapValues(arg, unpack)
+      : arg
   }
 
-  endpoint.addEventListener('message', async e => {
+  endpoint.onmessage = async e => {
     const msg = (e as any).data
     if (!isFiberMsg(msg)) return
     // todo: investigate scope behavior of proxied return
@@ -102,7 +106,7 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
       res.data = data
       endpoint.postMessage(res, transfer)
     } else handleResponse(msg)
-  })
+  }
 
   async function handleRequest(msg: FiberRequest): Promise<FiberResponse> {
     let data: any
@@ -110,12 +114,12 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
 
     try {
       if (msg.path.length === 1 && msg.path[0] in internal) {
-        data = internal[msg.path[0] as keyof typeof internal](api)
+        data = internal[msg.path[0] as keyof typeof internal](api)()
       } else {
         const isRoot = msg.path.length === 0
         const root = typeof msg.path[0] === 'number' ? proxyMap : api
         const ctx = isRoot ? undefined : select(root, msg.path.slice(0, -1))
-        let node = isRoot ? api : select(ctx, msg.path.slice(-1))
+        let node = isRoot ? api : await select(ctx, msg.path.slice(-1))
         if (
           (root === proxyMap && node === undefined) ||
           (node instanceof WeakRef && (node = node.deref()) === undefined)
@@ -160,14 +164,15 @@ export function expose<T>(api: T, endpoint: Endpoint = self): Wrapped<T> {
 }
 
 const internal = {
-  createPort(api: any) {
+  createPort: (api: any) => () => {
     const channel = new MessageChannel()
     expose(api, channel.port1)
     return transfer(channel.port2)
   },
 }
+type Internal = { [K in keyof typeof internal]: ReturnType<typeof internal[K]> }
 
-type Wrapped<T> = _Wrapped<T> & typeof internal
+type Wrapped<T> = _Wrapped<T & Internal>
 
 const createProxy = (
   send: (msg: Omit<FiberRequest, '__fid'>) => Promise<any>,
