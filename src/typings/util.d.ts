@@ -33,5 +33,5 @@ type GqlType<T> = Optional<NullOpt<T>, '__typename'>
 
 type CondArr<T, K> = T extends any[] ? K[] : K
 
-type λ<T extends any[] = any[]> = (...args: T) => any
+type λ<TA extends any[] = any[], TR = any> = (...args: TA) => TR
 type Fun = λ

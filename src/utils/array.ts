@@ -33,3 +33,39 @@ export const diff = <T>(
   newSet.filter(v => !oldSet.includes(v)),
   oldSet.filter(v => !newSet.includes(v)),
 ]
+
+export const set = <T extends any[]>(arr: T, i: number, v: T) =>
+  [...[...arr, ...Array(i)].slice(0, i), v, ...arr.slice(i + 1)] as T
+
+type Zip<T extends unknown[][]> = {
+  [I in keyof T]: T[I] extends (infer U)[] ? U : never
+}[]
+
+export const zip = <T extends unknown[][]>(...lists: T): Zip<T> =>
+  [...Array(Math.min(...lists.map(({ length }) => length)))].map((_, i) =>
+    lists.map(l => l[i])
+  ) as any
+
+export const zipWith = <T extends unknown[][], U>(
+  zipper: (...args: Zip<T>[0]) => U,
+  ...lists: T
+): U[] =>
+  [...Array(Math.min(...lists.map(({ length }) => length)))].map((_, i) =>
+    zipper(...(lists.map(l => l[i]) as any))
+  )
+
+type Unzip<T extends unknown[]> = { [I in keyof T]: T[I][] }
+
+export const unzip = <T extends unknown[]>(...zipped: T[]): Unzip<T> =>
+  zipped.reduce((a, c) => c.map((v, i) => [...(a[i] ?? []), v]), [] as any)
+
+export const unzipWith = <
+  T extends unknown[],
+  U extends {
+    [I in keyof T]: λ<[cur: T[I], acc: any]>
+  }
+>(
+  zipped: T[],
+  ...unzippers: U
+): { [I in keyof U]: ReturnType<U[I]> } =>
+  zipped.reduce((a, c) => c.map((v, i) => unzippers[i](v, a[i])), [] as any)

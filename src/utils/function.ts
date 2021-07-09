@@ -46,3 +46,6 @@ export const asyncNullChain =
 type MaybeAsync<T extends λ> = (
   ...args: Parameters<T>
 ) => MaybeProm<ReturnType<T>>
+
+export const bound = <T, K extends FilterKeys<T, λ>>(obj: T, method: K): T[K] =>
+  (obj[method] as any).bind(obj)

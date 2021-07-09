@@ -1,7 +1,6 @@
 import { togglePrint } from 'utils/logger'
 import { asyncNullChain } from 'utils/function'
-import { wrap, proxy } from 'comlink'
-import type { Remote } from 'comlink'
+import { wrap, proxy, Wrapped } from 'fiber'
 import type { API as MainAPI } from 'main/main.worker'
 
 declare let self: ServiceWorkerGlobalScope
@@ -15,8 +14,8 @@ const expectedCaches = [STATIC_CACHE, PHOTO_CACHE]
 const IS_LOCAL = ['localhost', '127.0.0.1'].includes(self.location.hostname)
 const IMG_HOST = /^https:\/\/(img|photon)\.picast\.app/
 
-let setMainWorker: (v: Remote<MainAPI>) => void
-const mainWorker: Promise<Remote<MainAPI>> = new Promise(res => {
+let setMainWorker: (v: Wrapped<MainAPI>) => void
+const mainWorker: Promise<Wrapped<MainAPI>> = new Promise(res => {
   setMainWorker = res
 })
 

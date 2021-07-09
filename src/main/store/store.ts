@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/require-await */
 import dbProm, { gql as convert } from './idb'
 import * as api from 'api/calls'
-import { proxy } from 'comlink'
+import { proxy } from 'fiber'
 import { Episode, EpisodeBase } from './types'
 import type { Podcast } from 'store/state'
 import * as Feed from '../feed'
