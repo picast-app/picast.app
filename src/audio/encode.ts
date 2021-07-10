@@ -49,12 +49,10 @@ function encodeWAV(
 
 function interleave(left: Float32Array, right: Float32Array) {
   const result = new Float32Array(left.length + right.length)
-
-  for (let i = 0, e = 0; i < length; i++, e++) {
+  for (let i = 0, e = 0; i < result.length; e++) {
     result[i++] = left[e]
-    result[i++] = left[e]
+    result[i++] = right[e]
   }
-
   return result
 }
 
