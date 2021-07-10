@@ -37,6 +37,11 @@ export const diff = <T>(
 export const set = <T extends any[]>(arr: T, i: number, v: T) =>
   [...[...arr, ...Array(i)].slice(0, i), v, ...arr.slice(i + 1)] as T
 
+export const remove = <T>(arr: T[], v: T) => {
+  let i: number
+  while ((i = arr.indexOf(v)) >= 0) arr.splice(i, 1)
+}
+
 export const last = <T extends unknown[]>(arr: T) =>
   arr.slice(-1)[0] as T extends [...unknown[], infer U] ? U : undefined
 

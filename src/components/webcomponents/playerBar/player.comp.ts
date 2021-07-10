@@ -7,10 +7,12 @@ import Interaction from './components/interaction'
 import StateListener from './components/stateListener'
 import store from 'store/uiThread/api'
 import { bindThis } from 'utils/proto'
-import { PlayState } from 'utils/audioState'
+import { PlayState } from 'audio/state'
 import { timeLimit } from 'utils/promise'
 import Job from 'utils/job'
 import { main } from 'workers'
+import FakeAudio from 'audio/fakeAudio'
+import serialAudio from 'audio/serialAdapter'
 
 export default class Player extends Component {
   static tagName = 'picast-player'
@@ -19,7 +21,9 @@ export default class Player extends Component {
   private mediaSession = new MediaSession(this)
   private interaction = new Interaction(this)
   private stateListener = new StateListener(this)
-  private audio = this.shadowRoot!.querySelector<Audio>('picast-audio')!
+  // private audio = this.shadowRoot!.querySelector<Audio>('picast-audio')!
+  // private audio = new FakeAudio()
+  private audioAdapter = serialAudio()
 
   constructor() {
     super()
@@ -27,14 +31,17 @@ export default class Player extends Component {
 
     customElements.upgrade(this.shadowRoot!)
 
-    this.audio.addEventListener('state', ({ detail }) =>
-      this.onAudioStateChange(detail)
-    )
-    this.audio.addEventListener('progress', this.onBufferedChange)
+    // this.audio.addEventListener('state', ({ detail }) =>
+    //   this.onAudioStateChange(detail)
+    // )
+    // this.audio.addEventListener('progress', this.onBufferedChange)
 
-    this.audio.addEventListener('durationchange', () =>
-      this.setProgressAttr('duration', this.audio.duration)
-    )
+    // this.audio.addEventListener('durationchange', () =>
+    //   this.setProgressAttr('duration', this.audio.duration)
+    // )
+
+    this.audioAdapter.audio =
+      this.shadowRoot!.querySelector<Audio>('picast-audio')!
   }
 
   connectedCallback() {
@@ -78,53 +85,50 @@ export default class Player extends Component {
     else this.setAttribute('hidden', '')
   }
 
-  private currentTimeJob = new Job(30000, () => {
-    this.setProgressAttr('current', this.audio.time)
-  })
+  // private currentTimeJob = new Job(30000, () => {
+  //   this.setProgressAttr('current', this.audio.time)
+  // })
 
   // events
 
-  async onPlayStateChange(state: PlayState) {
+  onPlayStateChange(state: PlayState) {
+    logger.info({ state })
     this.setProgressAttr('loading', state === 'waiting')
-    if ((state === 'paused') !== (this.audio.state.current === 'paused')) {
-      if (state === 'paused') this.audio.pause()
-      else {
-        await timeLimit(1000, this.waitForSrc(await this.getSrc()))
-        await this.audio.play()
-      }
-    }
   }
 
-  onAudioStateChange(state: PlayState) {
-    if (state === 'playing') this.currentTimeJob.start()
-    else this.currentTimeJob.stop()
-    this.setProgressAttr('playing', state === 'playing')
-    if (state === 'paused') return
-    store.setX('player.status', state)
-  }
+  // onAudioStateChange(state: PlayState) {
+  //   if (state === 'playing') this.currentTimeJob.start()
+  //   else this.currentTimeJob.stop()
+  //   this.setProgressAttr('playing', state === 'playing')
+  //   if (state === 'paused') return
+  //   store.setX('player.status', state)
+  // }
 
   async onEpisodeChange(id: EpisodeId | null) {
-    if (!id) return (this.audio.src = null)
+    // if (!id) return (this.audio.src = null)
+    if (!id) return
 
-    this.audio.pause()
+    // this.audio.pause()
+    this.mediaSession.showInfo(id)
     const episode = await store.getX('episodes.*.*', ...id)
     if (!episode?.file) throw Error(`can't find file for ${id[0]} ${id[1]}`)
-    this.audio.src = episode.file
+    // this.audio.src = episode.file
 
     this.select('.title').forEach(el => (el.innerText = episode.title))
 
     this.setProgressAttr('playing', false)
     this.setProgressAttr('current', 0)
 
-    if ((await store.getX('player.status')) !== 'paused')
-      await this.audio.play()
+    // if ((await store.getX('player.status')) !== 'paused')
+    // await this.audio.play()
   }
 
-  private async getEpisode(id: EpisodeId) {
-    id ??= await store.getX('player.current')
-    if (!id) throw Error(`can't get src (no episode playing)`)
-    return await store.getX('episodes.*.*', ...id)
-  }
+  // private async getEpisode(id: EpisodeId) {
+  //   if (!id) return
+  //   id ??= await store.getX('player.current')
+  //   if (!id) throw Error(`can't get src (no episode playing)`)
+  //   return await store.getX('episodes.*.*', ...id)
+  // }
 
   // private async getSrc(id?: EpisodeId) {
   //   id ??= await store.getX('player.current')
@@ -140,15 +144,15 @@ export default class Player extends Component {
   //   // this.events.call('duration', duration, this.currentId)
   // }
 
-  onBufferedChange() {
-    // const buffered = this.audioService.buffered
-    const buffered = this.audio.buffered
-    logger.info({ buffered })
-    for (const bar of this.progressBars) {
-      bar.buffered = buffered
-      bar.scheduleFrame()
-    }
-  }
+  // onBufferedChange() {
+  //   // const buffered = this.audioService.buffered
+  //   const buffered = this.audio.buffered
+  //   logger.info({ buffered })
+  //   for (const bar of this.progressBars) {
+  //     bar.buffered = buffered
+  //     bar.scheduleFrame()
+  //   }
+  // }
 
   async onEnded() {
     // this.current = null
@@ -158,32 +162,32 @@ export default class Player extends Component {
 
   onJump(seconds: number) {
     logger.info('on jump', seconds)
-    this.audio.time = seconds
+    // this.audio.time = seconds
     this.setProgressAttr('current', seconds)
   }
 
   // utils
 
-  private waitForSrc = (src: string | null) =>
-    new Promise<void>(res => {
-      if (this.audio.src === src) return res()
-      const onChange = ({ detail }: CustomEvent<string | null>) => {
-        if (detail !== src) return
-        this.audio.removeEventListener('src', onChange as any)
-        res()
-      }
-      this.audio.addEventListener('src', onChange)
-    })
+  // private waitForSrc = (src: string | null) =>
+  //   new Promise<void>(res => {
+  //     if (this.audio.src === src) return res()
+  //     const onChange = ({ detail }: CustomEvent<string | null>) => {
+  //       if (detail !== src) return
+  //       this.audio.removeEventListener('src', onChange as any)
+  //       res()
+  //     }
+  //     this.audio.addEventListener('src', onChange)
+  //   })
 
-  @logger.time
-  private async getSrc(id?: EpisodeId) {
-    id ??= await store.getX('player.current')
-    if (!id) throw Error(`can't get src (no episode playing)`)
-    const episode = await store.getX('episodes.*.*', ...id)
-    if (!episode?.file)
-      throw Error(`can't get src (no episode ${id[0]} ${id[1]})`)
-    return episode.file
-  }
+  // @logger.time
+  // private async getSrc(id?: EpisodeId) {
+  //   id ??= await store.getX('player.current')
+  //   if (!id) throw Error(`can't get src (no episode playing)`)
+  //   const episode = await store.getX('episodes.*.*', ...id)
+  //   if (!episode?.file)
+  //     throw Error(`can't get src (no episode ${id[0]} ${id[1]})`)
+  //   return episode.file
+  // }
 
   private progressBars: Progress[] = []
 
@@ -198,7 +202,7 @@ export default class Player extends Component {
   }
 
   private async onBarJump(e: CustomEvent<number>) {
-    await main.playerJump((e as CustomEvent<number>).detail)
+    // await main.playerJump((e as CustomEvent<number>).detail)
   }
 
   private getProgressBars(): Progress[] {

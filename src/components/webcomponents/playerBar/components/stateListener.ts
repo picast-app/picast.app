@@ -14,9 +14,9 @@ export default class StateListener extends Service {
       store.listenX('player.status', this.player.onPlayStateChange)
     )
 
-    const cb = proxy(this.player.onJump)
-    main.playerOnJump(cb)
-    this.cancellers.push(() => main.playerUnsubJump(cb), cb[release])
+    // const cb = proxy(this.player.onJump)
+    // main.playerOnJump(cb)
+    // this.cancellers.push(() => main.playerUnsubJump(cb), cb[release])
   }
 
   disable() {

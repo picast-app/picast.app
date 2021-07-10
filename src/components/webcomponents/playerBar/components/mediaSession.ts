@@ -1,16 +1,17 @@
 import Service from './base'
 import { main } from 'workers'
+import store from 'store/uiThread/api'
 
 const ms = navigator.mediaSession
 
 export default class Session extends Service {
   public enable() {
     if (!ms) return
-    ms.setActionHandler('play', () => main.playerResume())
-    ms.setActionHandler('pause', () => main.playerPause())
-    ms.setActionHandler('stop', () => main.playerPause())
-    ms.setActionHandler('nexttrack', () => main.playerJump(30, true))
-    ms.setActionHandler('previoustrack', () => main.playerJump(-15, true))
+    ms.setActionHandler('play', main.player$start)
+    ms.setActionHandler('pause', main.player$stop)
+    // ms.setActionHandler('stop', () => main.playerPause())
+    // ms.setActionHandler('nexttrack', () => main.playerJump(30, true))
+    // ms.setActionHandler('previoustrack', () => main.playerJump(-15, true))
   }
 
   public disable() {
@@ -23,21 +24,30 @@ export default class Session extends Service {
     ms.setPositionState?.()
   }
 
-  public showInfo() {
-    // if (!ms) return
+  public async showInfo(id: EpisodeId) {
+    if (!ms || !id) return
+
+    const [podcast, episode] = await Promise.all([
+      store.getX('podcasts.*', id[0]),
+      store.getX('episodes.*.*', ...id),
+    ])
+    if (!podcast || !episode) throw Error("couldn't fetch ms info")
+    if (ms.metadata?.title === episode.title) return
+
+    logger.info({ podcast, episode })
+
     // const [podcast, episode] = this.player.current ?? []
     // if (!podcast) throw Error("couldn't set ms info, podcast missing")
     // if (!episode) throw Error("couldn't set ms info, episode missing")
-    // if (ms.metadata?.title === episode.title) return
     //
-    // const meta = new MediaMetadata({
-    //   title: episode.title,
-    //   artist: podcast.author,
-    //   album: podcast.title,
-    //   artwork: this.formatArtwork(podcast.covers),
-    // })
+    const meta = new MediaMetadata({
+      title: episode.title,
+      artist: podcast.author,
+      album: podcast.title,
+      artwork: this.formatArtwork(podcast.covers),
+    })
     // logger.info('set media session metadata', meta)
-    // ms.metadata = meta
+    ms.metadata = meta
   }
 
   private formatArtwork(covers: string[]): MediaImage[] {

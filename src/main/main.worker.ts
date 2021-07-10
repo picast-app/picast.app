@@ -7,12 +7,12 @@ import bufferInstance from 'utils/instantiationBuffer'
 import dbProm from './store/idb'
 import store from './store'
 import { deleteDB } from 'idb'
-import { threaded, player } from 'store'
+import { threaded } from 'store'
 import { registerUICall } from './ui'
 import { actions as accountActions } from './account'
 import { pullSubscriptions } from './sync'
-import { methods } from 'utils/proto'
 import { prefix } from 'utils/object'
+import { VirtualPlayer, serialWrapper } from 'audio/virtualPlayer'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const self: DedicatedWorkerGlobalScope
@@ -37,10 +37,10 @@ const api = {
   ...store,
   ...accountActions,
   ...threaded,
-  ...prefix(methods(player), 'player', 'camel'),
   pullSubscriptions,
   deleteIDB,
   registerUICall,
+  ...prefix(serialWrapper(new VirtualPlayer()), 'player$'),
 } as const
 
 export type API = typeof api

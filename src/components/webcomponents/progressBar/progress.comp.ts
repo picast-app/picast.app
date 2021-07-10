@@ -373,6 +373,7 @@ export default class Progress extends Component {
     this.dragging = false
     const progress = this.dragProgress * this.duration!
     this.onDragCancel()
+    this.setAttribute('current', progress as any)
     this.dispatchEvent(new CustomEvent('jump', { detail: progress }))
 
     const fsWrap = this.closest<HTMLElement>('.fs-sec-wrap')

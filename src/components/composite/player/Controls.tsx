@@ -13,8 +13,8 @@ const PlayControls: React.FC<Props> = ({ round = false, ...props }) => {
 
   function toggle() {
     if (!state) return
-    if (state === 'paused') main.playerResume()
-    else main.playerPause()
+    if (state === 'paused') main.player$start()
+    else main.player$stop()
   }
 
   return (

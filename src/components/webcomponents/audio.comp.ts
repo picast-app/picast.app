@@ -1,4 +1,4 @@
-import makeState, { PlayState } from 'utils/audioState'
+import makeState, { PlayState } from 'audio/state'
 import { asyncQueued } from 'utils/promise'
 
 interface Events extends HTMLElementEventMap {
