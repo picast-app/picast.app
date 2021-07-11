@@ -4,6 +4,7 @@ import { main } from 'workers'
 import { proxy, release } from 'fiber'
 import { callAll } from 'utils/function'
 import { remove } from 'utils/array'
+import store from 'store/uiThread/api'
 
 export default () => {
   let audio: Audio | null = null
@@ -43,6 +44,20 @@ export default () => {
       onCleanup.push(cancel)
     })
 
+  let volume: number | undefined
+  let muted = false
+
+  onCleanup.push(
+    store.listenX('player.volume', v => {
+      volume = v
+      if (audio) audio.volume = v
+    }),
+    store.listenX('player.muted', v => {
+      muted = v
+      if (audio) audio.muted = v
+    })
+  )
+
   main.player$listen(
     clean(async msg => {
       switch (msg.type) {
@@ -67,6 +82,8 @@ export default () => {
 
   onAudioChange.push(audio => {
     if (!audio) return
+    if (volume !== undefined) audio.volume = volume
+    if (muted) audio.muted = true
 
     const cleanups: λ[] = []
     const listen = <T extends keyof AudioEvent>(

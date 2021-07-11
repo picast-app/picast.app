@@ -57,3 +57,14 @@ export const chain =
   ) =>
   (...args: Parameters<F1>): ReturnType<F2> =>
     f2(f1, f1(...args), ...args)
+
+export const debounce = <T extends λ<TA>, TA extends any[]>(
+  f: T,
+  ms: number
+): λ<TA, void> => {
+  let toId: any
+  return (...args: TA) => {
+    clearTimeout(toId)
+    toId = setTimeout(() => f(...args), ms)
+  }
+}

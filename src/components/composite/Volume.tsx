@@ -1,22 +1,38 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 import { Icon, Slider } from 'components/atoms'
+import { useStateX } from 'hooks'
+import store from 'store/uiThread/api'
 
 export function Volume() {
-  const [volume, setVolume] = useState(50)
+  const [volume] = useStateX('player.volume')
+  const [muted] = useStateX('player.muted')
 
   return (
     <S.Container>
       <S.Inner tabIndex={0}>
         <Icon
-          icon="speaker"
-          label="mute"
+          icon={muted || !volume ? 'speaker_off' : 'speaker'}
+          label={muted ? 'unmute' : 'mute'}
           onClick={e => {
             ;(e.target as HTMLElement).closest<HTMLElement>(':focus')?.blur()
+            if (muted && volume === 0) store.setX('player.volume', 0.5)
+            store.setX('player.muted', !muted)
           }}
           ripple
         />
-        <Slider value={volume} onChange={setVolume} />
+        {volume !== undefined && (
+          <Slider
+            value={muted ? 0 : volume}
+            onChange={n => {
+              store.setX('player.volume', n)
+              if (muted) store.setX('player.muted', false)
+            }}
+            min={0}
+            max={1}
+            step={0.01}
+          />
+        )}
       </S.Inner>
     </S.Container>
   )
@@ -57,7 +73,7 @@ const S = {
 
     input[type='range'] {
       margin: 0;
-      --off-left: 0.5rem;
+      --off-left: 0.3rem;
       --off-right: 1rem;
       left: calc(var(--min-size) + var(--off-left));
       width: calc(

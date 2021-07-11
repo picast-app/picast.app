@@ -87,6 +87,22 @@ export default class Audio extends HTMLElement {
     }
   }
 
+  public get volume() {
+    return this.audio.volume
+  }
+
+  public set volume(n: number) {
+    this.audio.volume = n
+  }
+
+  public get muted() {
+    return this.audio.muted
+  }
+
+  public set muted(v: boolean) {
+    this.audio.muted = v
+  }
+
   private toggleQueue = asyncQueued()
 
   public play = this.toggleQueue(async () => {

@@ -7,6 +7,7 @@ type Props = {
   value: number
   onChange(v: number): void
   vertical?: boolean
+  step?: number
 }
 
 export const Slider: React.FC<Props> = ({
@@ -15,11 +16,13 @@ export const Slider: React.FC<Props> = ({
   value,
   onChange,
   vertical,
+  step,
 }: Props) => (
   <S.Slider
     type="range"
     min={min}
     max={max}
+    step={step}
     value={value}
     onChange={({ target }) => {
       onChange(parseFloat(target.value))

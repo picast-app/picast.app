@@ -38,6 +38,8 @@ export type State = {
     status: PlayState
     queue: string[]
     duration: number | undefined
+    volume: number
+    muted: boolean
   }
 }
 

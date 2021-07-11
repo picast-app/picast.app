@@ -16,6 +16,8 @@ type IDBMeta = {
   libSort: string
   playerCurrent: EpisodeId
   playerQueue: string[]
+  muted: boolean
+  volume: number
 }
 
 export const idbDefaultReader = async <T extends keyof IDBMeta>(
