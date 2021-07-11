@@ -274,7 +274,11 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
           if (!escaped) this.unlockHandler()
         }
         if (err !== noErr)
-          throw Error(`error in [${meth.name}](${args.join(', ')}): ${err}`)
+          throw Error(
+            `error in [${meth.name}](${args
+              .map(v => JSON.stringify(v))
+              .join(', ')}): ${err}`
+          )
       }) as any
     ).bind(this)
   }

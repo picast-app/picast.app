@@ -67,7 +67,7 @@ export default abstract class MemCache<T> {
 
         this.store.handler(path as any).set((v, p, meta) => {
           if (p !== path) return
-          if (equals(mutate({ _: this.state }, v, '_', ...sub), v)) return false
+          if (equals(mutate(this, v, 'state', ...sub), v)) return false
           ;(this.hooks as any)[sub.join('.') || '$']?.(v)
           if (!meta?.reflection) this.syncer?.broadcast({ path, v })
         })
