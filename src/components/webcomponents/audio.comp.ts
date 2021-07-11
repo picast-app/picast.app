@@ -1,7 +1,7 @@
 import makeState, { PlayState } from 'audio/state'
 import { asyncQueued } from 'utils/promise'
 
-interface Events extends HTMLElementEventMap {
+export interface Events extends HTMLElementEventMap {
   state: CustomEvent<PlayState>
   event: CustomEvent<AudioEvent>
   src: CustomEvent<string | null>

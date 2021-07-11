@@ -1,10 +1,9 @@
 import type Audio from 'components/webcomponents/audio.comp'
+import type { Events as AudioEvent } from 'components/webcomponents/audio.comp'
 import { main } from 'workers'
-import store from 'store/uiThread/api'
 import { proxy, release } from 'fiber'
 import { callAll } from 'utils/function'
 import { remove } from 'utils/array'
-import type { PlayState } from './state'
 
 export default () => {
   let audio: Audio | null = null
@@ -16,11 +15,6 @@ export default () => {
     onCleanup.push(wrapped[release])
     return wrapped
   }
-
-  const srcCache: Record<string, Promise<string>> = {}
-
-  const src = async (id: EpisodeId) =>
-    await (srcCache[id[1]] ??= store.getX('episodes.*.*.file', ...id))
 
   const waitForSrc = (src: string | null) =>
     new Promise<void>(res => {
@@ -53,14 +47,20 @@ export default () => {
     clean(async msg => {
       switch (msg.type) {
         case 'SELECT':
-          if (audio) audio.src = await src(msg.id)
+          if (audio) audio.src = msg.src
           break
         case 'PLAY':
-          await waitForSrc(await src(msg.id))
+          logger.info('start at', msg.seconds)
+          await waitForSrc(msg.src)
+          if (audio) audio.time = msg.seconds
           await audio?.play()
           break
         case 'PAUSE':
           audio?.pause()
+          break
+        case 'JUMP':
+          if (audio?.src === msg.src) audio.time = msg.seconds
+          break
       }
     })
   )
@@ -68,14 +68,25 @@ export default () => {
   onAudioChange.push(audio => {
     if (!audio) return
 
-    const onStateChange = ({ detail: state }: CustomEvent<PlayState>) => {
-      if (state === 'playing')
-        main.player$post({ type: 'IS_PLAYING', seconds: audio.time })
+    const cleanups: λ[] = []
+    const listen = <T extends keyof AudioEvent>(
+      k: T,
+      f: λ<[AudioEvent[T]]>
+    ) => {
+      audio.addEventListener(k, f)
+      cleanups.push(() => audio.removeEventListener(k, f as any))
     }
 
-    audio.addEventListener('state', onStateChange)
+    listen('state', ({ detail: state }) => {
+      if (state === 'playing') main.player$isPlaying(audio.time, Date.now())
+    })
+
+    listen('durationchange', () => {
+      main.player$setDuration(audio.duration, audio.src!)
+    })
+
     const cleanup = () => {
-      audio.removeEventListener('state', onStateChange as any)
+      callAll(cleanups)
       remove(onAudioChange, cleanup)
     }
     onAudioChange.push(cleanup)
@@ -84,6 +95,9 @@ export default () => {
   return {
     set audio(v: Audio | null) {
       callAll([...onAudioChange], (audio = v))
+    },
+    get audio() {
+      return audio
     },
     cleanup: () => callAll(onCleanup),
   }

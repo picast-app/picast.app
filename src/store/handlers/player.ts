@@ -11,6 +11,7 @@ export default class Player extends MemCache<State['player']> {
     current: _,
     queue: [],
     status: this.status.current,
+    duration: undefined,
   }
 
   hooks: HookDict<State['player']> = {

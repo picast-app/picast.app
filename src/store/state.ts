@@ -37,6 +37,7 @@ export type State = {
     current: EpisodeId | null
     status: PlayState
     queue: string[]
+    duration: number | undefined
   }
 }
 

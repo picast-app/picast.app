@@ -8,7 +8,6 @@ import StateListener from './components/stateListener'
 import store from 'store/uiThread/api'
 import { bindThis } from 'utils/proto'
 import { PlayState } from 'audio/state'
-import { timeLimit } from 'utils/promise'
 import Job from 'utils/job'
 import { main } from 'workers'
 import FakeAudio from 'audio/fakeAudio'
@@ -23,7 +22,7 @@ export default class Player extends Component {
   private stateListener = new StateListener(this)
   // private audio = this.shadowRoot!.querySelector<Audio>('picast-audio')!
   // private audio = new FakeAudio()
-  private audioAdapter = serialAudio()
+  public audioAdapter = serialAudio()
 
   constructor() {
     super()
@@ -92,8 +91,8 @@ export default class Player extends Component {
   // events
 
   onPlayStateChange(state: PlayState) {
-    logger.info({ state })
     this.setProgressAttr('loading', state === 'waiting')
+    this.setProgressAttr('playing', state === 'playing')
   }
 
   // onAudioStateChange(state: PlayState) {
@@ -121,6 +120,11 @@ export default class Player extends Component {
 
     // if ((await store.getX('player.status')) !== 'paused')
     // await this.audio.play()
+  }
+
+  onDurationChange(secs?: number) {
+    if (!secs) return
+    this.setProgressAttr('duration', secs)
   }
 
   // private async getEpisode(id: EpisodeId) {
@@ -168,27 +172,6 @@ export default class Player extends Component {
 
   // utils
 
-  // private waitForSrc = (src: string | null) =>
-  //   new Promise<void>(res => {
-  //     if (this.audio.src === src) return res()
-  //     const onChange = ({ detail }: CustomEvent<string | null>) => {
-  //       if (detail !== src) return
-  //       this.audio.removeEventListener('src', onChange as any)
-  //       res()
-  //     }
-  //     this.audio.addEventListener('src', onChange)
-  //   })
-
-  // @logger.time
-  // private async getSrc(id?: EpisodeId) {
-  //   id ??= await store.getX('player.current')
-  //   if (!id) throw Error(`can't get src (no episode playing)`)
-  //   const episode = await store.getX('episodes.*.*', ...id)
-  //   if (!episode?.file)
-  //     throw Error(`can't get src (no episode ${id[0]} ${id[1]})`)
-  //   return episode.file
-  // }
-
   private progressBars: Progress[] = []
 
   private attachBar(bar: Progress) {
@@ -201,8 +184,8 @@ export default class Player extends Component {
     this.progressBars = this.progressBars.filter(v => v !== bar)
   }
 
-  private async onBarJump(e: CustomEvent<number>) {
-    // await main.playerJump((e as CustomEvent<number>).detail)
+  private onBarJump(e: CustomEvent<number>) {
+    main.player$jump(e.detail, this.audioAdapter.audio?.src!)
   }
 
   private getProgressBars(): Progress[] {
@@ -230,7 +213,6 @@ export default class Player extends Component {
           ...((v as any).querySelectorAll?.('player-progress') ?? []),
         ])
     )
-    // for (const bar of addedBars) this.attachBar(bar)
     addedBars.forEach(this.attachBar)
     removedBars.forEach(this.detachBar)
   })

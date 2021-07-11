@@ -12,7 +12,8 @@ import { registerUICall } from './ui'
 import { actions as accountActions } from './account'
 import { pullSubscriptions } from './sync'
 import { prefix } from 'utils/object'
-import { VirtualPlayer, serialWrapper } from 'audio/virtualPlayer'
+import { VirtualPlayer } from 'audio/virtualPlayer'
+import serialWrapper from 'audio/serialInterface'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const self: DedicatedWorkerGlobalScope
