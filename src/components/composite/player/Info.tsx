@@ -1,6 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Artwork, Icon } from 'components/atoms'
+import { Volume } from 'components/composite'
 import { Link } from '@picast-app/router'
 import { mobile, desktop } from 'styles/responsive'
 import { useStateX } from 'hooks'
@@ -15,6 +16,7 @@ export default function Info({ podcast: podId }: Props) {
   if (!podcast) return null
   return (
     <S.Container slot="info">
+      <Volume />
       <Icon icon="list" label="queue" linkTo="#queue" />
       <S.Thumbnail to={`/show/${podcast.id}`} slot="info">
         <Artwork
@@ -50,11 +52,19 @@ const S = {
       & > button {
         margin-right: unset;
       }
+
+      & > *:first-child {
+        display: none;
+      }
     }
 
     @media ${desktop} {
-      & > a:last-of-type {
-        margin-left: 2rem;
+      --padd-side: calc((var(--player-height) - var(--size)) / 2);
+      padding: 0 var(--padd-side);
+      justify-content: space-between;
+
+      & > * {
+        flex-shrink: 0;
       }
     }
   `,
@@ -63,7 +73,6 @@ const S = {
     width: var(--size);
     height: var(--size);
     place-self: center end;
-    margin-right: calc((var(--player-height) - var(--size)) / 2);
     border-radius: 0.25rem;
     overflow: hidden;
     transition: transform 0.2s ease;

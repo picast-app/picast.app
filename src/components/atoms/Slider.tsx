@@ -37,5 +37,9 @@ const S = {
       width: 1rem;
       height: unset;
     }
+
+    &::-webkit-slider-thumb {
+      cursor: pointer;
+    }
   `,
 }

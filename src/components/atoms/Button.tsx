@@ -127,6 +127,14 @@ const S = {
       width: var(--icon-size);
       height: var(--icon-size);
       box-sizing: content-box;
+      position: relative;
+
+      svg {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
     }
 
     &[data-style~='text'] {

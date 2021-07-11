@@ -17,7 +17,12 @@
     "jsx": "react",
     "baseUrl": "src",
     "downlevelIteration": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "plugins": [
+      {
+        "name": "typescript-styled-plugin"
+      }
+    ]
   },
   "include": ["src"],
   "exclude": ["src/types/gql/globalTypes.ts", "node_modules", "build"]
