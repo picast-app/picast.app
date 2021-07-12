@@ -3,9 +3,7 @@ import { isPromise } from 'utils/promise'
 export const callAll = <T extends any[] = []>(
   list?: (((...args: T) => any) | undefined)[],
   ...args: T
-) => {
-  for (const cb of list ?? []) cb?.(...args)
-}
+) => list?.map(cb => cb?.(...args)) ?? []
 
 export const ident = <T>(v: T): T => v
 
@@ -19,7 +17,7 @@ export const bundle =
 export const bundleSync =
   <TA extends any[]>(...funcs: (((...args: TA) => any) | undefined)[]) =>
   (...args: TA) =>
-    callAll(funcs, ...args)
+    void callAll(funcs, ...args)
 
 export const forward =
   <T extends λ, P extends any[]>(func: T, ...argsR: P) =>

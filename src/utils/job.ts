@@ -9,9 +9,9 @@ export default class Job {
 
   public onError?: (err: unknown) => void
 
-  public start() {
+  public start(immediate?: boolean) {
     if ('taskId' in this) return
-    if (this.runImmediate) this.run()
+    if (immediate ?? this.runImmediate) this.run()
     else this.schedule()
   }
 
@@ -36,5 +36,9 @@ export default class Job {
 
   private schedule() {
     this.taskId = setTimeout(this.run, this.interval) as any
+  }
+
+  public once() {
+    return this.task()
   }
 }

@@ -19,13 +19,13 @@ const PlayControls: React.FC<Props> = ({ round = false, ...props }) => {
 
   return (
     <SC {...props}>
-      <Skip ms={-15000} onJump={n => {}} />
+      <Skip ms={-15000} onJump={main.player$jumpBy} />
       <PlayButton
         playing={!!state && state !== 'paused'}
         onPress={toggle}
         round={round}
       />
-      <Skip ms={30000} onJump={n => {}} />
+      <Skip ms={30000} onJump={main.player$jumpBy} />
     </SC>
   )
 }

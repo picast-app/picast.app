@@ -24,7 +24,6 @@ export default class StateListener extends Service {
     }
 
     const handlerPlayerMsg = (msg: MsgOut) => {
-      logger.info('handle msg', msg)
       if (
         msg.type === 'JUMP' &&
         msg.src === this.player.audioAdapter.audio?.src

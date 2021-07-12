@@ -88,65 +88,39 @@ export default class Player extends Component {
   //   this.setProgressAttr('current', this.audio.time)
   // })
 
+  private readPlaybackPosition = new Job(30000, async () => {
+    const pos = await main.player$getPosition()
+    if (typeof pos === 'number') this.setProgressAttr('current', pos)
+  })
+
   // events
 
   onPlayStateChange(state: PlayState) {
     this.setProgressAttr('loading', state === 'waiting')
     this.setProgressAttr('playing', state === 'playing')
+
+    this.readPlaybackPosition.stop()
+    this.readPlaybackPosition.once()
+    if (state === 'playing') this.readPlaybackPosition.start(false)
   }
 
-  // onAudioStateChange(state: PlayState) {
-  //   if (state === 'playing') this.currentTimeJob.start()
-  //   else this.currentTimeJob.stop()
-  //   this.setProgressAttr('playing', state === 'playing')
-  //   if (state === 'paused') return
-  //   store.setX('player.status', state)
-  // }
-
   async onEpisodeChange(id: EpisodeId | null) {
-    // if (!id) return (this.audio.src = null)
     if (!id) return
 
-    // this.audio.pause()
     this.mediaSession.showInfo(id)
     const episode = await store.getX('episodes.*.*', ...id)
     if (!episode?.file) throw Error(`can't find file for ${id[0]} ${id[1]}`)
-    // this.audio.src = episode.file
 
     this.select('.title').forEach(el => (el.innerText = episode.title))
 
     this.setProgressAttr('playing', false)
     this.setProgressAttr('current', 0)
-
-    // if ((await store.getX('player.status')) !== 'paused')
-    // await this.audio.play()
   }
 
   onDurationChange(secs?: number) {
     if (!secs) return
     this.setProgressAttr('duration', secs)
   }
-
-  // private async getEpisode(id: EpisodeId) {
-  //   if (!id) return
-  //   id ??= await store.getX('player.current')
-  //   if (!id) throw Error(`can't get src (no episode playing)`)
-  //   return await store.getX('episodes.*.*', ...id)
-  // }
-
-  // private async getSrc(id?: EpisodeId) {
-  //   id ??= await store.getX('player.current')
-  //   if (!id) throw Error(`can't get src (no episode playing)`)
-  //   const episode = await store.getX('episodes.*.*', ...id)
-  //   if (!episode?.file) throw Error(`can't find file for ${id[0]} ${id[1]}`)
-  //   return episode.file
-  // }
-
-  // onDurationChange(duration: number) {
-  //   // if (this.currentId) main.setEpisodeDuration(this.currentId[1], duration)
-  //   // this.setProgressAttr('duration', duration)
-  //   // this.events.call('duration', duration, this.currentId)
-  // }
 
   // onBufferedChange() {
   //   // const buffered = this.audioService.buffered
@@ -165,8 +139,6 @@ export default class Player extends Component {
   }
 
   onJump(seconds: number) {
-    logger.info('on jump', seconds)
-    // this.audio.time = seconds
     this.setProgressAttr('current', seconds)
   }
 
@@ -185,7 +157,7 @@ export default class Player extends Component {
   }
 
   private onBarJump(e: CustomEvent<number>) {
-    main.player$jump(e.detail, this.audioAdapter.audio?.src!)
+    main.player$jumpTo(e.detail, this.audioAdapter.audio?.src!)
   }
 
   private getProgressBars(): Progress[] {

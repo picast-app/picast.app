@@ -101,7 +101,7 @@ function PlayButton({ id, progress }: { id: EpisodeId; progress: number }) {
       <Icon
         icon={isPlaying ? 'pause' : 'play'}
         label={isPlaying ? 'pause' : 'play'}
-        onClick={() => main.playerToggleEpisode(id)}
+        onClick={() => main.player$toggleTrack(id)}
       />
     </S.Play>
   )
@@ -344,7 +344,7 @@ const S = {
 
         button > svg {
           fill: var(--cl-surface);
-          transform: scale(1.2);
+          transform: translate(-50%, -50%) scale(1.2);
         }
       }
     }

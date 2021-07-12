@@ -41,8 +41,14 @@ const S = {
       height: unset;
     }
 
-    &::-webkit-slider-thumb {
+    &:not(:active)::-webkit-slider-runnable-track {
       cursor: pointer;
+    }
+    &:not(:active)::-webkit-slider-thumb {
+      cursor: grab;
+    }
+    &:active {
+      cursor: grabbing;
     }
   `,
 }

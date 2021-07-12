@@ -4,11 +4,12 @@ import { last } from 'utils/array'
 import { store } from 'store'
 import { callAll } from 'utils/function'
 import { forEach } from 'utils/object'
+import { methods } from 'utils/proto'
 
 export type MsgOut =
   | { type: 'PLAY'; src: string; seconds: number }
   | { type: 'PAUSE' }
-  | { type: 'SELECT'; src: string }
+  | { type: 'SELECT'; src: string; position: number }
   | { type: 'JUMP'; src: string; seconds: number }
 
 export default function serialWrapper(player: VirtualPlayer) {
@@ -32,14 +33,18 @@ export default function serialWrapper(player: VirtualPlayer) {
     },
     changeTrack: (id, src) => {
       store.set('player.current', id)
-      if (src) emit({ type: 'SELECT', src })
+      if (src) emit({ type: 'SELECT', src, position: 0 })
     },
-    changeDuration: (secs, updated) => {
+    changeDuration: secs => {
       store.set('player.duration', secs)
-      // if (updated) // persist
+      if (player.track)
+        store.set('episodes.*.*.duration', secs, {}, ...player.track)
     },
     jump: (seconds, src) => {
       emit({ type: 'JUMP', seconds, src })
+    },
+    waiting: () => {
+      store.set('player.status', 'waiting')
     },
   }
 
@@ -48,7 +53,7 @@ export default function serialWrapper(player: VirtualPlayer) {
   store.get('player.current').then(v => {
     if (!v) return
     player.setTrack(v)
-    player.setPosition(0) //
+    player.jumpTo(0) //
   })
 
   return {
@@ -58,10 +63,6 @@ export default function serialWrapper(player: VirtualPlayer) {
         delete listeners[last(listener[key])]
       }
     },
-    start: player.start,
-    stop: player.stop,
-    isPlaying: player.isPlaying,
-    setDuration: player.setDuration,
-    jump: player.setPosition,
+    ...methods(player),
   }
 }

@@ -26,6 +26,7 @@ export default class Audio extends HTMLElement {
     events.forEach(e =>
       this.audio.addEventListener(e, () => {
         this.handlers[e]?.()
+        logger.info(`audio::${e}`)
         this.dispatch('event', e)
       })
     )
@@ -78,13 +79,15 @@ export default class Audio extends HTMLElement {
     return this.audio.src
   }
 
-  public set src(src: string | null) {
-    logger.info('set src', src)
-    if (src) this.setAttribute('src', src)
-    else {
-      this.removeAttribute('src')
-      this.pause()
-    }
+  private toggleQueue = asyncQueued()
+
+  public setSrc(src: string, position = 0) {
+    this.audio.preload = 'none'
+    this.audio.pause()
+    this.setAttribute('src', src)
+    this.audio.currentTime = position
+    this.audio.preload = 'auto'
+    this.audio.load()
   }
 
   public get volume() {
@@ -103,10 +106,11 @@ export default class Audio extends HTMLElement {
     this.audio.muted = v
   }
 
-  private toggleQueue = asyncQueued()
+  public load() {
+    this.audio.load()
+  }
 
   public play = this.toggleQueue(async () => {
-    logger.info('audio.play')
     if (this.src) await this.audio.play()
     else logger.warn('ignore play')
   })
@@ -115,7 +119,6 @@ export default class Audio extends HTMLElement {
 
   public pause = this.toggleQueue(
     () => {
-      logger.info('audio.pause')
       this.audio.pause()
       this.playAborted = false
     },
@@ -144,8 +147,9 @@ export default class Audio extends HTMLElement {
   }
 
   private handlers: { [K in AudioEvent]?: λ<[]> } = {
-    play: () => this.state.transition('waiting'),
     playing: () => !this.playAborted && this.state.transition('playing'),
+    play: () => this.state.transition('waiting'),
+    waiting: () => this.state.transition('waiting'),
     pause: () => this.state.transition('paused'),
     emptied: () => this.state.transition('paused'),
   }

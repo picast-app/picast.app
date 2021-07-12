@@ -15,29 +15,29 @@ export function useIsEpisodePlaying([, id]: EpisodeId) {
   const [isPlaying, setPlaying] = useState<boolean>()
   const initial = useRef(false)
 
-  // yes, all of this just exists to prevent unnecessary renders
   useEffect(() => {
-    let isIntitial = true
-    let stopStatus: (() => void) | undefined
+    if (!id) return
+    let isInitial = true
+    let cancelPlayState: (() => void) | undefined
 
     const set = (v: boolean) => {
-      if (initial.current === v) return false
-      initial.current = v
-      if (!isIntitial) setPlaying(v)
-      return true
+      if (isInitial) initial.current = v
+      else setPlaying(v)
     }
 
-    const unsub = store.listenX('player.current', v => {
-      if (v?.[1] !== id) if (!set(false)) return
-      stopStatus?.()
-      if (v?.[1] === id)
-        stopStatus = store.listenX('player.status', status => {
-          set(status !== 'paused')
-        })
+    const cancelCurrent = store.listenX('player.current', v => {
+      if (v?.[1] !== id) {
+        cancelPlayState?.()
+        return set(false)
+      }
+      cancelPlayState = store.listenX('player.status', status =>
+        set(status !== 'paused')
+      )
     })
 
-    isIntitial = false
-    return bundleSync(unsub, stopStatus)
+    isInitial = false
+
+    return bundleSync(cancelCurrent, cancelPlayState)
   }, [id])
 
   return isPlaying ?? initial.current

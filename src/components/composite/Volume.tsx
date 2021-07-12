@@ -10,12 +10,16 @@ export function Volume() {
 
   return (
     <S.Container>
-      <S.Inner tabIndex={0}>
+      <S.Inner
+        tabIndex={0}
+        onClick={e => {
+          ;(e.target as HTMLElement).closest<HTMLElement>(':focus')?.blur()
+        }}
+      >
         <Icon
           icon={muted || !volume ? 'speaker_off' : 'speaker'}
           label={muted ? 'unmute' : 'mute'}
           onClick={e => {
-            ;(e.target as HTMLElement).closest<HTMLElement>(':focus')?.blur()
             if (muted && volume === 0) store.setX('player.volume', 0.5)
             store.setX('player.muted', !muted)
           }}

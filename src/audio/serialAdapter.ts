@@ -62,7 +62,7 @@ export default () => {
     clean(async msg => {
       switch (msg.type) {
         case 'SELECT':
-          if (audio) audio.src = msg.src
+          audio?.setSrc(msg.src)
           break
         case 'PLAY':
           logger.info('start at', msg.seconds)
@@ -96,6 +96,7 @@ export default () => {
 
     listen('state', ({ detail: state }) => {
       if (state === 'playing') main.player$isPlaying(audio.time, Date.now())
+      if (state === 'waiting') main.player$isWaiting(audio.time)
     })
 
     listen('durationchange', () => {

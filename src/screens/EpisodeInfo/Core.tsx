@@ -27,7 +27,7 @@ export const Core: React.FC<{ id: EpisodeId }> = ({ id }) => {
       <S.Actions>
         <PlayButton
           playing={isPlaying}
-          onPress={() => main.playerToggleEpisode(id)}
+          onPress={() => main.player$toggleTrack(id)}
           round
         />
       </S.Actions>
