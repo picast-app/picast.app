@@ -43,6 +43,7 @@ export const listen = <T extends keyof FlatState>(
   }
 
   return () => {
+    if (!paths[key]?.cbs.includes(cb)) return
     paths[key].cbs.splice(paths[key].cbs.indexOf(cb), 1)
     if (paths[key].cbs.length) return
     if (paths[key].cancel) paths[key].cancel!()
