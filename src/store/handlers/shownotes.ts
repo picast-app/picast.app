@@ -4,19 +4,18 @@ import idb from 'main/store/idb'
 import { asyncNullChain } from 'utils/function'
 
 export default (store: Store) => {
-  store
-    .handler('episodes.*.*.shownotes')
-    .get(async (_, p, e) =>
-      asyncNullChain(readShowNotes, queryShownotes)([p, e])
-    )
+  store.handler('episodes.*.shownotes').get(
+    async (_, e) => {
+      return ''
+    }
+    // asyncNullChain(readShowNotes, queryShownotes)([p, e])
+  )
 
-  store
-    .handler('episodes.*.*.shownotes')
-    .set(async (shownotes, p, m, _, id) => {
-      const db = await idb
-      shownotes ??= (await db.get('episodeInfo', id))?.shownotes
-      await db.put('episodeInfo', { id, shownotes, fetched: Date.now() })
-    })
+  store.handler('episodes.*.shownotes').set(async (shownotes, p, m, _, id) => {
+    const db = await idb
+    shownotes ??= (await db.get('episodeInfo', id))?.shownotes
+    await db.put('episodeInfo', { id, shownotes, fetched: Date.now() })
+  })
 
   async function readShowNotes([p, id]: EpisodeId) {
     const episode = await (await idb).get('episodeInfo', id)
@@ -28,7 +27,7 @@ export default (store: Store) => {
   async function queryShownotes(id: EpisodeId) {
     const episode = await api.query.episode(id)
     const notes = episode?.shownotes ?? undefined
-    if (notes) store.set('episodes.*.*.shownotes', notes, {}, ...id)
+    if (notes) store.set('episodes.*.shownotes', notes, {}, id[1])
     return notes
   }
 }

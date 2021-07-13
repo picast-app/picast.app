@@ -1,60 +1,75 @@
 import type { Episode } from 'store/state'
 import type { Store } from 'store'
 import idb from 'main/store/idb'
-import { mergeInPlace, seg } from 'utils/path'
+import { seg, mutate } from 'utils/path'
 import { diff } from 'utils/array'
 import { allFlat } from 'utils/promise'
 import * as o from 'utils/object'
 import equals from 'utils/equal'
 
 function writeEpisodeData(
-  cache: Record<string, Episode>,
-  data: unknown,
-  ...path: string[]
+  cache: Map<string, Episode>,
+  data: any,
+  ...[id, ...path]: string[]
 ): boolean {
-  const before = { ...cache[path[0]] }
+  const previous = cache.get(id)
+  let state: any = previous ?? {}
 
-  mergeInPlace(cache, data, ...path)
-  cache[path[0]] = o.filter(
-    o.pick(
-      cache[path[0]],
-      'id',
-      'podcast',
-      'title',
-      'file',
-      'published',
-      'duration',
-      'currentTime',
-      'relProg'
-    ),
-    (_, v) => typeof v !== 'object' || v === null
-  ) as Episode
+  const filter = (state: any) =>
+    o.filter(
+      o.pick(
+        state,
+        'id',
+        'podcast',
+        'title',
+        'file',
+        'published',
+        'duration',
+        'currentTime',
+        'relProg'
+      ),
+      (_, v) => typeof v !== 'object' || v === null
+    ) as Episode
 
-  return equals(before, cache[path[0]])
+  if (!path.length) {
+    data = filter(data)
+    if (equals(previous, data)) return true
+    cache.set(id, data)
+    return false
+  }
+
+  const old = mutate(state, data, ...path)
+  state = filter(state)
+
+  if (!previous) {
+    cache.set(id, state)
+    return false
+  }
+
+  return equals(old, data)
 }
 
 export default (store: Store) => {
-  const cache: { [pod: string]: { [ep: string]: Episode } } = {}
+  const cache = new Map<string, Episode>()
 
   let subscriptions: Promise<string[]> = store.get('user.subscriptions')
 
   store
-    .handler('episodes.*.*')
-    .set(async (data, path, { known, noChange }, pod, id) => {
+    .handler('episodes.*')
+    .set(async (data, path, { known, noChange }, id) => {
       if (!data) return
-      if (writeEpisodeData((cache[pod] ??= {}), data, ...seg(path, 2)))
-        return noChange?.()
-      if (!known && (await subscriptions).includes(pod))
-        await writeToDB(cache[pod][id])
+      if (writeEpisodeData(cache, data, ...seg(path, 1)))
+        if (!known && (await subscriptions).includes(cache.get(id)!.podcast))
+          await writeToDB(cache.get(id)!)
     }, true)
 
   store
-    .handler('episodes.*.*')
-    .get(async (_, pod, id) => cache[pod]?.[id] ?? (await readIDB(pod, id)))
+    .handler('episodes.*')
+    .get(async (_, id) => cache.get(id) ?? (await readIDB(id)))
 
-  async function readIDB(podcast: string, id: string) {
+  async function readIDB(id: string) {
     const data = await (await idb).get('episodes', id)
-    if (data) store.set('episodes.*.*', data, { known: true }, podcast, id)
+    if (data) store.set('episodes.*', data, { known: true }, id)
     return data ?? null
   }
 
@@ -70,8 +85,7 @@ export default (store: Store) => {
     if (!keys.length) return
 
     // write uncached episodes from db to cache
-    const known = new Set(podcasts.flatMap(id => Object.keys(cache[id] ?? {})))
-    const unknown = keys.filter(key => !known.has(key))
+    const unknown = keys.filter(key => !(key in cache))
     await readToCache(unknown)
 
     logger.info(`remove ${keys.length} episodes from db`)
@@ -80,7 +94,10 @@ export default (store: Store) => {
   }
 
   async function storeInDB(...podcasts: string[]) {
-    const episodes = podcasts.flatMap(id => Object.values(cache[id] ?? {}))
+    const podIds = new Set(podcasts)
+    const episodes: Episode[] = []
+    for (const [, episode] of cache)
+      if (podIds.has(episode.id)) episodes.push(episode)
     if (!episodes.length) return
     logger.info(`store ${episodes.length} episodes in db`)
     const tx = (await idb).transaction('episodes', 'readwrite')
@@ -93,8 +110,7 @@ export default (store: Store) => {
     await Promise.all(
       keys.map(async key => {
         const episode = await db.get('episodes', key)
-        if (episode)
-          store.set('episodes.*.*', episode, {}, episode.podcast, episode.id)
+        if (episode) store.set('episodes.*', episode, {}, episode.id)
       })
     )
   }

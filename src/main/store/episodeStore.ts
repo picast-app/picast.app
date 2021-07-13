@@ -89,7 +89,7 @@ export class Podcast {
 
   public addEpisodes(episodes: Episode[], notify = false) {
     this.addKeys(Podcast.keys(episodes.map(({ id }) => id)))
-    episodes.map(data => store.set('episodes.*.*', data, {}, this.id, data.id))
+    episodes.map(data => store.set('episodes.*', data, {}, data.id))
     if (!notify) return
     store.set('podcasts.*.episodeCount', this.keys.length, {}, this.id)
     const indices = episodes.map(v =>

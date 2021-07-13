@@ -12,7 +12,7 @@ export function Queue() {
     <S.Queue>
       {queue.map(id => (
         <S.Entry key={id[1]}>
-          <EpisodeStrip id={id} artwork clamp />
+          <EpisodeStrip id={id[1]} artwork clamp />
         </S.Entry>
       ))}
     </S.Queue>

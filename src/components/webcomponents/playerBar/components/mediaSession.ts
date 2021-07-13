@@ -29,7 +29,7 @@ export default class Session extends Service {
 
     const [podcast, episode] = await Promise.all([
       store.getX('podcasts.*', id[0]),
-      store.getX('episodes.*.*', ...id),
+      store.getX('episodes.*', id[1]),
     ])
     if (!podcast || !episode) throw Error("couldn't fetch ms info")
     if (ms.metadata?.title === episode.title) return

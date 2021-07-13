@@ -108,7 +108,7 @@ export default class Player extends Component {
     if (!id) return
 
     this.mediaSession.showInfo(id)
-    const episode = await store.getX('episodes.*.*', ...id)
+    const episode = await store.getX('episodes.*', id[1])
     if (!episode?.file) throw Error(`can't find file for ${id[0]} ${id[1]}`)
 
     this.select('.title').forEach(el => (el.innerText = episode.title))

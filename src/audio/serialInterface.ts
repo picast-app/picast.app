@@ -38,7 +38,7 @@ export default function serialWrapper(player: VirtualPlayer) {
     changeDuration: secs => {
       store.set('player.duration', secs)
       if (player.track)
-        store.set('episodes.*.*.duration', secs, {}, ...player.track)
+        store.set('episodes.*.duration', secs, {}, player.track[1])
     },
     jump: (seconds, src) => {
       emit({ type: 'JUMP', seconds, src })

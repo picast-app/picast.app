@@ -25,6 +25,7 @@ type Props = (
 export function EpisodeStrip(props: Props) {
   const episode = useConstant(
     'id' in props ? useIdEpisode : useFeedEpisode,
+    // @ts-ignore
     ...('id' in props ? [props.id] : [props.feed, props.index])
   )
   if (!episode) return null
@@ -67,12 +68,9 @@ function Thumbnail({ podcast }: { podcast: string }) {
   return <Artwork covers={covers} />
 }
 
-function useIdEpisode(id: EpisodeId) {
+function useIdEpisode(id: string) {
   const [episode, setEpisode] = useState<Episode | null>()
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => store.listenX('episodes.*.*', setEpisode, ...id), [...id])
-
+  useEffect(() => store.listenX('episodes.*', setEpisode, id), [id])
   return episode
 }
 
@@ -178,6 +176,8 @@ function Published({ children: time }: { children: number }) {
 function formatDate(raw: number) {
   return format(raw)
 }
+
+type SVGAttrs = { progress: number; remaining: number }
 
 const S = {
   Strip: styled.article`
@@ -364,7 +364,12 @@ const S = {
     }
   `,
 
-  Progress: styled.svg<{ progress: number; remaining: number }>`
+  Progress: styled.svg.attrs<SVGAttrs>(({ progress, remaining }) => ({
+    style: {
+      '--anim': `${remaining}s linear progress`,
+      '--off': progress * circ,
+    },
+  }))<SVGAttrs>`
     width: 100%;
     height: 100%;
 
@@ -381,11 +386,11 @@ const S = {
     circle:last-of-type {
       transform-origin: 50% 50%;
       transform: scaleX(-1) rotate(-90deg);
-      stroke-dashoffset: ${({ progress }) => progress * circ};
+      stroke-dashoffset: var(--off);
       animation-fill-mode: forwards;
 
       &[data-state='playing'] {
-        animation: ${({ remaining }) => remaining}s linear progress;
+        animation: var(--anim);
       }
     }
 

@@ -34,7 +34,7 @@ function FullscreenContainer({ id, ...props }: Props) {
   const [isExtended, setExtended] = useState(activeTabIndex(false) >= 0)
   const wasExtended = useRef<boolean | null>(null)
   const [podcast] = useStateX('podcasts.*', id[0])
-  const [episode] = useStateX('episodes.*.*', ...id)
+  const [episode] = useStateX('episodes.*', id[1])
 
   const _tab = activeTabIndex()
   useEffect(() => {

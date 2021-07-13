@@ -9,7 +9,7 @@ type Props = {
 export const Shownotes: React.FC<
   Props & Omit<React.HTMLProps<HTMLDivElement>, keyof Props>
 > = ({ id }) => {
-  const [notes] = useStateX('episodes.*.*.shownotes', ...id)
+  const [notes] = useStateX('episodes.*.shownotes', id[1])
   return (
     <Notes
       dangerouslySetInnerHTML={{ __html: notes ?? '' }}

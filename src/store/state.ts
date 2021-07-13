@@ -24,9 +24,7 @@ export type State = {
     '*': Podcast | null
   }
   episodes: {
-    '*': {
-      '*': Episode | null
-    }
+    '*': Episode | null
   }
   library: {
     sorting: string

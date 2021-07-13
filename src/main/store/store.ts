@@ -1,23 +1,21 @@
 /* eslint-disable @typescript-eslint/require-await */
 import dbProm, { gql as convert } from './idb'
 import * as api from 'api/calls'
-import { proxy } from 'fiber'
 import { Episode, EpisodeBase } from './types'
-import type { Podcast } from 'store/state'
+import type { Podcast, Episode as _Episode } from 'store/state'
 import * as Feed from '../feed'
 import epStore, { EpisodeStore } from './episodeStore'
 import ws, { wsApi } from 'main/ws'
 import type * as T from 'types/gql'
 import * as obj from 'utils/object'
 import { store as storeX } from 'store'
-
-type TotalCB = (v: { total: number; complete: boolean }) => void
+import { proxy, Proxied, release } from 'fiber'
+import { bundle } from 'utils/function'
 
 export default class Store {
   private readonly podcasts: Record<Podcast['id'], Podcast> = {}
   private subscriptions: Podcast['id'][] = []
   private feedSubs: Feed.Base[] = []
-  private totalListeners: Record<Podcast['id'], TotalCB[]> = {}
 
   constructor(
     private readonly db: PromType<typeof dbProm>,
@@ -38,17 +36,17 @@ export default class Store {
       const store = await this.epStore.getPodcast(podcast)
       await store.addEpisodes(formatted, true)
       const { total, hasFeedStart: complete } = store
-      this.totalListeners[podcast]?.forEach(listener =>
-        listener({ total, complete })
-      )
+      // this.totalListeners[podcast]?.forEach(listener =>
+      //   listener({ total, complete })
+      // )
     })
 
-    ws.on('hasAllEpisodes', async ({ podcast, total }) => {
-      this.totalListeners[podcast]?.forEach(listener =>
-        listener({ total, complete: true })
-      )
-      ;(await this.epStore.getPodcast(podcast)).hasFeedStart = true
-    })
+    // ws.on('hasAllEpisodes', async ({ podcast, total }) => {
+    //   this.totalListeners[podcast]?.forEach(listener =>
+    //     listener({ total, complete: true })
+    //   )
+    //   ;(await this.epStore.getPodcast(podcast)).hasFeedStart = true
+    // })
 
     ws.on('hasCovers', async ({ id, covers, palette }) => {
       logger.info('got covers for ' + id, { covers, palette })
@@ -114,21 +112,9 @@ export default class Store {
     await tx.done
   }
 
-  public async onTotalChange(
-    id: string,
-    handler: TotalCB
-  ): Promise<() => void> {
-    ;(this.totalListeners[id] ??= []).push(handler)
-    return proxy(() => {
-      this.totalListeners[id] = this.totalListeners[id]!.filter(
-        f => f !== handler
-      )
-    })
-  }
-
   public async episode([podId, epId]: EpisodeId): Promise<EpisodeBase | null> {
     return (
-      (await storeX.get('episodes.*.*', podId, epId)) ??
+      (await storeX.get('episodes.*', epId)) ??
       (convert.episode(await api.query.episode([podId, epId]), podId) as any) ??
       null
     )
@@ -159,11 +145,16 @@ export default class Store {
   public async feedItem(
     subId: string,
     index: number,
-    update: (v: EpisodeBase) => void
+    update: Proxied<λ<[_Episode]>>
   ): Promise<(() => void) | undefined> {
     const sub = this.getFeedSub(subId)
     if (!sub) return
-    return proxy(sub.addSub(index, update))
+    const cancel = sub.addSub(index, update)
+    const unsub = proxy(() => {
+      cancel()
+      unsub[release]?.()
+    })
+    return unsub
   }
 
   // public async addSubscription(id: string, existing: boolean) {

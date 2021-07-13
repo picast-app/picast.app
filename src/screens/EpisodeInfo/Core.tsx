@@ -8,7 +8,7 @@ import { main } from 'workers'
 
 export const Core: React.FC<{ id: EpisodeId }> = ({ id }) => {
   const [podcast] = useStateX('podcasts.*', id[0])
-  const [episode] = useStateX('episodes.*.*', ...id)
+  const [episode] = useStateX('episodes.*', id[1])
   const themeRef = useThemeRef(podcast?.palette)
   const isPlaying = useIsEpisodePlaying(id)
 

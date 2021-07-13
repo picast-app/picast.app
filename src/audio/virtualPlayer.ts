@@ -41,11 +41,11 @@ export class VirtualPlayer extends EventEmitter<Events> {
 
     this.track = id
     if (!id) return this.call('changeTrack', null, null)
-    const file = await store.get('episodes.*.*.file', ...id)
+    const file = await store.get('episodes.*.file', id[1])
     if (!file) throw Error(`can't find file for ${id[0]} ${id[1]}`)
     this.src = file
     this.setDuration(
-      (await store.get('episodes.*.*.duration', ...id)) ?? 1200,
+      (await store.get('episodes.*.duration', id[1])) ?? 1200,
       file
     )
     this.call('changeTrack', id, file)
