@@ -64,6 +64,14 @@ export const timeLimit = <T extends Promise<any>>(ms: number, ...proms: T[]) =>
   Promise.race<T>([...proms, new Promise((_, rej) => setTimeout(rej, ms))])
 
 export const asyncCB =
-  <T extends λ<TA, TR>, TA extends any[], TR>(prom: Promise<T>) =>
-  (...args: TA): TR extends PromiseLike<any> ? TR : Promise<TR> =>
-    new Promise((res, rej) => prom.then(f => res(f(...args))).catch(rej)) as any
+  <T extends λ | undefined>(prom: Promise<T>) =>
+  (
+    ...args: T extends λ ? Parameters<T> : []
+  ): T extends λ
+    ? ReturnType<T> extends PromiseLike<any>
+      ? ReturnType<T>
+      : Promise<ReturnType<T>>
+    : Promise<undefined> =>
+    new Promise((res, rej) =>
+      prom.then(f => res(f?.(...args))).catch(rej)
+    ) as any

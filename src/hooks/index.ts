@@ -477,3 +477,11 @@ export function useChanged(cb: Parameters<typeof useEffect>[0], deps?: any[]) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)
 }
+
+export function useConstant<T extends λ>(
+  hook: T,
+  ...args: Parameters<T>
+): ReturnType<T> {
+  const ref = useRef(hook)
+  return ref.current(...args)
+}

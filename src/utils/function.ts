@@ -8,9 +8,9 @@ export const callAll = <T extends any[] = []>(
 export const ident = <T>(v: T): T => v
 
 export const bundle =
-  <TA extends any[]>(...funcs: ((...args: TA) => any)[]) =>
+  <TA extends any[]>(...funcs: (((...args: TA) => any) | undefined)[]) =>
   async (...args: TA): Promise<void> => {
-    const res = funcs.map(func => func(...args))
+    const res = funcs.map(func => func?.(...args))
     if (res.some(isPromise)) await Promise.all(res)
   }
 
