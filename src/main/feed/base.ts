@@ -4,6 +4,8 @@ import type { Episode } from 'store/state'
 import { isPromise } from 'utils/promise'
 import { store as storeX } from 'store'
 import { callAll } from 'utils/function'
+import type { Podcast as PodStore } from 'main/store/episodeStore'
+import { nullSet } from 'utils/map'
 
 // keeps track of subscribers per index
 export abstract class Base {
@@ -29,8 +31,8 @@ export abstract class Base {
   }
 
   protected episodeListeners: { [id: string]: () => void } = {}
-  protected indexMap: string[] = []
-  protected keyMap: Record<string, number> = {}
+  protected indexMap: [string, number][] = []
+  protected keyMap = new Map<string, { i?: number }>()
 
   protected listen(id: string) {
     this.episodeListeners[id] ??= storeX
@@ -38,7 +40,7 @@ export abstract class Base {
       .set(async (_, p, { unlock }) => {
         unlock?.()
         const episode = await storeX.get('episodes.*', id)
-        if (episode) callAll(this.subs[this.keyMap[id]], episode)
+        if (episode) callAll(this.subs[this.keyMap.get(id)!.i!], episode)
       })
   }
 
@@ -50,6 +52,51 @@ export abstract class Base {
   protected abstract onSub(index: number, update: λ<[Episode]>): void
   protected abstract onEstablishedSub(index: number): any
   protected onRemovedSub(index: number) {
-    this.stopListen(this.indexMap[index])
+    this.stopListen(this.indexMap[index][0])
+  }
+
+  protected merge(
+    store: PodStore,
+    ...indices: [feedI: number, storeI: number][] | number[]
+  ): number {
+    let iPairs: [number, number][] =
+      typeof indices[0] === 'number'
+        ? indices.map(n => [n, n])
+        : (indices as any)
+    iPairs = [...iPairs].sort(([a], [b]) => a - b)
+    for (const [i, si] of iPairs) {
+      for (let e = this.indexMap.length; e > i; e--) {
+        this.indexMap[e] = this.indexMap[e - 1]
+        this.key(this.indexMap[e][0]).i = e
+      }
+      this.setKey(i, store.read(si))
+      this.key(this.indexMap[i][0]).i = i
+    }
+    return iPairs[0][0]
+  }
+
+  protected async reattach(from: number) {
+    for (let i = from; i < this.indexMap.length; i++) {
+      if (this.subs[i]?.length) {
+        const episode = await storeX.get('episodes.*', this.indexMap[i][0])
+        if (!episode) throw Error(`no episode found for ${this.indexMap[i][0]}`)
+        callAll(this.subs[i], episode)
+      } else {
+        this.episodeListeners[this.indexMap[i][0]]()
+        delete this.episodeListeners[this.indexMap[i][0]]
+      }
+    }
+  }
+
+  protected key = (id: string) => nullSet(this.keyMap, id, {})
+  protected static numeric = (key: string) => parseInt(key.slice(0, 6), 36)
+  protected setKey(i: number, key: string) {
+    this.indexMap[i] = [key, Base.numeric(key)]
+  }
+
+  protected searchIndex(key: number) {
+    for (let i = 0; i < this.indexMap.length; i++)
+      if (this.indexMap[i][1] <= key) return i
+    return this.indexMap.length
   }
 }

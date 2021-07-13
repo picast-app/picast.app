@@ -17,7 +17,14 @@ export class MultiPodcast extends Base {
         throw Error('all podcasts in MultiPodcast feed must be subscribed to')
 
       store.onEpisode = (...indices) => {
-        logger.info('store has', ...indices)
+        const slots: [number, number][] = indices.map(i => [
+          this.searchIndex(Base.numeric(store.read(i))),
+          i,
+        ])
+
+        this.reattach(this.merge(store, ...slots))
+
+        // todo: work out correct [lastIndex] advance
       }
     }
   }
@@ -33,7 +40,7 @@ export class MultiPodcast extends Base {
 
   async onSub(i: number, update: λ<[Episode]>) {
     if (!this.indexMap[i]) return
-    const episode = await storeX.get('episodes.*', this.indexMap[i])
+    const episode = await storeX.get('episodes.*', this.indexMap[i][0])
     if (episode) update(episode)
   }
 
@@ -58,8 +65,8 @@ export class MultiPodcast extends Base {
     }
 
     if (!this.episodes[i]) return
-    this.indexMap[i] = this.episodes[i][2]
-    this.keyMap[this.episodes[i][2]] = i
+    this.setKey(i, this.episodes[i][2])
+    this.key(this.episodes[i][2]).i = i
     this.listen(this.episodes[i][2])
   }
 
