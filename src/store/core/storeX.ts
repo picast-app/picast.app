@@ -43,7 +43,7 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
   ) {
     const final = this.substituteWildcards(key, ...subs)
     const [skip, noChange] = flag()
-    const m = { ...meta, noChange }
+    const m = { ...meta, noChange, unlock: this.escapeLock }
 
     const subsMatch = (handler: λ) => {
       const filters = this.substitutionFilters.get(handler)
@@ -348,7 +348,7 @@ export type Getter<T = any> = (
 export type Setter<T = any> = (
   v: T,
   path: string,
-  meta: Record<string, any> & { noChange?(): void },
+  meta: Record<string, any> & { noChange?(): void; unlock?(): void },
   ...subs: string[]
 ) => unknown
 export type Deleted = (path: string) => unknown

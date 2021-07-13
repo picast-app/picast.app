@@ -1,8 +1,9 @@
 import dbProm, { gql as convert } from './idb'
 import * as api from 'api/calls'
-import { EpisodeBase } from './types'
+import { Episode } from 'store/state'
 import { store } from 'store'
 import { bindThis } from 'utils/proto'
+import { callAll } from 'utils/function'
 
 type Key = [id: string, published: number]
 
@@ -12,7 +13,7 @@ export class Podcast {
   private listeners: ((...i: number[]) => void)[] = []
 
   constructor(
-    private readonly id: string,
+    public readonly id: string,
     private readonly db: PromType<typeof dbProm>,
     private keys: Key[],
     private subscribed: boolean
@@ -64,10 +65,8 @@ export class Podcast {
       return this.read(index)
     })
 
-  public async read(index: number) {
-    const id = this.keys[index]?.[0]
-    if (!id) return
-    return await store.get('episodes.*.*', this.id, id)
+  public read(index: number) {
+    return this.keys[index]?.[0]
   }
 
   private async fetch(n: number) {
@@ -88,14 +87,15 @@ export class Podcast {
     this.addEpisodes(episodes)
   }
 
-  public addEpisodes(episodes: EpisodeBase[], notify = false) {
+  public addEpisodes(episodes: Episode[], notify = false) {
     this.addKeys(Podcast.keys(episodes.map(({ id }) => id)))
     episodes.map(data => store.set('episodes.*.*', data, {}, this.id, data.id))
     if (!notify) return
+    store.set('podcasts.*.episodeCount', this.keys.length, {}, this.id)
     const indices = episodes.map(v =>
       this.keys.findIndex(([id]) => id === v.id)
     )
-    this.listeners.forEach(f => f(...indices))
+    callAll(this.listeners, ...indices)
   }
 
   public set onEpisode(listener: (...i: number[]) => void) {
