@@ -2,6 +2,8 @@ import { key } from 'fiber/wellKnown'
 import type { Proxied } from 'fiber'
 import type { Episode } from 'store/state'
 import { isPromise } from 'utils/promise'
+import { store as storeX } from 'store'
+import { callAll } from 'utils/function'
 
 // keeps track of subscribers per index
 export abstract class Base {
@@ -26,7 +28,28 @@ export abstract class Base {
     }
   }
 
-  abstract onSub(index: number, update: λ<[Episode]>): void
-  abstract onEstablishedSub(index: number): any
-  abstract onRemovedSub(index: number): void
+  protected episodeListeners: { [id: string]: () => void } = {}
+  protected indexMap: string[] = []
+  protected keyMap: Record<string, number> = {}
+
+  protected listen(id: string) {
+    this.episodeListeners[id] ??= storeX
+      .handler('episodes.*', id)
+      .set(async (_, p, { unlock }) => {
+        unlock?.()
+        const episode = await storeX.get('episodes.*', id)
+        if (episode) callAll(this.subs[this.keyMap[id]], episode)
+      })
+  }
+
+  protected stopListen(id: string) {
+    this.episodeListeners[id]()
+    delete this.episodeListeners[id]
+  }
+
+  protected abstract onSub(index: number, update: λ<[Episode]>): void
+  protected abstract onEstablishedSub(index: number): any
+  protected onRemovedSub(index: number) {
+    this.stopListen(this.indexMap[index])
+  }
 }

@@ -11,18 +11,17 @@ export class Podcast extends Base {
       indices = [...indices].sort()
 
       for (const i of indices) {
-        for (let e = this.indexMap.length; e > i; e--)
+        for (let e = this.indexMap.length; e > i; e--) {
           this.indexMap[e] = this.indexMap[e - 1]
+          this.keyMap[this.indexMap[e]] = e
+        }
         this.indexMap[i] = this.store.read(i)
+        this.keyMap[this.indexMap[i]] = i
       }
 
       for (let i = indices[0]; i < this.indexMap.length; i++) {
         if (this.subs[i]?.length) {
-          const episode = await storeX.get(
-            'episodes.*.*',
-            this.podId,
-            this.indexMap[i]
-          )
+          const episode = await storeX.get('episodes.*', this.indexMap[i])
           if (!episode)
             throw Error(
               `no episode found for ${this.podId} ${this.indexMap[i]}`
@@ -38,15 +37,9 @@ export class Podcast extends Base {
 
   private readonly podId = this.store.id
 
-  private episodeListeners: { [id: string]: () => void } = {}
-  private indexMap: string[] = []
-
   async onSub(i: number, update: λ<[Episode]>) {
-    const episode = await storeX.get(
-      'episodes.*.*',
-      this.podId,
-      this.indexMap[i]
-    )
+    if (!this.indexMap[i]) return
+    const episode = await storeX.get('episodes.*', this.indexMap[i])
     if (episode) update(episode)
   }
 
@@ -55,29 +48,8 @@ export class Podcast extends Base {
     if (!id) return logger.warn(`no id found for [${i}] (${this.podId})`)
 
     this.indexMap[i] = id
+    this.keyMap[id] = i
 
-    this.episodeListeners[id] ??= storeX
-      .handler('episodes.*.*', this.podId, id)
-      .set(async (_, p, { unlock }) => {
-        const index = this.findIndex(id, i)
-        if (index < 0 || !this.subs[index]?.length) return
-        unlock?.()
-        const episode = await storeX.get('episodes.*.*', this.podId, id)
-        logger.info(id, '->', episode)
-        if (episode) callAll(this.subs[i], episode)
-      })
-  }
-
-  onRemovedSub(i: number) {
-    const id = this.indexMap[i]
-    this.episodeListeners[id]()
-    delete this.episodeListeners[id]
-  }
-
-  private findIndex(id: string, startAt = 0) {
-    for (let i = startAt; i < this.indexMap.length; i++)
-      if (this.indexMap[i] === id) return i
-    for (let i = startAt - 1; i >= 0; i--) if (this.indexMap[i] === id) return i
-    return -1
+    this.listen(id)
   }
 }

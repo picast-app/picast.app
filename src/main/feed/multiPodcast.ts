@@ -1,10 +1,10 @@
-import { Base, UpdateCB } from './base'
-import { asyncQueue } from 'utils/decorators'
-import type { EpisodeBase } from 'main/store/types'
+import { Base } from './base'
 import type { Podcast as PodStore, EpisodeStore } from 'main/store/episodeStore'
+import type { Episode } from 'store/state'
+import { store as storeX } from 'store'
 
 export class MultiPodcast extends Base {
-  private episodes: EpisodeBase[] = []
+  private episodes: EpisodeKey[] = []
   private storeInfo = new Map<PodStore, MultiStoreInfo>(
     this.stores.map(store => [store, { lastIndex: -1, store }])
   )
@@ -31,29 +31,50 @@ export class MultiPodcast extends Base {
     )
   }
 
-  @asyncQueue
-  async onSub(i: number, update: UpdateCB) {
+  async onSub(i: number, update: λ<[Episode]>) {
+    if (!this.indexMap[i]) return
+    const episode = await storeX.get('episodes.*', this.indexMap[i])
+    if (episode) update(episode)
+  }
+
+  onEstablishedSub(i: number) {
     while (i >= this.episodes.length) {
       let candidate: MultiStoreInfo | null = null
+
       for (const store of this.stores) {
         const info = this.storeInfo.get(store)!
         if (info.exhausted) continue
-        const last = (info.last ??=
-          (await store.read(++info.lastIndex)) ?? undefined)
-        if (!last) info.exhausted = true
-        else if (last.published > (candidate?.last?.published ?? -Infinity))
+        if (!info.last) {
+          const key = store.read(++info.lastIndex)
+          if (key) info.last = MultiPodcast.parseKey(store.id, key)
+        }
+        if (!info.last) info.exhausted = true
+        else if (!candidate?.last?.[0] || info.last[0] > candidate?.last?.[0])
           candidate = info
       }
       if (!candidate) break
       this.episodes.push(candidate.last!)
       delete candidate.last
     }
-    update(this.episodes[i])
+
+    if (!this.episodes[i]) return
+    this.indexMap[i] = this.episodes[i][2]
+    this.keyMap[this.episodes[i][2]] = i
+    this.listen(this.episodes[i][2])
   }
+
+  static parseKey = (podcast: string, id: string): EpisodeKey => [
+    parseInt(id.slice(0, 6), 36),
+    podcast,
+    id,
+  ]
 }
+
 type MultiStoreInfo = {
-  last?: EpisodeBase
+  last?: EpisodeKey
   lastIndex: number
   exhausted?: boolean
   store: PodStore
 }
+
+type EpisodeKey = [ts: number, ...id: EpisodeId]
