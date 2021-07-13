@@ -45,10 +45,16 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     const [skip, noChange] = flag()
     const m = { ...meta, noChange }
 
+    const subsMatch = (handler: λ) => {
+      const filters = this.substitutionFilters.get(handler)
+      return !filters || !filters.some((v, i) => subs[i] !== v)
+    }
+
     for (let i = 0; i < this.handlers.length; i++) {
       if (!key.startsWith(this.handlers[i][0])) continue
       for (const handler of this.handlers[i][1].set)
-        if (handler(value, final, m, ...subs) === false || skip) return
+        if (subsMatch(handler))
+          if (handler(value, final, m, ...subs) === false || skip) return
     }
     // propagate down into children
     for (let i = this.handlers.length - 1; i >= 0; i--) {
@@ -60,7 +66,7 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
       const sub = this.pick(value, key, this.handlers[i][0], true)
       if (sub !== path.none) {
         for (const handler of this.handlers[i][1].set)
-          handler(sub, final, m, ...subs)
+          if (subsMatch(handler)) handler(sub, final, m, ...subs)
       } else {
         let o = 0
         while (
@@ -71,7 +77,7 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
 
         for (let i2 = i - o; i2 <= i; i2++)
           for (const handler of this.handlers[i2][1].del)
-            handler(this.handlers[i][0])
+            if (subsMatch(handler)) handler(this.handlers[i][0])
 
         i -= o
       }
@@ -87,7 +93,7 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     let cancel: () => void
     this.get(key, ...subs).then(v => {
       cb(v, key, {}, ...subs)
-      cancel = this.handler(key).set(cb)
+      cancel = this.handler(key, ...subs).set(cb)
     })
     return () => {
       cancel?.()
@@ -170,7 +176,10 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     { get?: Getter; fallback?: Fallback; set: Setter[]; del: Deleted[] }
   ][] = []
 
-  public handler<K extends keyof TF & string>(key: K) {
+  private substitutionFilters = new Map<λ, string[]>()
+
+  // todo: handle substitution filters for handlers other than set
+  public handler<K extends keyof TF & string>(key: K, ...subs: string[]) {
     const handlers = this.handlers
     const accessor = () => {
       let i = handlers.findIndex(([k]) => k <= key)
@@ -182,7 +191,7 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     type Accessor = ReturnType<typeof accessor>
 
     const handlerFactory =
-      <T extends (acc: Accessor, ...rest: R) => void, R extends any[]>({
+      <T extends (acc: Accessor, ...rest: R) => void, R extends [λ, ...any[]]>({
         attach,
         detach,
       }: {
@@ -190,6 +199,7 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
         detach: (acc: Accessor, accArgs: R) => void
       }) =>
       (...args: R) => {
+        this.substitutionFilters.set(args[0], subs)
         let acc: Accessor
         const apply = () => {
           acc = accessor()
@@ -198,6 +208,7 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
         if (this.handlerQueue) this.handlerQueue.push(apply)
         else apply()
         return () => {
+          this.substitutionFilters.delete(args[0])
           if (acc) detach(acc, args)
           else if (this.handlerQueue?.includes(apply))
             this.handlerQueue.splice(this.handlerQueue.indexOf(apply, 1))

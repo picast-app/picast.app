@@ -12,3 +12,4 @@ src/**/*.md
 /*.*profile
 /trace*
 cypress*
+benchmark

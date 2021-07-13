@@ -397,3 +397,40 @@ test('join state', async () => {
 })
 
 // todo register wildcard listener for specific value
+
+test.only('handler substitutions', () => {
+  const store = new Store<StoreSchema>()
+  const setRoot = jest.fn(() => {})
+  const setA = jest.fn(() => {})
+  const setRootTitle = jest.fn(() => {})
+  const setATitle = jest.fn(() => {})
+
+  store.handler('items.*').set(setRoot)
+  store.handler('items.*', 'a').set(setA)
+  store.handler('items.*.title').set(setRootTitle)
+  store.handler('items.*.title', 'a').set(setATitle)
+
+  store.set('items.*', { title: 'foo' }, {}, 'a')
+  expect(setRoot).toHaveBeenCalledTimes(1)
+  expect(setRootTitle).toHaveBeenCalledTimes(1)
+  expect(setA).toHaveBeenCalledTimes(1)
+  expect(setATitle).toHaveBeenCalledTimes(1)
+
+  store.set('items.*', { title: 'bar' }, {}, 'b')
+  expect(setRoot).toHaveBeenCalledTimes(2)
+  expect(setRootTitle).toHaveBeenCalledTimes(2)
+  expect(setA).toHaveBeenCalledTimes(1)
+  expect(setATitle).toHaveBeenCalledTimes(1)
+
+  store.set('items.*.title', 'baz', {}, 'a')
+  expect(setRoot).toHaveBeenCalledTimes(3)
+  expect(setRootTitle).toHaveBeenCalledTimes(3)
+  expect(setA).toHaveBeenCalledTimes(2)
+  expect(setATitle).toHaveBeenCalledTimes(2)
+
+  store.set('items.*.title', 'baz', {}, 'b')
+  expect(setRoot).toHaveBeenCalledTimes(4)
+  expect(setRootTitle).toHaveBeenCalledTimes(4)
+  expect(setA).toHaveBeenCalledTimes(2)
+  expect(setATitle).toHaveBeenCalledTimes(2)
+})
