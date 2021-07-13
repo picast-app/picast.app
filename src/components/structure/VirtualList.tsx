@@ -28,7 +28,7 @@ function _VirtualList<T>({ length, itemProps, children: item }: Props<T>) {
   const itemHeight = isDesktop ? ITEM_HEIGHT_DESKTOP : ITEM_HEIGHT_MOBILE
   const ihRef = useRef(itemHeight)
   ihRef.current = itemHeight
-  const numVisible = Math.ceil((height / itemHeight) * 3)
+  const numVisible = Math.min(Math.ceil((height / itemHeight) * 3), length)
   const total = useValueRef(length)
   const [ol, setOl] = useState<HTMLOListElement | null>(null)
   const offTop = useValueRef(

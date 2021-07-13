@@ -28,7 +28,7 @@ export default function Fake({ match: { id } }: RouteProps<{ id: string }>) {
           // isn't refetched
           <Feed
             podcast={id}
-            total={podcast?.episodeCount}
+            total={podcast?.episodeCount ?? 100}
             onLoading={() => {}}
           />
         )}
