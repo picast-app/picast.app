@@ -2,9 +2,6 @@ import { openDB } from 'idb/with-async-ittr'
 import type IDBSchema from './schema'
 import migrations from './migrations'
 
-// tmp
-import { podcast, episode } from 'api/convert'
-
 const VERSION = 5
 
 export default openDB<IDBSchema>(self.location.hostname, VERSION, {
@@ -23,8 +20,3 @@ export default openDB<IDBSchema>(self.location.hostname, VERSION, {
     }
   },
 })
-
-export const gql = {
-  podcast,
-  episode,
-}

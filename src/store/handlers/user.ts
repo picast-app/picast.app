@@ -1,11 +1,11 @@
 import type * as GQL from 'types/gql'
-import idb from 'main/store/idb'
+import idb from 'main/idb/idb'
 import { State } from 'store/state'
 import MemCache, { OptPrim, _, HookDict, FBDict } from 'store/utils/memCache'
 import { idbDefaultReader, idbWriter } from 'store/utils/idb'
 import * as api from 'api/calls'
 import * as convert from 'api/convert'
-import epStore from 'main/store/episodeStore'
+import epStore from 'main/episodeStore'
 
 export default class UserState extends MemCache<State['user']> {
   root = 'user'

@@ -2,10 +2,9 @@ import 'polyfills'
 import 'utils/logger'
 import { expose } from 'fiber'
 import { query, mutate } from 'api/calls'
-import IDBInterface from './store/idbInterface'
+import IDBInterface from './idb/idbInterface'
+import dbProm from './idb/idb'
 import bufferInstance from 'utils/instantiationBuffer'
-import dbProm from './store/idb'
-import store from './store'
 import { deleteDB } from 'idb'
 import { threaded } from 'store'
 import { registerUICall } from './ui'
@@ -37,7 +36,6 @@ const api = {
   ...query,
   ...mutate,
   ...idbInterface,
-  ...store,
   ...accountActions,
   ...threaded,
   pullSubscriptions,

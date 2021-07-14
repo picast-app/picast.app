@@ -1,10 +1,10 @@
-import dbProm from 'main/store/idb'
+import dbProm from 'main/idb/idb'
 import { collection } from 'utils/array'
 import type { Store } from 'store'
 import type { Podcast } from 'store/state'
 import * as api from 'api/calls'
 import * as convert from 'api/convert'
-import epStore from 'main/store/episodeStore'
+import epStore from 'main/episodeStore'
 import { set } from 'utils/path'
 import { waiter } from 'utils/promise'
 

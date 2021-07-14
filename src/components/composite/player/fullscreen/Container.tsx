@@ -112,7 +112,7 @@ function FullscreenContainer({ id, ...props }: Props) {
           )}
         </Section>
         <Section>
-          {episode && <Player podcast={podcast} episode={episode} />}
+          {podcast && episode && <Player podcast={podcast} episode={episode} />}
         </Section>
         <Section>
           <Queue />

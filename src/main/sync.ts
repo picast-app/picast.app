@@ -2,7 +2,7 @@ import * as api from 'api/calls'
 import { store, user } from 'store'
 import { collection } from 'utils/array'
 import { mapList, mapValuesAsync } from 'utils/object'
-import epStore from 'main/store/episodeStore'
+import epStore from 'main/episodeStore'
 import { hashIds, encodeIds } from 'utils/encode'
 import * as convert from 'api/convert'
 

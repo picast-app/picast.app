@@ -1,4 +1,5 @@
-import dbProm, { gql as convert } from './idb'
+import dbProm from 'main/idb/idb'
+import * as convert from 'api/convert'
 import * as api from 'api/calls'
 import { Episode } from 'store/state'
 import { store } from 'store'

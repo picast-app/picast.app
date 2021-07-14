@@ -2,7 +2,7 @@ import { store } from 'store'
 import { Base as Feed, CB } from './base'
 import { Podcast } from './singlePodcast'
 import { MultiPodcast } from './multiPodcast'
-import epStore from 'main/store/episodeStore'
+import epStore from 'main/episodeStore'
 import { proxy, release, Proxied } from 'fiber'
 
 export async function feedSubscription(...podcasts: string[]) {

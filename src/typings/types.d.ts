@@ -17,7 +17,7 @@ type EchoSnackEvent = CustomEvent<{
 }>
 
 type EpisodeId = [podcast: string, episode: string]
-type Podcast = import('main/store/types').Podcast
+type Podcast = import('store/state').Podcast
 type EpisodeMin = {
   id: string
   title: string

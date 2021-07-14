@@ -1,6 +1,6 @@
 import type { Episode } from 'store/state'
 import type { Store } from 'store'
-import idb from 'main/store/idb'
+import idb from 'main/idb/idb'
 import { seg, mutate } from 'utils/path'
 import { diff } from 'utils/array'
 import { allFlat } from 'utils/promise'

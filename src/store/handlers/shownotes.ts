@@ -1,6 +1,6 @@
 import type { Store } from 'store'
 import * as api from 'api/calls'
-import idb from 'main/store/idb'
+import idb from 'main/idb/idb'
 import { asyncNullChain } from 'utils/function'
 
 export default (store: Store) => {

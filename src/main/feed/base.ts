@@ -4,7 +4,7 @@ import type { Episode } from 'store/state'
 import { isPromise } from 'utils/promise'
 import { store as storeX } from 'store'
 import { callAll } from 'utils/function'
-import type { Podcast as PodStore } from 'main/store/episodeStore'
+import type { Podcast as PodStore } from 'main/episodeStore'
 import { nullSet } from 'utils/map'
 
 export type CB = Proxied<λ<[Episode]>>

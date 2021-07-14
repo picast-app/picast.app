@@ -1,5 +1,5 @@
 import { Base, CB } from './base'
-import type { Podcast as PodStore, EpisodeStore } from 'main/store/episodeStore'
+import type { Podcast as PodStore, EpisodeStore } from 'main/episodeStore'
 import { store as storeX } from 'store'
 
 export class MultiPodcast extends Base {
