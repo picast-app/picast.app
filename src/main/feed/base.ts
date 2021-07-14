@@ -7,13 +7,21 @@ import { callAll } from 'utils/function'
 import type { Podcast as PodStore } from 'main/store/episodeStore'
 import { nullSet } from 'utils/map'
 
+export type CB = Proxied<λ<[Episode]>>
+
 // keeps track of subscribers per index
 export abstract class Base {
-  constructor(public readonly id = ((Math.random() * 1e6) | 0).toString(36)) {}
+  constructor(public readonly id = Base.genId()) {
+    Base.instances.set(id, this)
+  }
 
-  protected subs: Proxied<λ<[Episode]>>[][] = []
+  delete() {
+    Base.instances.delete(this.id)
+  }
 
-  public addSub(index: number, update: Proxied<λ<[Episode]>>): λ<[], void> {
+  protected subs: CB[][] = []
+
+  public addSub(index: number, update: CB): λ<[], void> {
     ;(this.subs[index] ??= []).push(update)
     const onSub = () => this.onSub(index, update)
     const v = this.subs[index].length === 1 && this.onEstablishedSub(index)
@@ -98,5 +106,14 @@ export abstract class Base {
     for (let i = 0; i < this.indexMap.length; i++)
       if (this.indexMap[i][1] <= key) return i
     return this.indexMap.length
+  }
+
+  public static readonly instances = new Map<string, Base>()
+  private static genId = () => {
+    do {
+      const id = ((Math.random() * 1e6) | 0).toString(36)
+      if (Base.instances.has(id)) continue
+      return id
+    } while (true)
   }
 }

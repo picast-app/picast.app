@@ -1,6 +1,5 @@
-import { Base } from './base'
+import { Base, CB } from './base'
 import { store as storeX } from 'store'
-import type { Episode } from 'store/state'
 import type { Podcast as PodStore } from 'main/store/episodeStore'
 
 export class Podcast extends Base {
@@ -12,7 +11,7 @@ export class Podcast extends Base {
 
   private readonly podId = this.store.id
 
-  async onSub(i: number, update: λ<[Episode]>) {
+  async onSub(i: number, update: CB) {
     if (!this.indexMap[i]) return
     const episode = await storeX.get('episodes.*', this.indexMap[i][0])
     if (episode) update(episode)

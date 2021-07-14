@@ -1,21 +1,13 @@
 /* eslint-disable @typescript-eslint/require-await */
 import dbProm, { gql as convert } from './idb'
-import * as api from 'api/calls'
-import { Episode, EpisodeBase } from './types'
-import type { Podcast, Episode as _Episode } from 'store/state'
-import * as Feed from '../feed'
+import type { Podcast } from 'store/state'
 import epStore, { EpisodeStore } from './episodeStore'
-import ws, { wsApi } from 'main/ws'
+import ws from 'main/ws'
 import type * as T from 'types/gql'
-import * as obj from 'utils/object'
-import { store as storeX } from 'store'
-import { proxy, Proxied, release } from 'fiber'
-import { bundle } from 'utils/function'
 
 export default class Store {
   private readonly podcasts: Record<Podcast['id'], Podcast> = {}
   private subscriptions: Podcast['id'][] = []
-  private feedSubs: Feed.Base[] = []
 
   constructor(
     private readonly db: PromType<typeof dbProm>,
@@ -102,114 +94,6 @@ export default class Store {
     await tx.done
   }
 
-  public async episodeChecked(...ids: string[]) {
-    ids = ids.filter(id => this.subscriptions.includes(id))
-    const tx = this.db.transaction('subscriptions', 'readwrite')
-    // ids.forEach(id => {
-    //   this.podcasts[id].lastEpisodeCheck = Date.now()
-    //   tx.store.put(this.podcasts[id])
-    // })
-    await tx.done
-  }
-
-  public async episode([podId, epId]: EpisodeId): Promise<EpisodeBase | null> {
-    return (
-      (await storeX.get('episodes.*', epId)) ??
-      (convert.episode(await api.query.episode([podId, epId]), podId) as any) ??
-      null
-    )
-  }
-
-  public async feedSubscription(...podcasts: string[]): Promise<string> {
-    const subs = await storeX.get('user.subscriptions')
-
-    podcasts = Array.from(
-      new Set(podcasts.flatMap(v => (v === '*' ? subs : [v])))
-    )
-    const sub: Feed.Base =
-      podcasts.length === 1
-        ? new Feed.Podcast(await this.epStore.getPodcast(podcasts[0]))
-        : await Feed.MultiPodcast.create(this.epStore, podcasts)
-    logger.info(`add feed sub ${sub.id} for`, ...podcasts)
-    this.feedSubs.push(sub)
-    return sub.id
-  }
-
-  public async cancelFeedSubscription(id: string) {
-    const i = this.feedSubs.findIndex(v => v.id === id)
-    if (i === -1) return
-    logger.info(`cancel feed sub ${id}`)
-    this.feedSubs.splice(i, 1)
-  }
-
-  public async feedItem(
-    subId: string,
-    index: number,
-    update: Proxied<λ<[_Episode]>>
-  ): Promise<(() => void) | undefined> {
-    const sub = this.getFeedSub(subId)
-    if (!sub) return
-    const cancel = sub.addSub(index, update)
-    const unsub = proxy(() => {
-      cancel()
-      unsub[release]?.()
-    })
-    return unsub
-  }
-
-  // public async addSubscription(id: string, existing: boolean) {
-  //   logger.info('subscribe to', id)
-  //   if (this.subscriptions.includes(id)) return
-  //   this.subscriptions.push(id)
-  //   const podcast = await this.podcast(id)
-  //   if (!podcast) throw Error(`can't subscribe to ${id}`)
-  //   const { state } = await appState
-  //   state.addSubscription(podcast)
-  //   await this.storeSubscription(id)
-  //   // await this.epStore.subscribe(id)
-  //   if (!existing) await api.mutate.subscribe(id)
-  // }
-
-  // public async removeSubscription(id: string, existing: boolean) {
-  //   logger.info('unsubscribe from', id)
-  //   if (!this.subscriptions.includes(id)) return
-  //   this.subscriptions = this.subscriptions.filter(v => v !== id)
-  //   const { state } = await appState
-  //   state.removeSubscription(id)
-  //   await this.db.delete('subscriptions', id)
-  //   // await this.epStore.unsubscribe(id)
-  //   if (!existing) await api.mutate.unsubscribe(id)
-  // }
-
-  // public async syncSubscriptions({
-  //   add,
-  //   remove,
-  // }: {
-  //   add: T.Me_me_subscriptions_added[]
-  //   remove: string[]
-  // }): Promise<{
-  //   removed: string[]
-  //   added: string[]
-  // }> {
-  //   add ??= []
-  //   remove ??= []
-
-  //   remove = remove.filter(id => this.subscriptions.includes(id))
-  //   const removed = remove.map(id => this.podcasts[id]!.title)
-  //   await Promise.all(remove.map(id => this.removeSubscription(id, true)))
-
-  //   add = add.filter(({ id }) => !this.subscriptions.includes(id))
-  //   add.forEach(data => {
-  //     this.podcasts[data.id] = convert.podcast(data) as any
-  //   })
-  //   await Promise.all(add.map(({ id }) => this.addSubscription(id, true)))
-
-  //   return {
-  //     removed,
-  //     added: add.map(({ title }) => title),
-  //   }
-  // }
-
   private async storeSubscription(id: string) {
     // const { incomplete, ...podcast } = this.podcasts[id]
     const podcast = this.podcasts[id] //
@@ -217,54 +101,9 @@ export default class Store {
     await this.db.put('subscriptions', podcast)
   }
 
-  public async setPlaying(id: EpisodeId | null) {
-    if (id) await this.db.put('meta', id, 'playing')
-    else await this.db.delete('meta', 'playing')
-  }
-
-  public async setEpisodeProgress(id: string, progress: number) {
-    await this.updateEpisode(id, {
-      currentTime: progress,
-      relProg: ({ duration }) => progress / duration,
-    })
-  }
-
-  public async setEpisodeCompleted(id: string) {
-    await this.updateEpisode(id, { completed: true }, 'currentTime', 'relProg')
-  }
-
-  public async setEpisodeDuration(id: string, duration: number) {
-    logger.info(`set ${id} duration:`, duration)
-    await this.updateEpisode(id, { duration })
-  }
-
-  private async updateEpisode(
-    id: string,
-    update: {
-      [K in keyof Episode]?: Episode[K] | ((v: Episode) => Episode[K])
-    },
-    ...removed: (keyof Episode)[]
-  ) {
-    const episode = await this.db.get('episodes', id)
-    if (!episode) throw Error(`can't update unknown episode ${id}`)
-    for (const key of removed) delete episode[key]
-    await this.db.put('episodes', {
-      ...episode,
-      ...obj.map(update, (k, v) => [
-        k,
-        typeof v === 'function' ? v(episode) : v,
-      ]),
-    })
-  }
-
-  public async getEpisodeProgress(id: string): Promise<number> {
-    const episode = await this.db.get('episodes', id)
-    return episode?.relProg ?? 0
-  }
-
-  private getFeedSub(id: string): Feed.Base | undefined {
-    return this.feedSubs.find(v => v.id === id)
-  }
+  // private getFeedSub(id: string): Feed.Base | undefined {
+  //   return this.feedSubs.find(v => v.id === id)
+  // }
 
   public async wpSubscriptions(): Promise<string[]> {
     return this.wpSubs

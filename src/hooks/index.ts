@@ -313,7 +313,7 @@ export function useFeed(...podcasts: string[]) {
       setId(v)
     })
     return () => {
-      if (id) main.cancelFeedSubscription(id)
+      if (id) main.cancelFeed(id)
     }
   }, [dep])
 

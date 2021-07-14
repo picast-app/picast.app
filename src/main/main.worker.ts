@@ -14,6 +14,8 @@ import { pullSubscriptions } from './sync'
 import { prefix } from 'utils/object'
 import { VirtualPlayer } from 'audio/virtualPlayer'
 import serialWrapper from 'audio/serialInterface'
+import audioSync from 'audio/audioSync'
+import * as feed from 'main/feed'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const self: DedicatedWorkerGlobalScope
@@ -41,7 +43,8 @@ const api = {
   pullSubscriptions,
   deleteIDB,
   registerUICall,
-  ...prefix(serialWrapper(new VirtualPlayer()), 'player$'),
+  ...prefix(serialWrapper(audioSync(new VirtualPlayer())), 'player$'),
+  ...feed,
 } as const
 
 export type API = typeof api
