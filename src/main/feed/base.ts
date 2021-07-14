@@ -82,7 +82,7 @@ export abstract class Base {
         if (!episode) throw Error(`no episode found for ${this.indexMap[i][0]}`)
         callAll(this.subs[i], episode)
       } else {
-        this.episodeListeners[this.indexMap[i][0]]()
+        this.episodeListeners[this.indexMap[i][0]]?.()
         delete this.episodeListeners[this.indexMap[i][0]]
       }
     }

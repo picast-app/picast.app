@@ -29,7 +29,7 @@ export function EpisodeStrip(props: Props) {
     ...('id' in props ? [props.id] : [props.feed, props.index])
   )
   if (!episode) return null
-  return <Strip episode={episode} {...props} />
+  return <Strip episode={episode} {...props} key={episode.id} />
 }
 
 type StripProps = {
@@ -41,7 +41,7 @@ type StripProps = {
 const Strip: React.FC<StripProps> = ({ episode, artwork, clamp }) => (
   <S.Strip>
     <Link to={`?info=${episode.podcast}-${episode.id}`}>
-      {artwork && episode?.podcast && <Thumbnail podcast={episode.podcast} />}
+      {artwork && <Thumbnail podcast={episode.podcast} />}
       <S.Title data-style={clamp ? 'clamp' : undefined}>
         {episode.title}
       </S.Title>
@@ -63,7 +63,7 @@ const Strip: React.FC<StripProps> = ({ episode, artwork, clamp }) => (
   </S.Strip>
 )
 
-function Thumbnail({ podcast }: { podcast: string }) {
+function Thumbnail({ podcast }: { podcast?: string }) {
   const covers = useArtwork(podcast)
   return <Artwork covers={covers} />
 }

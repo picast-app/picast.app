@@ -453,16 +453,23 @@ const artworks = (podcast: string) => {
   return (artCache[podcast] ??= fetchArt(podcast))
 }
 const fetchArt = async (id: string) =>
-  (artCache[id] = (await storeX.getX('podcasts.*', id))?.covers ?? [])
-export const useArtwork = (podcast: string) => {
+  (artCache[id] = storeX.getX('podcasts.*.covers', id).then(v => {
+    artCache[id] = v
+    return v
+  }))
+export const useArtwork = (podcast?: string) => {
   const [covers, setCovers] = useState<string[]>(
-    isPromise(artCache[podcast]) ? [] : (artCache[podcast] as string[])
+    !podcast || isPromise(artCache[podcast])
+      ? []
+      : (artCache[podcast] as string[])
   )
 
   useEffect(() => {
+    if (!podcast) return
     const v = artworks(podcast)
     if (isPromise(v)) v.then(setCovers)
   }, [podcast])
+
   return covers
 }
 
