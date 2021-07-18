@@ -1,7 +1,8 @@
-import * as path from 'utils/path'
+import * as pth from 'utils/path'
 import { callAll } from 'utils/function'
 import { promiseCB } from 'utils/promise'
 import { flag } from 'utils/state'
+import PathTree from './pathTree'
 import type { Flatten } from './types'
 
 export type Schema = { [K: string]: Schema | any }
@@ -10,12 +11,6 @@ export type Key<T extends Schema> = keyof Flatten<T>
 export type Value<T extends Schema, K extends Key<T>> = Flatten<T>[K]
 
 export default class Store<T extends Schema, TF = Flatten<T>> {
-  constructor() {
-    this.get = this.locked(this.get)
-    this.set = this.locked(this.set)
-    this.merge = this.locked(this.merge)
-  }
-
   public get<K extends keyof TF & string>(
     key: K,
     ...subs: string[]
@@ -25,11 +20,10 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
       promiseCB(async () => {
         const final = this.substituteWildcards(key, ...subs)
 
-        for (const [k, { get }] of this.handlers)
-          if (key.startsWith(k) && get) {
-            this.escapeLock?.()
+        for (const [k, { get }] of this.handlers.rln)
+          if (key.startsWith(k) && get)
             return this.pick(await get(final, ...subs), k, key)
-          }
+
         throw Error(`no get handler for '${key}' registered`)
       })
     )
@@ -43,43 +37,41 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
   ) {
     const final = this.substituteWildcards(key, ...subs)
     const [skip, noChange] = flag()
-    const m = { ...meta, noChange, unlock: this.escapeLock }
+    const m = { ...meta, noChange, unlock: () => {} }
 
     const subsMatch = (handler: λ) => {
       const filters = this.substitutionFilters.get(handler)
       return !filters || !filters.some((v, i) => subs[i] !== v)
     }
 
-    for (let i = 0; i < this.handlers.length; i++) {
-      if (!key.startsWith(this.handlers[i][0])) continue
-      for (const handler of this.handlers[i][1].set)
+    // call setters where path=key or path includes key (high->low specificity)
+    // stop if handler returns `false` or calls `noChange`
+    for (const [path, { set }] of this.handlers.rln) {
+      if (!key.startsWith(path)) continue
+      for (const handler of set)
         if (subsMatch(handler))
           if (handler(value, final, m, ...subs) === false || skip) return
     }
-    // propagate down into children
-    for (let i = this.handlers.length - 1; i >= 0; i--) {
-      if (
-        this.handlers[i][0].length <= key.length ||
-        !this.handlers[i][0].startsWith(key)
-      )
-        continue
-      const sub = this.pick(value, key, this.handlers[i][0], true)
-      if (sub !== path.none) {
-        for (const handler of this.handlers[i][1].set)
+
+    // search handlers where path is child of key (low->high specificity)
+    // if path in value: call setters
+    // otherwise: call delete for path and children of path (high->low specificity)
+    for (const [path, { set }] of this.handlers.nlr) {
+      if (path.length <= key.length || !path.startsWith(key)) continue
+      const sub = this.pick(value, key, path, true)
+      if (sub !== pth.none) {
+        for (const handler of set)
           if (subsMatch(handler)) handler(sub, final, m, ...subs)
       } else {
-        let o = 0
-        while (
-          i - o > 0 &&
-          this.handlers[i - o - 1][0].startsWith(this.handlers[i][0] + '.')
-        )
-          o++
+        let last = path
+        for (const [k] of this.handlers.nlr.from(path))
+          if (!k.startsWith(path)) break
+          else last = path
 
-        for (let i2 = i - o; i2 <= i; i2++)
-          for (const handler of this.handlers[i2][1].del)
-            if (subsMatch(handler)) handler(this.handlers[i][0])
-
-        i -= o
+        for (const [k, { del }] of this.handlers.rln.from(last)) {
+          for (const handler of del) if (subsMatch(handler)) handler(path)
+          if (k === path) break
+        }
       }
     }
   }
@@ -161,7 +153,7 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     tips: for (const [tip, v] of Store.tips(value, key + '.')) {
       const [skip, noChange] = flag()
       const final = this.substituteWildcards(tip, ...subs)
-      for (const [path, { set }] of this.handlers) {
+      for (const [path, { set }] of this.handlers.rln) {
         if (!tip.startsWith(path)) continue
         for (const handler of set)
           if (handler(v, final, { noChange }, ...subs) === false || skip)
@@ -170,48 +162,30 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     }
   }
 
-  // handler map in reverse alphabetical order
-  private handlers: [
-    string,
-    { get?: Getter; fallback?: Fallback; set: Setter[]; del: Deleted[] }
-  ][] = []
+  private handlers = new PathTree((): PathHandlers => ({ set: [], del: [] }))
 
   private substitutionFilters = new Map<λ, string[]>()
 
   // todo: handle substitution filters for handlers other than set
   public handler<K extends keyof TF & string>(key: K, ...subs: string[]) {
-    const handlers = this.handlers
-    const accessor = () => {
-      let i = handlers.findIndex(([k]) => k <= key)
-      if (i < 0) i = handlers.length
-      if (handlers[i]?.[0] !== key)
-        handlers.splice(i, 0, [key, { set: [], del: [] }])
-      return handlers[i][1]
-    }
-    type Accessor = ReturnType<typeof accessor>
-
     const handlerFactory =
-      <T extends (acc: Accessor, ...rest: R) => void, R extends [λ, ...any[]]>({
+      <
+        T extends (acc: PathHandlers, ...rest: R) => void,
+        R extends [λ, ...any[]]
+      >({
         attach,
         detach,
       }: {
         attach: T
-        detach: (acc: Accessor, accArgs: R) => void
+        detach: (acc: PathHandlers, accArgs: R) => void
       }) =>
       (...args: R) => {
         this.substitutionFilters.set(args[0], subs)
-        let acc: Accessor
-        const apply = () => {
-          acc = accessor()
-          attach(acc, ...args)
-        }
-        if (this.handlerQueue) this.handlerQueue.push(apply)
-        else apply()
+        const acc = this.handlers.get(key)
+        attach(acc, ...args)
         return () => {
           this.substitutionFilters.delete(args[0])
-          if (acc) detach(acc, args)
-          else if (this.handlerQueue?.includes(apply))
-            this.handlerQueue.splice(this.handlerQueue.indexOf(apply, 1))
+          detach(acc, args)
         }
       }
 
@@ -253,61 +227,18 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     }
   }
 
-  private handlerQueue?: (() => void)[]
-  private lockHandler() {
-    if (this.handlerQueue) throw Error('handler already locked')
-    this.handlerQueue = []
-  }
-  private unlockHandler() {
-    if (!this.handlerQueue) throw Error('handler already unlocked')
-    callAll(this.handlerQueue)
-    delete this.handlerQueue
-  }
-
-  private escapeLock?: () => void
-  private locked<T extends λ>(meth: T): T {
-    meth = meth.bind(this) as any
-    return (
-      ((...args: Parameters<T>) => {
-        let escaped = false
-        this.escapeLock = () => {
-          this.unlockHandler()
-          escaped = true
-        }
-        const noErr = Symbol()
-        let err: unknown = noErr
-        try {
-          this.lockHandler()
-          return meth(...args)
-        } catch (e) {
-          err = e
-        } finally {
-          if (!escaped) this.unlockHandler()
-        }
-        if (err !== noErr)
-          throw Error(
-            `error in [${meth.name}](${args
-              .map(v => JSON.stringify(v))
-              .join(', ')}): ${err}`
-          )
-      }) as any
-    ).bind(this)
-  }
-
-  public afterHandlers(cb: () => any) {
-    if (!this.handlerQueue) cb()
-    else this.handlerQueue.push(cb)
-  }
   public handlersDone(): Promise<void> {
-    return new Promise(res => this.afterHandlers(res))
+    // return new Promise(res => this.afterHandlers(res))
+    // return new Promise(res => {})
+    return Promise.resolve()
   }
 
   private pick(obj: any, root: string, select: string, returnNone = false) {
     if (root === select) return obj
-    const value = path.pick(obj, ...select.slice(root.length + 1).split('.'))
-    if (value === path.none) {
-      if (returnNone) return path.none
-      const fb = this.handlers.find(([p]) => p === select)?.[1].fallback
+    const value = pth.pick(obj, ...select.slice(root.length + 1).split('.'))
+    if (value === pth.none) {
+      if (returnNone) return pth.none
+      const fb = this.handlers.get(select).fallback
       if (fb) return fb()
       throw Error(`path '${root}' does not contain '${select}'`)
     }
@@ -339,6 +270,13 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
       )
     return path
   }
+}
+
+type PathHandlers = {
+  get?: Getter
+  fallback?: Fallback
+  set: Setter[]
+  del: Deleted[]
 }
 
 export type Getter<T = any> = (

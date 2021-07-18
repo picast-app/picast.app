@@ -13,3 +13,4 @@ src/**/*.md
 /trace*
 cypress*
 benchmark
+src/**/*.txt
