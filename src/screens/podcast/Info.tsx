@@ -43,15 +43,17 @@ export default function Info(podcast: Partial<Podcast>) {
         {podcast.subscribed ? 'subscribed' : 'subscribe'}
       </Button>
       <ContextMenu id={podcast.id} feed={(podcast as any).feed} />
-      <Icon
-        icon={
-          `bell_${
-            wpSubs?.includes(podcast.id!) ? 'active' : 'inactive'
-          }` as const
-        }
-        label={`${wpActive ? 'disable' : 'enable'} push notifications`}
-        onClick={toggleNotifications}
-      ></Icon>
+      {podcast.subscribed && (
+        <Icon
+          icon={
+            `bell_${
+              wpSubs?.includes(podcast.id!) ? 'active' : 'inactive'
+            }` as const
+          }
+          label={`${wpActive ? 'disable' : 'enable'} push notifications`}
+          onClick={toggleNotifications}
+        />
+      )}
       <Icon
         icon={`expand_${showDescription ? 'less' : 'more'}` as any}
         onClick={() => setShowDescription(!showDescription)}
@@ -183,8 +185,6 @@ const S = {
     }
 
     & > button[data-style~='icon-wrap'] {
-      margin-left: 0.8rem;
-      margin-right: 0.2rem;
       opacity: 0.9;
 
       &:not(:last-of-type) {

@@ -36,9 +36,9 @@ const S = {
     height: 1rem;
 
     &[orient='vertical'] {
-      appearance: slider-vertical;
-      width: 1rem;
-      height: unset;
+      transform: rotate(-90deg);
+      margin: 0;
+      margin-left: 4rem;
     }
 
     &:not(:active)::-webkit-slider-runnable-track {
