@@ -19,22 +19,30 @@ export default class UserState extends MemCache<State['user']> {
       queueMicrotask(() => this.reattach())
     },
     subscriptions: idbWriter('subscriptions'),
+    wpSubs: idbWriter('wpSubs'),
   }
 
   fbs: FBDict<State['user']> = {
     subscriptions: () => [],
+    wpSubs: () => [],
   }
 
   async init() {
-    const state = await idbDefaultReader(['currentUser', 'subscriptions'])
+    const state = await idbDefaultReader([
+      'currentUser',
+      'subscriptions',
+      'wpSubs',
+    ])
 
     if (!state.currentUser) this.state = null
-    else
+    else {
       this.state = {
         id: state.currentUser,
         subscriptions: state.subscriptions ?? [],
-        wpSubs: [],
+        wpSubs: state.wpSubs ?? [],
       }
+      this.reattach()
+    }
 
     this.pullRemote()
   }

@@ -1,5 +1,7 @@
 import { mutate } from 'api/calls'
 import { store, user } from 'store'
+import * as set from 'utils/set'
+import type { State } from 'store/state'
 
 export const signIn = async (creds: SignInCreds, wpSub?: string | null) => {
   const me = await mutate.signInGoogle(creds.accessToken, wpSub ?? undefined)
@@ -23,28 +25,39 @@ export async function signOut() {
   await mutate.signOut()
 }
 
-export async function enablePushNotifications(id: string) {}
+type User = Exclude<State['user'], null>
 
-export async function disablePushNotifications(id: string) {}
+const signedInGuard =
+  <T extends λ<[user: User, ...args: any[]], void | Promise<void>>>(f: T) =>
+  async (
+    ...args: Parameters<T> extends [any, ...infer TA] ? TA : never
+  ): Promise<boolean> => {
+    const user = await store.get('user')
+    if (!user) return false
+    await f(user, ...args)
+    return true
+  }
 
-export async function subscribe(id: string): Promise<boolean> {
-  const user = await store.get('user')
-  if (!user) return false
-  store.set(
-    'user.subscriptions',
-    Array.from(new Set([...user.subscriptions, id]))
-  )
+export const subscribe = signedInGuard(async (user, id: string) => {
+  store.set('user.subscriptions', set.add(user.subscriptions, id))
   await mutate.subscribe(id)
-  return true
-}
+})
 
-export async function unsubscribe(id: string): Promise<boolean> {
-  const user = await store.get('user')
-  if (!user) return false
-  store.set(
-    'user.subscriptions',
-    user.subscriptions.filter(v => v !== id)
-  )
+export const unsubscribe = signedInGuard(async (user, id: string) => {
+  store.set('user.subscriptions', set.remove(user.subscriptions, id))
   await mutate.unsubscribe(id)
-  return true
-}
+})
+
+export const enablePushNotifications = signedInGuard(
+  async (user, id: string) => {
+    store.set('user.wpSubs', set.add(user.wpSubs, id))
+    await mutate.wpPodSub(id)
+  }
+)
+
+export const disablePushNotifications = signedInGuard(
+  async (user, id: string) => {
+    store.set('user.wpSubs', set.remove(user.wpSubs, id))
+    await mutate.wpPodUnsub(id)
+  }
+)

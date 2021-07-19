@@ -98,7 +98,7 @@ export default (store: Store) => {
     const podIds = new Set(podcasts)
     const episodes: Episode[] = []
     for (const [, episode] of cache)
-      if (podIds.has(episode.id)) episodes.push(episode)
+      if (podIds.has(episode.podcast)) episodes.push(episode)
     if (!episodes.length) return
     logger.info(`store ${episodes.length} episodes in db`)
     const tx = (await idb).transaction('episodes', 'readwrite')

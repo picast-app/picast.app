@@ -3,9 +3,9 @@ import equal from 'utils/equal'
 import { forEach } from 'utils/object'
 
 export const idbWriter =
-  <T extends string = string>(key: T) =>
+  <T extends keyof IDBMeta = keyof IDBMeta>(key: T) =>
   async (value: any) =>
-    (await dbProm).put('meta', value, key as string)
+    (await dbProm).put('meta', value, key)
 
 type IDBMeta = {
   printLogs: boolean
@@ -13,6 +13,7 @@ type IDBMeta = {
   extractColor: boolean
   currentUser: string
   subscriptions: string[]
+  wpSubs: string[]
   libSort: string
   playerCurrent: EpisodeId
   playerQueue: string[]

@@ -89,7 +89,7 @@ async function pullDiffEpisodes(podIds: string[]) {
     if (removed?.length) logger.info(`removed from ${podcast}`, ...removed)
     if (added?.length) {
       logger.info(`added to ${podcast}`, ...added)
-      await stores[podcast].addEpisodes(
+      stores[podcast].addEpisodes(
         added.map(v => convert.episode(v, podcast)),
         true
       )

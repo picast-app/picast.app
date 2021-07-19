@@ -1,5 +1,5 @@
 import dbProm from 'main/idb/idb'
-import { collection } from 'utils/array'
+import { collection, diff } from 'utils/array'
 import type { Store } from 'store'
 import type { Podcast } from 'store/state'
 import * as api from 'api/calls'
@@ -12,6 +12,7 @@ export default async (store: Store) => {
   const [podcasts, init] =
     waiter<Record<string, Promise<Podcast | null> | Podcast | null>>()
   let subs: string[] = []
+  let wpSubs: string[] = []
 
   store.handler('podcasts.*').get(async (_, id) => {
     const pods = await podcasts
@@ -43,12 +44,13 @@ export default async (store: Store) => {
   subs = await store.get('user.subscriptions')
   store.handler('user.subscriptions').set(setSubs)
 
+  wpSubs = await store.get('user.wpSubs')
+  store.handler('user.wpSubs').set(setWpSubs)
+
   async function setSubs(newSubs: string[]) {
-    const addSubs = newSubs.filter(id => !subs.includes(id))
-    const delSubs = subs.filter(id => !newSubs.includes(id))
+    const [addSubs, delSubs] = diff(subs, newSubs)
     subs = newSubs
     const tx = (await dbProm).transaction('podcasts', 'readwrite')
-
     const cached = async (id: string) => await (await podcasts)[id]
 
     await Promise.all<any>([
@@ -59,6 +61,12 @@ export default async (store: Store) => {
 
     addSubs.forEach(id => store.set('podcasts.*.subscribed', true, {}, id))
     delSubs.forEach(id => store.set('podcasts.*.subscribed', false, {}, id))
+  }
+
+  function setWpSubs(newSubs: string[]) {
+    const [added, removed] = diff(wpSubs, newSubs)
+    added.forEach(id => store.set('podcasts.*.wpSubscribed', true, {}, id))
+    removed.forEach(id => store.set('podcasts.*.wpSubscribed', false, {}, id))
   }
 
   const hasError = (err: any, ...codes: string[]) =>
@@ -86,7 +94,11 @@ export default async (store: Store) => {
     collection(
       await idb.getAll('podcasts'),
       ({ id }) => id,
-      v => ({ ...v, subscribed: subs.includes(v.id) })
+      v => ({
+        ...v,
+        subscribed: subs.includes(v.id),
+        wpSubscribed: wpSubs.includes(v.id),
+      })
     )
   )
 }

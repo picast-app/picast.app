@@ -48,6 +48,7 @@ export type Value<T extends Key> = FlatState[T]
 export type Podcast = {
   id: string
   subscribed?: boolean
+  wpSubscribed?: boolean
   title: string
   author?: string
   artwork?: string
