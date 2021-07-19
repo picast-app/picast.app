@@ -39,7 +39,10 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     const [skip, noChange] = flag()
     const m = { ...meta, noChange, unlock: () => {} }
 
-    const subsMatch = (handler: λ) => {
+    const blocked = this.createBlockSet()
+
+    const matches = (handler: λ) => {
+      if (blocked.has(handler)) return false
       const filters = this.substitutionFilters.get(handler)
       return !filters || !filters.some((v, i) => subs[i] !== v)
     }
@@ -49,8 +52,9 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     for (const [path, { set }] of this.handlers.rln) {
       if (!key.startsWith(path)) continue
       for (const handler of set)
-        if (subsMatch(handler))
-          if (handler(value, final, m, ...subs) === false || skip) return
+        if (matches(handler))
+          if (handler(value, final, m, ...subs) === false || skip)
+            return void this.blockSets.delete(blocked)
     }
 
     // search handlers where path is child of key (low->high specificity)
@@ -61,7 +65,7 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
       const sub = this.pick(value, key, path, true)
       if (sub !== pth.none) {
         for (const handler of set)
-          if (subsMatch(handler)) handler(sub, final, m, ...subs)
+          if (matches(handler)) handler(sub, final, m, ...subs)
       } else {
         let last = path
         for (const [k] of this.handlers.nlr.from(path))
@@ -69,11 +73,13 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
           else last = path
 
         for (const [k, { del }] of this.handlers.rln.from(last)) {
-          for (const handler of del) if (subsMatch(handler)) handler(path)
+          for (const handler of del) if (matches(handler)) handler(path)
           if (k === path) break
         }
       }
     }
+
+    this.blockSets.delete(blocked)
   }
 
   // get & register setter
@@ -129,9 +135,8 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
       execJoin()
 
       cancel.push(
-        this.handler(on).set(async (v, k) => {
+        this.handler(on).set((v, k) => {
           if (k !== on) return
-          await this.handlersDone()
           joiner = v
           execJoin()
         })
@@ -150,21 +155,36 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     value: Partial<TF[K]>,
     ...subs: string[]
   ) {
+    const blocked = this.createBlockSet()
+
     tips: for (const [tip, v] of Store.tips(value, key + '.')) {
       const [skip, noChange] = flag()
       const final = this.substituteWildcards(tip, ...subs)
       for (const [path, { set }] of this.handlers.rln) {
         if (!tip.startsWith(path)) continue
         for (const handler of set)
-          if (handler(v, final, { noChange }, ...subs) === false || skip)
-            continue tips
+          if (!blocked.has(handler))
+            if (handler(v, final, { noChange }, ...subs) === false || skip)
+              continue tips
       }
     }
+
+    this.blockSets.delete(blocked)
   }
 
   private handlers = new PathTree((): PathHandlers => ({ set: [], del: [] }))
 
   private substitutionFilters = new Map<λ, string[]>()
+
+  private blockSets = new Set<Set<λ>>()
+  private createBlockSet() {
+    const set = new Set<λ>()
+    this.blockSets.add(set)
+    return set
+  }
+  private block(f: λ) {
+    for (const set of this.blockSets) set.add(f)
+  }
 
   // todo: handle substitution filters for handlers other than set
   public handler<K extends keyof TF & string>(key: K, ...subs: string[]) {
@@ -180,6 +200,7 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
         detach: (acc: PathHandlers, accArgs: R) => void
       }) =>
       (...args: R) => {
+        this.block(args[0])
         this.substitutionFilters.set(args[0], subs)
         const acc = this.handlers.get(key)
         attach(acc, ...args)
@@ -225,12 +246,6 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
         },
       }),
     }
-  }
-
-  public handlersDone(): Promise<void> {
-    // return new Promise(res => this.afterHandlers(res))
-    // return new Promise(res => {})
-    return Promise.resolve()
   }
 
   private pick(obj: any, root: string, select: string, returnNone = false) {

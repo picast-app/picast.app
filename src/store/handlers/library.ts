@@ -24,7 +24,6 @@ export default (store: Store) => {
   })
 
   store.listen('user.subscriptions', async ids => {
-    await store.handlersDone()
     const pods = await Promise.all(ids.map(id => store.get('podcasts.*', id)))
     store.set('library.list', (podcasts = sort(sorting, pods as Podcast[])))
 

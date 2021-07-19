@@ -36,8 +36,7 @@ export default abstract class MemCache<T> {
   }
 
   // revalidate & attach handlers after schema change
-  protected async reattach() {
-    await this.store.handlersDone()
+  protected reattach() {
     f.callAll(this.cleanupCBs)
     this.assertComplete(this.state)
     this.attachHandlers()

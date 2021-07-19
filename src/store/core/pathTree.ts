@@ -12,19 +12,19 @@ export default class Paths<T> {
     })
   }
 
-  private handlers_ = new OrderedMap<string, T>()
+  private handlers = new OrderedMap<string, T>()
 
   public get(key: string): T {
-    if (!this.handlers_.has(key)) this.handlers_.set(key, this.value(key))
-    return this.handlers_.get(key)!
+    if (!this.handlers.has(key)) this.handlers.set(key, this.value(key))
+    return this.handlers.get(key)!
   }
 
   private iter = (dir: 1 | -1, startAt?: string) => (): PathIter<T> => {
-    let i = dir === 1 ? -1 : this.handlers_.size
+    let i = dir === 1 ? -1 : this.handlers.size
 
     if (startAt) {
-      for (i = i + dir; i >= 0 && i < this.handlers_.size; i += dir)
-        if (this.handlers_.at(i)![0] === startAt) break
+      for (i = i + dir; i >= 0 && i < this.handlers.size; i += dir)
+        if (this.handlers.at(i)![0] === startAt) break
       i -= dir
     }
 
@@ -35,8 +35,8 @@ export default class Paths<T> {
       next: () => {
         i += dir
         return {
-          done: i === (dir === 1 ? this.handlers_.size : -1),
-          value: this.handlers_.at(i)!,
+          done: i === (dir === 1 ? this.handlers.size : -1),
+          value: this.handlers.at(i)!,
         }
       },
       from: path => this.iter(dir, path)(),

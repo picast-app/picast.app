@@ -398,7 +398,7 @@ test('join state', async () => {
 
 // todo register wildcard listener for specific value
 
-test.only('handler substitutions', () => {
+test('handler substitutions', () => {
   const store = new Store<StoreSchema>()
   const setRoot = jest.fn(() => {})
   const setA = jest.fn(() => {})
@@ -433,4 +433,21 @@ test.only('handler substitutions', () => {
   expect(setRootTitle).toHaveBeenCalledTimes(4)
   expect(setA).toHaveBeenCalledTimes(2)
   expect(setATitle).toHaveBeenCalledTimes(2)
+})
+
+test('iteration excludes new handlers', () => {
+  const store = new Store<{}>()
+  let i = 0
+
+  const handler = (path: string) => {
+    // @ts-ignore
+    store.handler(path).set((v, p) => {
+      if (++i > 1) throw Error(`setter called ${i} times`)
+      handler(`${p}.x`)
+    })
+  }
+  handler('x')
+
+  // @ts-ignore
+  store.set('x', { x: 'x' })
 })

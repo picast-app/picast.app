@@ -86,8 +86,6 @@ export class OrderedMap<K, V> extends Map<K, V> {
     super()
   }
 
-  private keys_ = new OrderedList(this.comp)
-
   public set(k: K, v: V) {
     if (!this.has(k)) this.keys_.add(k)
     super.set(k, v)
@@ -111,7 +109,7 @@ export class OrderedMap<K, V> extends Map<K, V> {
     return [k, this.get(k)!]
   }
 
-  [Symbol.iterator]() {
+  public [Symbol.iterator]() {
     return this.entries()
   }
 
@@ -119,8 +117,12 @@ export class OrderedMap<K, V> extends Map<K, V> {
     const k = this.keys_.at(i)!
     return [k, this.get(k)!]
   })
+
   public keys = this._iter<K>(i => this.keys_.at(i)!)
+
   public values = this._iter<V>(i => this.get(this.keys_.at(i)!)!)
+
+  private keys_ = new OrderedList(this.comp)
 
   private _iter<T>(get: (i: number) => T) {
     return (): IterableIterator<T> => {
