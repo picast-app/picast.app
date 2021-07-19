@@ -105,6 +105,12 @@ export class OrderedMap<K, V> extends Map<K, V> {
     super.clear()
   }
 
+  public at(index: number): [K, V] | undefined {
+    if (index >= this.keys_.size) return
+    const k = this.keys_.at(index)!
+    return [k, this.get(k)!]
+  }
+
   [Symbol.iterator]() {
     return this.entries()
   }
@@ -117,18 +123,17 @@ export class OrderedMap<K, V> extends Map<K, V> {
   public values = this._iter<V>(i => this.get(this.keys_.at(i)!)!)
 
   private _iter<T>(get: (i: number) => T) {
-    return () => {
+    return (): IterableIterator<T> => {
       let i = -1
-      const iterator: IterableIterator<T> = {
+      return {
         [Symbol.iterator]() {
-          return iterator
+          return this
         },
         next: () => {
           if (++i >= this.keys_.size) return { done: true, value: undefined }
           return { done: false, value: get(i) }
         },
       }
-      return iterator
     }
   }
 }
