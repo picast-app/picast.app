@@ -1,4 +1,4 @@
-import { OrderedList } from './ordered'
+import { OrderedList, OrderedMap } from './ordered'
 
 test('Ordered List', () => {
   const asc = new OrderedList<number>()
@@ -40,4 +40,23 @@ test('Ordered List', () => {
   const sorted = new OrderedList<number>()
   sorted.add(...random)
   expect(sorted.values).toEqual([...random].sort())
+})
+
+test('Ordered Map', () => {
+  const map = new OrderedMap<string, string>()
+
+  map.set('c', 'C')
+  map.set('a', 'A')
+  map.set('b', 'B')
+
+  expect([...map.entries()]).toEqual([
+    ['a', 'A'],
+    ['b', 'B'],
+    ['c', 'C'],
+  ])
+  expect([...map]).toEqual([...map.entries()])
+
+  expect([...map.keys()]).toEqual(['a', 'b', 'c'])
+
+  expect([...map.values()]).toEqual(['A', 'B', 'C'])
 })

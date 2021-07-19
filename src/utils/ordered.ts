@@ -1,6 +1,6 @@
 // if >0 sort b before a
 type Comparator<T = unknown> = (a: T, b: T) => number
-const defaultComp = (a: any, b: any) => +(a > b)
+const defaultComp: Comparator<any> = (a, b) => +(a > b)
 
 export class OrderedList<T> {
   constructor(
@@ -79,4 +79,56 @@ export class OrderedList<T> {
   }
 
   private elems: T[] = []
+}
+
+export class OrderedMap<K, V> extends Map<K, V> {
+  constructor(private readonly comp: Comparator<K> = defaultComp) {
+    super()
+  }
+
+  private keys_ = new OrderedList(this.comp)
+
+  public set(k: K, v: V) {
+    if (!this.has(k)) this.keys_.add(k)
+    super.set(k, v)
+    return this
+  }
+
+  public delete(k: K) {
+    if (!this.has(k)) return false
+    this.keys_.remove(k)
+    return super.delete(k)
+  }
+
+  public clear() {
+    this.keys_.clear()
+    super.clear()
+  }
+
+  [Symbol.iterator]() {
+    return this.entries()
+  }
+
+  public entries = this._iter<[K, V]>(i => {
+    const k = this.keys_.at(i)!
+    return [k, this.get(k)!]
+  })
+  public keys = this._iter<K>(i => this.keys_.at(i)!)
+  public values = this._iter<V>(i => this.get(this.keys_.at(i)!)!)
+
+  private _iter<T>(get: (i: number) => T) {
+    return () => {
+      let i = -1
+      const iterator: IterableIterator<T> = {
+        [Symbol.iterator]() {
+          return iterator
+        },
+        next: () => {
+          if (++i >= this.keys_.size) return { done: true, value: undefined }
+          return { done: false, value: get(i) }
+        },
+      }
+      return iterator
+    }
+  }
 }
