@@ -3,7 +3,7 @@ const path = require('path')
 
 const locDir = path.join(__dirname, '../locales/')
 const outDir = path.join(__dirname, '../node_modules/strings')
-if (!fs.existsSync(outDir)) fs.mkdirSync(outDir)
+if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true })
 
 const paths = dir =>
   fs
