@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react'
 import styled, { AnyStyledComponent } from 'styled-components'
-import { desktop, mobile } from 'styles/responsive'
-import Appbar, { AppbarSC } from 'components/Appbar'
-import { Progress, ProgressSC, Icon } from 'components/atoms'
-import { animateTo } from 'utils/animate'
-import { wait } from 'utils/promise'
+import { desktop, mobile } from 'app/styles/responsive'
+import Appbar, { AppbarSC } from 'app/components/Appbar'
+import { Progress, ProgressSC, Icon } from 'app/components/atoms'
+import { animateTo } from 'app/utils/animate'
+import { wait } from 'app/utils/promise'
 
 type Props = {
   style?: AnyStyledComponent

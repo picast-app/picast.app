@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
-import { bar } from 'styles/mixin'
-import { Icon, ProgressSC } from 'components/atoms'
-import { Surface, Helmet } from 'components/structure'
-import { useScrollDir, useMatchMedia } from 'hooks'
-import { desktop } from 'styles/responsive'
+import { bar } from 'app/styles/mixin'
+import { Icon, ProgressSC } from 'app/components/atoms'
+import { Surface, Helmet } from 'app/components/structure'
+import { useScrollDir, useMatchMedia } from 'app/hooks'
+import { desktop } from 'app/styles/responsive'
 import { useLocation, history } from '@picast-app/router'
 
 type Props = {

@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
-import { useComputed } from 'hooks'
-import * as color from 'utils/css/color'
+import { useComputed } from 'app/hooks'
+import * as color from 'app/utils/css/color'
 
 type Props = {
   data: Datum[]

@@ -5,9 +5,6 @@ declare module '*.gql' {
 }
 
 declare module '*.html' {
-  // import { DocumentNode } from 'graphql'
-  // const value: DocumentNode
-  // export default value
   const html: string
   export default html
 }

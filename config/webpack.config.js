@@ -10,10 +10,9 @@ const TerserPlugin = require('terser-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const safePostCssParser = require('postcss-safe-parser')
-const ManifestPlugin = require('webpack-manifest-plugin')
+const { WebpackManifestPlugin } = require('webpack-manifest-plugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin')
-const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
 const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent')
 const paths = require('./paths')
 const modules = require('./modules')
@@ -21,7 +20,7 @@ const getClientEnvironment = require('./env')
 const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin')
 const ForkTsCheckerWebpackPlugin = require('react-dev-utils/ForkTsCheckerWebpackPlugin')
 const typescriptFormatter = require('react-dev-utils/typescriptFormatter')
-const GitRevisionPlugin = require('git-revision-webpack-plugin')
+const { GitRevisionPlugin } = require('git-revision-webpack-plugin')
 
 const gitRevisionPlugin = new GitRevisionPlugin({
   commithashCommand: 'rev-parse --short HEAD',
@@ -146,20 +145,20 @@ const shared =
       bail: isEnvProduction,
       output: {
         // The build folder.
-        path: isEnvProduction ? paths.appBuild : undefined,
+        path: isEnvProduction ? paths.appBuild : path.resolve('build'),
         // Add /* filename */ comments to generated require()s in the output.
         pathinfo: isEnvDevelopment,
         // There will be one main bundle, and one file per asynchronous chunk.
         // In development, it does not produce real files.
-        filename: isEnvProduction
-          ? 'static/js/[name].[contenthash:8].js'
-          : isEnvDevelopment && 'static/js/bundle.js',
-        // TODO: remove this when upgrading to webpack 5
-        futureEmitAssets: true,
+        // filename: isEnvProduction
+        //   ? 'static/js/[name].[contenthash:8].js'
+        //   : isEnvDevelopment && 'static/js/bundle.js',
+        filename: 'static/js/[name].[contenthash:8].js',
         // There are also additional JS chunk files if you use code splitting.
-        chunkFilename: isEnvProduction
-          ? 'static/js/[name].[contenthash:8].chunk.js'
-          : isEnvDevelopment && 'static/js/[name].chunk.js',
+        // chunkFilename: isEnvProduction
+        //   ? 'static/js/[name].[contenthash:8].chunk.js'
+        //   : isEnvDevelopment && 'static/js/[name].chunk.js',
+        chunkFilename: 'static/js/[name].[contenthash:8].chunk.js',
         // webpack uses `publicPath` to determine where the app is being served from.
         // It requires a trailing slash, or the file assets will get an incorrect path.
         // We inferred the "public path" (such as / or /my-project) from homepage.
@@ -175,7 +174,7 @@ const shared =
               path.resolve(info.absoluteResourcePath).replace(/\\/g, '/')),
         // Prevents conflicts when multiple webpack runtimes (from different apps)
         // are used on the same page.
-        jsonpFunction: `webpackJsonp${appPackageJson.name}`,
+        chunkLoadingGlobal: `webpackJsonp${appPackageJson.name}`,
         // this defaults to 'window', but by setting it to 'this' then
         // module chunks which are built will work in web workers as well.
         globalObject: 'this',
@@ -231,7 +230,6 @@ const shared =
               },
             },
             extractComments: false,
-            sourceMap: shouldUseSourceMap,
           }),
           // This is only used in production mode
           new OptimizeCSSAssetsPlugin({
@@ -271,6 +269,7 @@ const shared =
         },
       },
       resolve: {
+        fallback: { url: require.resolve('url/') },
         // This allows you to set a fallback for where webpack should look for modules.
         // We placed these paths second because we want `node_modules` to "win"
         // if there are any conflicts. This matches Node resolution mechanism.
@@ -302,12 +301,6 @@ const shared =
           // Adds support for installing with Plug'n'Play, leading to faster installs and adding
           // guards against forgotten dependencies and such.
           PnpWebpackPlugin,
-          // Prevents users from importing files from outside of src/ (or node_modules/).
-          // This often causes confusion because we only process files within src/ with babel.
-          // To fix this, we prevent you from importing files out of src/ -- if you'd like to,
-          // please link the files into your node_modules/ and let module-resolution kick in.
-          // Make sure your source files are compiled, as they will not be processed in any way.
-          new ModuleScopePlugin(paths.appSrc, [paths.appPackageJson]),
         ],
       },
       resolveLoader: {
@@ -321,7 +314,7 @@ const shared =
         strictExportPresence: true,
         rules: [
           // Disable require.ensure as it's not a standard language feature.
-          { parser: { requireEnsure: false } },
+          { test: /\.[cm]?js$/, parser: { requireEnsure: false } },
 
           {
             test: /\.worker\.ts$/,
@@ -603,7 +596,7 @@ const shared =
         // - "entrypoints" key: Array of files which are included in `index.html`,
         //   can be used to reconstruct the HTML if necessary
         emitManifest &&
-          new ManifestPlugin({
+          new WebpackManifestPlugin({
             fileName: 'asset-manifest.json',
             publicPath: paths.publicUrlOrPath,
             generate: (seed, files, entrypoints) => {
@@ -611,8 +604,14 @@ const shared =
                 manifest[file.name] = file.path
                 return manifest
               }, seed)
-              const entrypointFiles = entrypoints.main.filter(
-                fileName => !fileName.endsWith('.map')
+              const entrypointFiles = Object.entries(entrypoints).reduce(
+                (acc, [name, paths]) => {
+                  acc[name] = paths.filter(
+                    fileName => !fileName.endsWith('.map')
+                  )
+                  return acc
+                },
+                {}
               )
 
               return {
@@ -636,12 +635,14 @@ const shared =
             async: isEnvDevelopment,
             useTypescriptIncrementalApi: true,
             checkSyntacticErrors: true,
-            resolveModuleNameModule: process.versions.pnp
-              ? `${__dirname}/pnpTs.js`
-              : undefined,
-            resolveTypeReferenceDirectiveModule: process.versions.pnp
-              ? `${__dirname}/pnpTs.js`
-              : undefined,
+            resolveModuleNameModule:
+              process.versions.pnp === '1'
+                ? `${__dirname}/pnpTs.js`
+                : undefined,
+            resolveTypeReferenceDirectiveModule:
+              process.versions.pnp === '1'
+                ? `${__dirname}/pnpTs.js`
+                : undefined,
             tsconfig: paths.appTsConfig,
             reportFiles: [
               '**',
@@ -664,18 +665,6 @@ const shared =
           },
         }),
       ].filter(Boolean),
-      // Some libraries import Node modules but don't use them in the browser.
-      // Tell webpack to provide empty mocks for them so importing them works.
-      node: {
-        module: 'empty',
-        dgram: 'empty',
-        dns: 'mock',
-        fs: 'empty',
-        http2: 'empty',
-        net: 'empty',
-        tls: 'empty',
-        child_process: 'empty',
-      },
       // Turn off performance processing because we utilize
       // our own hints via the FileSizeReporter
       performance: false,

@@ -1,10 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Artwork, PlayButton } from 'components/atoms'
-import { Shownotes } from 'components/composite'
-import { useThemeRef, useStateX, useIsEpisodePlaying } from 'hooks'
-import { mobile, desktop } from 'styles/responsive'
-import { main } from 'workers'
+import { Artwork, PlayButton } from 'app/components/atoms'
+import { Shownotes } from 'app/components/composite'
+import { useThemeRef, useStateX, useIsEpisodePlaying } from 'app/hooks'
+import { mobile, desktop } from 'app/styles/responsive'
+import { main } from 'app/workers'
 
 export const Core: React.FC<{ id: EpisodeId }> = ({ id }) => {
   const [podcast] = useStateX('podcasts.*', id[0])

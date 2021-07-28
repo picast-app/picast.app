@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import Section from './Section'
-import { Switch } from 'components/atoms'
-import { useStateX } from 'hooks/store'
+import { Switch } from 'app/components/atoms'
+import { useStateX } from 'app/hooks/store'
 import { stateToggle } from './util'
 
 export default function Debug() {

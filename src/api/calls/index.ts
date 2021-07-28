@@ -1,5 +1,5 @@
 import { client } from '../client'
-import { mapValues } from 'utils/object'
+import { mapValues } from 'app/utils/object'
 import * as q from './queries'
 import * as m from './mutations'
 

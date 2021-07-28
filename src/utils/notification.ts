@@ -1,4 +1,4 @@
-import type { Snack } from 'components/structure'
+import type { Snack } from 'app/components/structure'
 
 export const snack = (detail: Snack) => {
   window.dispatchEvent(

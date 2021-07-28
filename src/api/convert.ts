@@ -1,7 +1,7 @@
-import type * as GQL from 'types/gql'
-import type { Podcast } from 'store/state'
-import type IDBSchema from 'main/idb/schema'
-import { omit } from 'utils/object'
+import type * as GQL from 'app/types/gql'
+import type { Podcast } from 'app/store/state'
+import type IDBSchema from 'app/main/idb/schema'
+import { omit } from 'app/utils/object'
 
 type NoNull<T> = { [K in keyof T]: Exclude<T[K], null> }
 

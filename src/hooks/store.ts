@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { set, seg } from 'utils/path'
-import type { Key, Value } from 'store/state'
-import storeX from 'store/uiThread/api'
+import { set, seg } from 'app/utils/path'
+import type { Key, Value } from 'app/store/state'
+import storeX from 'app/store/uiThread/api'
 
 export function useStateX<T extends Key>(key: T, ...subs: string[]) {
   const [value, setValue] = useState<Value<T>>()

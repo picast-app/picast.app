@@ -1,10 +1,10 @@
-import dbProm from 'main/idb/idb'
-import * as convert from 'api/convert'
-import * as api from 'api/calls'
-import { Episode } from 'store/state'
-import { store } from 'store'
-import { bindThis } from 'utils/proto'
-import { callAll } from 'utils/function'
+import dbProm from 'app/main/idb/idb'
+import * as convert from 'app/api/convert'
+import * as api from 'app/api/calls'
+import { Episode } from 'app/store/state'
+import { store } from 'app/store'
+import { bindThis } from 'app/utils/proto'
+import { callAll } from 'app/utils/function'
 
 type Key = [id: string, published: number]
 

@@ -1,10 +1,10 @@
 import React from 'react'
-import Appbar from 'components/Appbar'
-import { Icon, Button } from 'components/atoms'
-import { Screen } from 'components/structure'
+import Appbar from 'app/components/Appbar'
+import { Icon, Button } from 'app/components/atoms'
+import { Screen } from 'app/components/structure'
 import { Redirect } from '@picast-app/router'
-import { main } from 'workers'
-import { useStateX } from 'hooks/store'
+import { main } from 'app/workers'
+import { useStateX } from 'app/hooks/store'
 
 export default function Profile() {
   const [user] = useStateX('user')

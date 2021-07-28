@@ -1,6 +1,6 @@
 import { Base, CB } from './base'
-import type { Podcast as PodStore, EpisodeStore } from 'main/episodeStore'
-import { store as storeX } from 'store'
+import type { Podcast as PodStore, EpisodeStore } from 'app/main/episodeStore'
+import { store as storeX } from 'app/store'
 
 export class MultiPodcast extends Base {
   private episodes: EpisodeKey[] = []

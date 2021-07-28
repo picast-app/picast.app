@@ -1,5 +1,5 @@
-import makeState, { PlayState } from 'audio/state'
-import { asyncQueued } from 'utils/promise'
+import makeState, { PlayState } from 'app/audio/state'
+import { asyncQueued } from 'app/utils/promise'
 
 export interface Events extends HTMLElementEventMap {
   state: CustomEvent<PlayState>

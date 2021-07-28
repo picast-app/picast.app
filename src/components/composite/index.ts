@@ -1,5 +1,5 @@
 export * from './ShowCard'
-export * from './Player'
+export * from './player/Player'
 export * from './SnackBar'
 export * from './ArtworkShowcase'
 export * from './Dropdown'

@@ -1,6 +1,6 @@
-import dbProm from 'main/idb/idb'
-import equal from 'utils/equal'
-import { forEach } from 'utils/object'
+import dbProm from 'app/main/idb/idb'
+import equal from 'app/utils/equal'
+import { forEach } from 'app/utils/object'
 
 export const idbWriter =
   <T extends keyof IDBMeta = keyof IDBMeta>(key: T) =>

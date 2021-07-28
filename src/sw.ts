@@ -1,7 +1,7 @@
-import { togglePrint } from 'utils/logger'
-import { asyncNullChain } from 'utils/function'
-import { wrap, proxy, Wrapped } from 'fiber'
-import type { API as MainAPI } from 'main/main.worker'
+import { togglePrint } from 'app/utils/logger'
+import { asyncNullChain } from 'app/utils/function'
+import { wrap, proxy, Wrapped } from 'app/fiber'
+import type { API as MainAPI } from 'app/main/main.worker'
 
 declare let self: ServiceWorkerGlobalScope
 export default null

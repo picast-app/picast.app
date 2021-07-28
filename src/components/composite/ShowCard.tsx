@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Artwork } from 'components/atoms'
-import { lineClamp } from 'styles/mixin'
+import { Artwork } from 'app/components/atoms'
+import { lineClamp } from 'app/styles/mixin'
 import { Link } from '@picast-app/router'
 
 type Props = {

@@ -1,7 +1,7 @@
 import * as debug from './debug'
-import store from 'store/uiThread/api'
-import EventManager from 'utils/event'
-import { bindThis } from 'utils/proto'
+import store from 'app/store/uiThread/api'
+import EventManager from 'app/utils/event'
+import { bindThis } from 'app/utils/proto'
 
 export default class TouchRegistry extends EventManager<{
   start: (e: TouchRegistryEvent) => void

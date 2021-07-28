@@ -1,9 +1,9 @@
-import * as f from 'utils/function'
-import { mutate, pick, paths } from 'utils/path'
-import type { Store } from 'store'
-import type { Flatten, Schema } from 'store/core/types'
+import * as f from 'app/utils/function'
+import { mutate, pick, paths } from 'app/utils/path'
+import type { Store } from 'app/store'
+import type { Flatten, Schema } from 'app/store/core/types'
 import { Synchronized } from './tabSync'
-import equals from 'utils/equal'
+import equals from 'app/utils/equal'
 
 export const _ = Symbol('deferred')
 

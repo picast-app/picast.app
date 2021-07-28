@@ -1,10 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
-import { mobile } from 'styles/responsive'
+import { mobile } from 'app/styles/responsive'
 import Skip from './SkipControl'
-import { PlayButton } from 'components/atoms'
-import { useStateX } from 'hooks'
-import { main } from 'workers'
+import { PlayButton } from 'app/components/atoms'
+import { useStateX } from 'app/hooks'
+import { main } from 'app/workers'
 
 type Props = { slot?: string; round?: boolean }
 

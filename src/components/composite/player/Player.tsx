@@ -1,8 +1,8 @@
 import React from 'react'
-import Controls from './player/Controls'
-import Fullscreen from './player/fullscreen/Container'
-import { useTheme, useStateX } from 'hooks'
-import Info from './player/Info'
+import Controls from './Controls'
+import Fullscreen from './fullscreen/Container'
+import { useTheme, useStateX } from 'app/hooks'
+import Info from './Info'
 
 export function Player() {
   const theme = useTheme()

@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react'
-import { useChanged } from 'hooks'
+import { useChanged } from 'app/hooks'
 import styled from 'styled-components'
-import { interpolated, Interpolated, translate, scale } from 'utils/svgPath'
-import { vec, equiTriBoxRatio } from 'utils/math'
-import { easeInOutSine as ease } from 'utils/ease'
+import { interpolated, Interpolated, translate, scale } from 'app/utils/svgPath'
+import { vec, equiTriBoxRatio } from 'app/utils/math'
+import { easeInOutSine as ease } from 'app/utils/ease'
 
 type Props = {
   playing: boolean

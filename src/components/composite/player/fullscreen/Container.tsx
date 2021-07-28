@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, forwardRef } from 'react'
 import Background from './Background'
 import Player from './Player'
-import { Queue, EpisodeInfo } from 'components/composite'
-import { useEvent, useMatchMedia, useStateX } from 'hooks'
-import { desktop } from 'styles/responsive'
-import { scrollTo } from 'utils/animate'
-import { memoize } from 'utils/cache'
+import { Queue, EpisodeInfo } from 'app/components/composite'
+import { useEvent, useMatchMedia, useStateX } from 'app/hooks'
+import { desktop } from 'app/styles/responsive'
+import { scrollTo } from 'app/utils/animate'
+import { memoize } from 'app/utils/cache'
 import { history, Link, useLocation, location } from '@picast-app/router'
 import {
   Container,

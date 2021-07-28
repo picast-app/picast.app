@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
-import { Surface } from 'components/structure'
+import { Surface } from 'app/components/structure'
 
 type Props = {
   visible?: boolean

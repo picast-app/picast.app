@@ -1,11 +1,11 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Icon } from 'components/atoms'
-import { Surface } from 'components/structure'
-import { bar } from 'styles/mixin'
-import { desktop, mobile } from 'styles/responsive'
+import { Icon } from 'app/components/atoms'
+import { Surface } from 'app/components/structure'
+import { bar } from 'app/styles/mixin'
+import { desktop, mobile } from 'app/styles/responsive'
 import Search from './PodcastSearch'
-import { useMatchMedia, useTheme, useNavbarWidget } from 'hooks'
+import { useMatchMedia, useTheme, useNavbarWidget } from 'app/hooks'
 import { useLocation, Link } from '@picast-app/router'
 
 const routes: {

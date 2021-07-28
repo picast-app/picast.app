@@ -1,7 +1,7 @@
-import { mutate } from 'api/calls'
-import { store, user } from 'store'
-import * as set from 'utils/set'
-import type { State } from 'store/state'
+import { mutate } from 'app/api/calls'
+import { store, user } from 'app/store'
+import * as set from 'app/utils/set'
+import type { State } from 'app/store/state'
 
 export const signIn = async (creds: SignInCreds, wpSub?: string | null) => {
   const me = await mutate.signInGoogle(creds.accessToken, wpSub ?? undefined)

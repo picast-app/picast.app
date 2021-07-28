@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { desktop } from 'styles/responsive'
+import { desktop } from 'app/styles/responsive'
 
 type Props = {
   title?: string

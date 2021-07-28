@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
-import * as cl from 'utils/css/color'
+import * as cl from 'app/utils/css/color'
 
 type Props = {
   active?: boolean

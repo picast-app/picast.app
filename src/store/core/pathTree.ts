@@ -1,4 +1,4 @@
-import { OrderedMap } from 'utils/ordered'
+import { OrderedMap } from 'app/utils/ordered'
 
 type PathIter<T> = IterableIterator<[path: string, value: T]> & {
   from(path: string): PathIter<T>

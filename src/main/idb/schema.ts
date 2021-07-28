@@ -1,4 +1,4 @@
-import type { Podcast as _Podcast, Episode } from 'store/state'
+import type { Podcast as _Podcast, Episode } from 'app/store/state'
 
 type Podcast = Omit<_Podcast, 'subscribed'>
 

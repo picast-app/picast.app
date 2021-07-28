@@ -1,6 +1,6 @@
-import { main, proxy } from 'workers'
-import { Key, Value } from 'store/state'
-import { forEach } from 'utils/object'
+import { main, proxy } from 'app/workers'
+import { Key, Value } from 'app/store/state'
+import { forEach } from 'app/utils/object'
 if (globalThis !== window) throw Error()
 
 registerHooks({

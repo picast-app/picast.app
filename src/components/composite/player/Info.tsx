@@ -1,10 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Artwork, Icon } from 'components/atoms'
-import { Volume } from 'components/composite'
+import { Artwork, Icon } from 'app/components/atoms'
+import { Volume } from 'app/components/composite'
 import { Link } from '@picast-app/router'
-import { mobile, desktop } from 'styles/responsive'
-import { useStateX } from 'hooks'
+import { mobile, desktop } from 'app/styles/responsive'
+import { useStateX } from 'app/hooks'
 
 interface Props {
   podcast: string

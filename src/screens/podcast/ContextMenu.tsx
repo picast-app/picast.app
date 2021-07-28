@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Icon } from 'components/atoms'
+import { Icon } from 'app/components/atoms'
 import { Link } from '@picast-app/router'
-import { Dropdown } from 'components/composite'
-import { main } from 'workers'
+import { Dropdown } from 'app/components/composite'
+import { main } from 'app/workers'
 
 type Props = {
   id: string

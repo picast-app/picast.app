@@ -3,7 +3,7 @@ import ReactDOMServer from 'react-dom/server'
 import styled from 'styled-components'
 import type { StyledComponent } from 'styled-components'
 import { Icon } from './Icon'
-import * as cl from 'utils/css/color'
+import * as cl from 'app/utils/css/color'
 
 type Props = {
   value?: string

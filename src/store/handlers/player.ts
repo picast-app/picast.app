@@ -1,7 +1,7 @@
-import MemCache, { OptPrim, _, HookDict } from 'store/utils/memCache'
-import type { State } from 'store/state'
-import { idbDefaultReader, idbWriter } from 'store/utils/idb'
-import { debounce } from 'utils/function'
+import MemCache, { OptPrim, _, HookDict } from 'app/store/utils/memCache'
+import type { State } from 'app/store/state'
+import { idbDefaultReader, idbWriter } from 'app/store/utils/idb'
+import { debounce } from 'app/utils/function'
 
 export default class Player extends MemCache<State['player']> {
   root = 'player'

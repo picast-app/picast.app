@@ -1,4 +1,4 @@
-import EventDispatcher from 'utils/event'
+import EventDispatcher from 'app/utils/event'
 
 export default EventDispatcher as new () => EventDispatcher<{
   play(): void

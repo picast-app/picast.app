@@ -1,13 +1,13 @@
 import content from './template.html'
 import Component from '../base.comp'
-import debounce from 'lodash/debounce'
-import { durAttr, formatDuration } from 'utils/time'
-import { desktop } from 'styles/responsive'
-import { bindThis } from 'utils/proto'
-import * as cl from 'utils/css/color'
-import { clamp } from 'utils/math'
-import { easeOutSine, easeInOutCubic } from 'utils/ease'
-import { DelayMachine } from 'utils/state'
+import { debounce } from 'app/utils/function'
+import { durAttr, formatDuration } from 'app/utils/time'
+import { desktop } from 'app/styles/responsive'
+import { bindThis } from 'app/utils/proto'
+import * as cl from 'app/utils/css/color'
+import { clamp } from 'app/utils/math'
+import { easeOutSine, easeInOutCubic } from 'app/utils/ease'
+import { DelayMachine } from 'app/utils/state'
 
 export default class Progress extends Component {
   private readonly canvas: HTMLCanvasElement
@@ -59,7 +59,7 @@ export default class Progress extends Component {
   }
 
   private readonly resizeObserver = new ResizeObserver(
-    debounce(this.resize.bind(this), 100, { leading: false, trailing: true })
+    debounce(this.resize.bind(this), 100)
   )
 
   constructor() {

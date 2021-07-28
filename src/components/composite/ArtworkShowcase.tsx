@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react'
 import styled from 'styled-components'
-import { animateTo } from 'utils/animate'
-import { useComputed } from 'hooks'
+import { animateTo } from 'app/utils/animate'
+import { useComputed } from 'app/hooks'
 
 type Props = {
   src: string

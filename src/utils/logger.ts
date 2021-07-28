@@ -1,5 +1,5 @@
-import * as ts from 'utils/time'
-import * as dec from 'utils/decorators'
+import * as ts from 'app/utils/time'
+import * as dec from 'app/utils/decorators'
 
 // eslint-disable-next-line no-console
 export default globalThis.logger = { assert: console.assert }

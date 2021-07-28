@@ -1,7 +1,7 @@
-import * as pth from 'utils/path'
-import { callAll } from 'utils/function'
-import { promiseCB } from 'utils/promise'
-import { flag } from 'utils/state'
+import * as pth from 'app/utils/path'
+import { callAll } from 'app/utils/function'
+import { promiseCB } from 'app/utils/promise'
+import { flag } from 'app/utils/state'
 import PathTree from './pathTree'
 import type { Flatten } from './types'
 

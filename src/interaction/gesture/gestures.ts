@@ -1,6 +1,6 @@
 import Registry, { TouchRegistryEvent } from './registry'
-import EventManager, { EventDef } from 'utils/event'
-import store from 'store/uiThread/api'
+import EventManager, { EventDef } from 'app/utils/event'
+import store from 'app/store/uiThread/api'
 
 const registry = new Registry()
 

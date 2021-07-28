@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useReducer, useRef } from 'react'
 import styled from 'styled-components'
-import { SnackBar } from 'components/composite'
-import { desktop } from 'styles/responsive'
-import { animateTo } from 'utils/animate'
-import { clamp } from 'utils/math'
+import { SnackBar } from 'app/components/composite'
+import { desktop } from 'app/styles/responsive'
+import { animateTo } from 'app/utils/animate'
+import { clamp } from 'app/utils/math'
 
 export type Snack = {
   text: string

@@ -1,14 +1,14 @@
 import Service from './base'
-import { desktop } from 'styles/responsive'
-import { animateTo } from 'utils/animate'
-import { clamp } from 'utils/math'
+import { desktop } from 'app/styles/responsive'
+import { animateTo } from 'app/utils/animate'
+import { clamp } from 'app/utils/math'
 import { history, SearchParams, location } from '@picast-app/router'
 import {
   GestureController,
   VerticalSwipe,
   UpwardSwipe,
   ExclusiveDownwardSwipe,
-} from 'interaction/gesture/gestures'
+} from 'app/interaction/gesture/gestures'
 
 enum FsState {
   CLOSED,

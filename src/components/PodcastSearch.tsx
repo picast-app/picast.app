@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { Input } from './atoms'
-import { useDebouncedInputCall } from 'hooks'
+import { useDebouncedInputCall } from 'app/hooks'
 import { useLocation, history } from '@picast-app/router'
 
 type Props = {

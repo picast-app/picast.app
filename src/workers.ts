@@ -1,7 +1,7 @@
-import MainWorker from 'main/main.worker'
-import type { API } from 'main/main.worker'
-import { wrap, proxy } from 'fiber'
-import { snack } from 'utils/notification'
+import MainWorker from 'app/main/main.worker'
+import type { API } from 'app/main/main.worker'
+import { wrap, proxy } from 'app/fiber'
+import { snack } from 'app/utils/notification'
 import uiAPI from './uiThreadAPI'
 
 export { proxy }

@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Icon, Artwork, Button } from 'components/atoms'
-import { ArtworkShowcase } from 'components/composite'
-import { Dialog } from 'components/structure'
-import { lineClamp } from 'styles/mixin'
-import { desktop, mobile } from 'styles/responsive'
-import { useMatchMedia, useStateX } from 'hooks'
+import { Icon, Artwork, Button } from 'app/components/atoms'
+import { ArtworkShowcase } from 'app/components/composite'
+import { Dialog } from 'app/components/structure'
+import { lineClamp } from 'app/styles/mixin'
+import { desktop, mobile } from 'app/styles/responsive'
+import { useMatchMedia, useStateX } from 'app/hooks'
 import ContextMenu, { SC as CM } from './ContextMenu'
-import { main } from 'workers'
-import type { Podcast } from 'store/state'
+import { main } from 'app/workers'
+import type { Podcast } from 'app/store/state'
 
 export default function Info(podcast: Partial<Podcast>) {
   const [showDescription, setShowDescription] = useState(false)

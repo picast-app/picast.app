@@ -1,8 +1,8 @@
 import Endpoint from 'typerpc'
 import browserWS from 'typerpc/transport/ws/browser'
-import { store } from 'store'
-import epStore from 'main/episodeStore'
-import type { Schema as WSAPI } from 'types/ws'
+import { store } from 'app/store'
+import epStore from 'app/main/episodeStore'
+import type { Schema as WSAPI } from 'app/types/ws'
 
 const endpoint = new Endpoint({
   episodeAdded: { params: { podcast: String, episodes: Object } },

@@ -1,7 +1,7 @@
-import type { Store } from 'store'
-import * as api from 'api/calls'
-import idb from 'main/idb/idb'
-import { asyncNullChain } from 'utils/function'
+import type { Store } from 'app/store'
+import * as api from 'app/api/calls'
+import idb from 'app/main/idb/idb'
+import { asyncNullChain } from 'app/utils/function'
 
 export default (store: Store) => {
   store.handler('episodes.*.shownotes').get(

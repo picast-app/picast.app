@@ -1,12 +1,12 @@
-import dbProm from 'main/idb/idb'
-import { collection, diff } from 'utils/array'
-import type { Store } from 'store'
-import type { Podcast } from 'store/state'
-import * as api from 'api/calls'
-import * as convert from 'api/convert'
-import epStore from 'main/episodeStore'
-import { set } from 'utils/path'
-import { waiter } from 'utils/promise'
+import dbProm from 'app/main/idb/idb'
+import { collection, diff } from 'app/utils/array'
+import type { Store } from 'app/store'
+import type { Podcast } from 'app/store/state'
+import * as api from 'app/api/calls'
+import * as convert from 'app/api/convert'
+import epStore from 'app/main/episodeStore'
+import { set } from 'app/utils/path'
+import { waiter } from 'app/utils/promise'
 
 export default async (store: Store) => {
   const [podcasts, init] =

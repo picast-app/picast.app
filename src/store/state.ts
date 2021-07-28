@@ -1,5 +1,5 @@
-import type { Flatten } from 'store/core/types'
-import type { PlayState } from 'audio/state'
+import type { Flatten } from 'app/store/core/types'
+import type { PlayState } from 'app/audio/state'
 
 export type State = {
   settings: {

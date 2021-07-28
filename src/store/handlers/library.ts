@@ -1,6 +1,6 @@
-import type { Store } from 'store'
-import type { Podcast } from 'store/state'
-import { memoize } from 'utils/cache'
+import type { Store } from 'app/store'
+import type { Podcast } from 'app/store/state'
+import { memoize } from 'app/utils/cache'
 
 export default (store: Store) => {
   store.handler('library')

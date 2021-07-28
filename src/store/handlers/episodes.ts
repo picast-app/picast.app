@@ -1,11 +1,11 @@
-import type { Episode } from 'store/state'
-import type { Store } from 'store'
-import idb from 'main/idb/idb'
-import { seg, mutate } from 'utils/path'
-import { diff } from 'utils/array'
-import { allFlat } from 'utils/promise'
-import * as o from 'utils/object'
-import equals from 'utils/equal'
+import type { Episode } from 'app/store/state'
+import type { Store } from 'app/store'
+import idb from 'app/main/idb/idb'
+import { seg, mutate } from 'app/utils/path'
+import { diff } from 'app/utils/array'
+import { allFlat } from 'app/utils/promise'
+import * as o from 'app/utils/object'
+import equals from 'app/utils/equal'
 
 function writeEpisodeData(
   cache: Map<string, Episode>,

@@ -1,5 +1,5 @@
-import { main } from 'workers'
-import type { threaded } from 'store'
+import { main } from 'app/workers'
+import type { threaded } from 'app/store'
 import { listen } from './registry'
 
 type API = typeof threaded

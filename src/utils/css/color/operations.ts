@@ -1,4 +1,4 @@
-import { split, compose } from 'utils/css/color/channels'
+import { split, compose } from 'app/utils/css/color/channels'
 
 export const blend = (background: number, foreground: number) => {
   const back = split(background)

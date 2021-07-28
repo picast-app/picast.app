@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from '@picast-app/router'
-import { Shownotes } from 'components/composite'
-import { desktop, mobile } from 'styles/responsive'
-import { ignore } from 'interaction/gesture/gestures'
-import type { Podcast, Episode } from 'store/state'
+import { Shownotes } from 'app/components/composite'
+import { desktop, mobile } from 'app/styles/responsive'
+import { ignore } from 'app/interaction/gesture/gestures'
+import type { Podcast, Episode } from 'app/store/state'
 
 interface Props {
   podcast: Podcast

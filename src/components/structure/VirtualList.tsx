@@ -9,10 +9,10 @@ import React, {
   memo,
 } from 'react'
 import ReactDOM from 'react-dom'
-import { useMatchMedia, useWindowDimensions, useValueRef } from 'hooks'
+import { useMatchMedia, useWindowDimensions, useValueRef } from 'app/hooks'
 import styled from 'styled-components'
-import { desktop } from 'styles/responsive'
-import { scrollParent } from 'utils/dom'
+import { desktop } from 'app/styles/responsive'
+import { scrollParent } from 'app/utils/dom'
 
 export const VirtualList = memo(_VirtualList) as typeof _VirtualList
 

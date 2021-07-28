@@ -1,4 +1,4 @@
-import { Machine } from 'utils/state'
+import { Machine } from 'app/utils/state'
 
 export type PlayState = 'paused' | 'waiting' | 'playing'
 

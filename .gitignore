@@ -22,3 +22,4 @@ cypress*
 benchmark
 src/**/*.txt
 *.*.swp
+src/i18n/strings

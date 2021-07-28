@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import Section from './Section'
-import { Button } from 'components/atoms'
-import { main } from 'workers'
-import * as notify from 'utils/notification'
-import * as wp from 'utils/webpush'
+import { Button } from 'app/components/atoms'
+import { main } from 'app/workers'
+import * as notify from 'app/utils/notification'
+import * as wp from 'app/utils/webpush'
 
 export default function Notifications() {
   const [granted, setGranted] = useState<PushSubscription | null>()

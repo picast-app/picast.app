@@ -1,7 +1,7 @@
 import { expandHex } from './format'
 import named, { ColorName } from './named'
 import { compose, hsla } from './channels'
-import { clamp } from 'utils/math'
+import { clamp } from 'app/utils/math'
 
 export const parseHex = (v: string): RGBA => parseInt(v.slice(1), 16)
 
