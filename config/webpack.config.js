@@ -20,11 +20,6 @@ const getClientEnvironment = require('./env')
 const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin')
 const ForkTsCheckerWebpackPlugin = require('react-dev-utils/ForkTsCheckerWebpackPlugin')
 const typescriptFormatter = require('react-dev-utils/typescriptFormatter')
-const { GitRevisionPlugin } = require('git-revision-webpack-plugin')
-
-const gitRevisionPlugin = new GitRevisionPlugin({
-  commithashCommand: 'rev-parse --short HEAD',
-})
 
 const postcssNormalize = require('postcss-normalize')
 
@@ -140,6 +135,7 @@ const shared =
     }
 
     const base = {
+      stats: { children: true, errorDetails: true },
       mode: isEnvProduction ? 'production' : isEnvDevelopment && 'development',
       // Stop compilation early in production
       bail: isEnvProduction,
@@ -655,15 +651,6 @@ const shared =
             // The formatter is invoked directly in WebpackDevServerUtils during development
             formatter: isEnvProduction ? typescriptFormatter : undefined,
           }),
-
-        new webpack.DefinePlugin({
-          'process.env': {
-            COMMIT: JSON.stringify(gitRevisionPlugin.commithash()),
-            BRANCH: JSON.stringify(
-              process.env.BRANCH || gitRevisionPlugin.branch()
-            ),
-          },
-        }),
       ].filter(Boolean),
       // Turn off performance processing because we utilize
       // our own hints via the FileSizeReporter

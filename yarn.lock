@@ -3467,13 +3467,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash@npm:^4.14.171":
-  version: 4.14.171
-  resolution: "@types/lodash@npm:4.14.171"
-  checksum: e48668fb030ad7d8c0c7751061bd332ad8704937d976bd4e24fd9e2128f80c17112be11e5c13d39f6a210336dc3549f7fb00eaebb56b94c2bfb89ad64c57d721
-  languageName: node
-  linkType: hard
-
 "@types/mdast@npm:^3.0.0":
   version: 3.0.7
   resolution: "@types/mdast@npm:3.0.7"
@@ -4846,7 +4839,6 @@ __metadata:
     "@types/crc": ^3.4.0
     "@types/css-font-loading-module": 0.0.4
     "@types/jest": ^26.0.3
-    "@types/lodash": ^4.14.171
     "@types/node": ^12.0.0
     "@types/react": ^16.9.53
     "@types/react-dom": ^16.9.8
@@ -4868,7 +4860,6 @@ __metadata:
     camelcase: ^6.1.0
     case-sensitive-paths-webpack-plugin: ^2.4.0
     crc: ^3.8.0
-    createCompiler: "link:./scripts/createCompiler"
     css-loader: 4.3.0
     dotenv: 8.2.0
     dotenv-expand: 5.1.0
@@ -4890,6 +4881,7 @@ __metadata:
     git-revision-webpack-plugin: ^5.0.0
     graphql: ^15.5.1
     graphql-request: ^3.3.0
+    graphql-tag: ^2.12.5
     html-loader: ^1.3.2
     html-webpack-plugin: ^5.3.2
     idb: ^5.0.7
@@ -6856,12 +6848,6 @@ __metadata:
   checksum: babd307893abfb26d77ae11cb9d6b6cfa6d18c9cee435cf70b5a3fb44aa8d90c9ec26ea89cbb16e0a94b8d34f5fcaee164b90ed526cdd3158955673ab9652d01
   languageName: node
   linkType: hard
-
-"createCompiler@link:./scripts/createCompiler::locator=app%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "createCompiler@link:./scripts/createCompiler::locator=app%40workspace%3A."
-  languageName: node
-  linkType: soft
 
 "cross-fetch@npm:3.0.6":
   version: 3.0.6
@@ -9745,7 +9731,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"graphql-tag@npm:^2.10.1, graphql-tag@npm:^2.11.0":
+"graphql-tag@npm:^2.10.1, graphql-tag@npm:^2.11.0, graphql-tag@npm:^2.12.5":
   version: 2.12.5
   resolution: "graphql-tag@npm:2.12.5"
   dependencies:

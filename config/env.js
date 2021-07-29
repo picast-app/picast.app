@@ -1,6 +1,11 @@
 const fs = require('fs')
 const path = require('path')
 const paths = require('./paths')
+const { GitRevisionPlugin } = require('git-revision-webpack-plugin')
+
+const gitRevisionPlugin = new GitRevisionPlugin({
+  commithashCommand: 'rev-parse --short HEAD',
+})
 
 // Make sure that including paths.js after env.js will read .env variables.
 delete require.cache[require.resolve('./paths')]
@@ -77,6 +82,9 @@ function getClientEnvironment(publicUrl) {
       WDS_SOCKET_HOST: process.env.WDS_SOCKET_HOST,
       WDS_SOCKET_PATH: process.env.WDS_SOCKET_PATH,
       WDS_SOCKET_PORT: process.env.WDS_SOCKET_PORT,
+
+      COMMIT: JSON.stringify(gitRevisionPlugin.commithash()),
+      BRANCH: JSON.stringify(process.env.BRANCH || gitRevisionPlugin.branch()),
     }
   )
   // Stringify all values so we can feed into webpack DefinePlugin
