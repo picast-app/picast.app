@@ -1,4 +1,4 @@
-import { debounce } from 'app/utils/function'
+import debounce from 'lodash/debounce'
 
 export function animateTo(
   element: HTMLElement,
@@ -23,10 +23,14 @@ export function animateTo(
 
 export async function scrollTo(element: HTMLElement, opts: ScrollToOptions) {
   return new Promise<void>(res => {
-    const onScroll = debounce(() => {
-      element.removeEventListener('scroll', onScroll)
-      res()
-    }, 50)
+    const onScroll = debounce(
+      () => {
+        element.removeEventListener('scroll', onScroll)
+        res()
+      },
+      50,
+      { leading: false, trailing: true }
+    )
     element.addEventListener('scroll', onScroll)
     element.scrollTo(opts)
   })

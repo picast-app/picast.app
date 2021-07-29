@@ -1,10 +1,10 @@
-import * as api from 'app/api/calls'
-import { store, user } from 'app/store'
-import { collection } from 'app/utils/array'
-import { mapList, mapValuesAsync } from 'app/utils/object'
-import epStore from 'app/main/episodeStore'
-import { hashIds, encodeIds } from 'app/utils/encode'
-import * as convert from 'app/api/convert'
+import * as api from 'api/calls'
+import { store, user } from 'store'
+import { collection } from 'utils/array'
+import { mapList, mapValuesAsync } from 'utils/object'
+import epStore from 'main/episodeStore'
+import { hashIds, encodeIds } from 'utils/encode'
+import * as convert from 'api/convert'
 
 const hour = (n: number) => n * 60 ** 2 * 1000
 
@@ -89,7 +89,7 @@ async function pullDiffEpisodes(podIds: string[]) {
     if (removed?.length) logger.info(`removed from ${podcast}`, ...removed)
     if (added?.length) {
       logger.info(`added to ${podcast}`, ...added)
-      stores[podcast].addEpisodes(
+      await stores[podcast].addEpisodes(
         added.map(v => convert.episode(v, podcast)),
         true
       )

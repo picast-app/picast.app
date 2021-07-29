@@ -1,7 +1,7 @@
-import { oneOf } from 'app/utils/equal'
-import { bound } from 'app/utils/function'
-import { mapValues, pick } from 'app/utils/object'
-import { unzipWith } from 'app/utils/array'
+import { oneOf } from 'utils/equal'
+import { bound } from 'utils/function'
+import { mapValues, pick } from 'utils/object'
+import { unzipWith } from 'utils/array'
 import { isFiberMsg, isError, genId, select } from './util'
 import {
   FiberResponse,

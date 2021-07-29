@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Screen } from 'app/components/structure'
+import { Screen } from 'components/structure'
 import {
   Title,
   Input,
@@ -8,9 +8,9 @@ import {
   PlayButton,
   Button,
   Icon,
-} from 'app/components/atoms'
-import { ShowCard } from 'app/components/composite'
-import { useComputed } from 'app/hooks'
+} from 'components/atoms'
+import { ShowCard } from 'components/composite'
+import { useComputed } from 'hooks'
 
 export default function Components() {
   const [src, setSrc] = useState(

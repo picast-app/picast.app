@@ -1,12 +1,5 @@
 /node_modules
 /build
-.yarn/*
-!.yarn/patches
-!.yarn/releases
-!.yarn/plugins
-!.yarn/sdks
-!.yarn/versions
-.pnp.*
 .DS_Store
 /*.env*
 /.*cache
@@ -21,5 +14,3 @@ src/**/*.md
 cypress*
 benchmark
 src/**/*.txt
-*.*.swp
-src/i18n/strings

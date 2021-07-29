@@ -15,10 +15,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react",
-    "baseUrl": ".",
-    "paths": {
-      "app/*": ["src/*"]
-    },
+    "baseUrl": "src",
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "plugins": [
@@ -28,5 +25,5 @@
     ]
   },
   "include": ["src"],
-  "exclude": ["src/types/gql/globalTypes.ts", "build"]
+  "exclude": ["src/types/gql/globalTypes.ts", "node_modules", "build"]
 }

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import styled from 'styled-components'
-import { useComputed, useNavbarWidget } from 'app/hooks'
+import { useComputed, useNavbarWidget } from 'hooks'
 
 type Props = {
   document: Document

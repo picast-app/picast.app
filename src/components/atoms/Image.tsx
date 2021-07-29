@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
-import { useComputed } from 'app/hooks'
-import { parseSize, sizesToQueries } from 'app/utils/css'
+import { useComputed } from 'hooks'
+import { parseSize, sizesToQueries } from 'utils/css'
 
 interface Props {
   base?: string

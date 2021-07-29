@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
-import { Button } from 'app/components/atoms'
-import { Surface } from 'app/components/structure'
-import { desktop } from 'app/styles/responsive'
-import { animateTo } from 'app/utils/animate'
+import { Button } from 'components/atoms'
+import { Surface } from 'components/structure'
+import { desktop } from 'styles/responsive'
+import { animateTo } from 'utils/animate'
 
 type Props = {
   text: string

@@ -1,11 +1,11 @@
-import MemCache, { _, OptPrim, HookDict } from 'app/store/utils/memCache'
-import { pick } from 'app/utils/object'
-import type { Store, State } from 'app/store'
-import uiThread from 'app/main/ui'
-import { proxy } from 'app/fiber'
-import { idbWriter, idbDefaultReader } from 'app/store/utils/idb'
-import { bundle } from 'app/utils/function'
-import { togglePrint } from 'app/utils/logger'
+import MemCache, { _, OptPrim, HookDict } from 'store/utils/memCache'
+import { pick } from 'utils/object'
+import type { Store, State } from 'store'
+import uiThread from 'main/ui'
+import { proxy } from 'fiber'
+import { idbWriter, idbDefaultReader } from 'store/utils/idb'
+import { bundle } from 'utils/function'
+import { togglePrint } from 'utils/logger'
 
 const IDBKeys = ['printLogs', 'showTouchPaths', 'extractColor'] as const
 type Key = typeof IDBKeys[number]

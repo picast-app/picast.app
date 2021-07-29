@@ -9,7 +9,7 @@ module.exports = {
   ],
   modulePathIgnorePatterns: ['src/typings'],
   testEnvironment: 'jsdom',
-  testRunner: '<rootDir>/node_modules/jest-circus/runner.js',
+  testRunner: './node_modules/jest-circus/runner.js',
   transform: {
     '^.+\\.(js|jsx|mjs|cjs|ts|tsx)$': '<rootDir>/node_modules/babel-jest',
     '^.+\\.css$': '<rootDir>/config/jest/cssTransform.js',

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import styled from 'styled-components'
-import { ptInBox } from 'app/utils/geometry'
+import { ptInBox } from 'utils/geometry'
 
 type Props = {
   open: boolean

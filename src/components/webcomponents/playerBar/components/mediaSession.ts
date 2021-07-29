@@ -1,6 +1,6 @@
 import Service from './base'
-import { main } from 'app/workers'
-import store from 'app/store/uiThread/api'
+import { main } from 'workers'
+import store from 'store/uiThread/api'
 
 const ms = navigator.mediaSession
 

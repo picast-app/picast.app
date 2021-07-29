@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import Section from './Section'
-import { format } from 'app/utils/storage'
-import { Button } from 'app/components/atoms'
-import { mobile, desktop } from 'app/styles/responsive'
-import { main } from 'app/workers'
+import { format } from 'utils/storage'
+import { Button } from 'components/atoms'
+import { mobile, desktop } from 'styles/responsive'
+import { main } from 'workers'
 
 export default function Storage() {
   const [usage, setUsage] = useState<number>()

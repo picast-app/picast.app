@@ -1,4 +1,4 @@
-import defaultDict from './strings/en.json'
+import defaultDict from 'strings/en.json'
 
 type Key = keyof typeof defaultDict
 const dict: any = defaultDict

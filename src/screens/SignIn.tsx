@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { Icon, Input } from 'app/components/atoms'
-import { Screen, Dialog } from 'app/components/structure'
-import Appbar from 'app/components/Appbar'
-import { main } from 'app/workers'
-import { useStateX } from 'app/hooks/store'
-import * as wp from 'app/utils/webpush'
-import { mobile } from 'app/styles/responsive'
+import { Icon, Input } from 'components/atoms'
+import { Screen, Dialog } from 'components/structure'
+import Appbar from 'components/Appbar'
+import { main } from 'workers'
+import { useStateX } from 'hooks/store'
+import * as wp from 'utils/webpush'
+import { mobile } from 'styles/responsive'
 import {
   Redirect,
   useLocation,

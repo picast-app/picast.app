@@ -1,4 +1,4 @@
-import * as str from 'app/utils/string'
+import * as str from 'utils/string'
 
 type obj = Record<string | number | symbol, any>
 

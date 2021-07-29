@@ -1,4 +1,4 @@
-import { isPromise } from 'app/utils/promise'
+import { isPromise } from 'utils/promise'
 
 type Methods<T> = {
   [K in keyof T]: T[K] extends λ ? K : never

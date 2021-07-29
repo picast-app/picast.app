@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { bundleSync } from 'app/utils/function'
-import store from 'app/store/uiThread/api'
+import { bundleSync } from 'utils/function'
+import store from 'store/uiThread/api'
 
 type EpisodeState = { progress: number; duration: number; _progAbs: number }
 

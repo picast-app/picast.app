@@ -1,4 +1,4 @@
-const chalk = require('react-dev-utils/chalk')
+const chalk = require('chalk')
 const isInteractive = process.stdout.isTTY
 const clearConsole = require('react-dev-utils/clearConsole')
 const forkTsCheckerWebpackPlugin = require('react-dev-utils/ForkTsCheckerWebpackPlugin')
@@ -132,10 +132,7 @@ module.exports.createCompiler = ({
       }
     }
 
-    const messages = formatWebpackMessages({
-      errors: statsData.errors.map(e => e.message),
-      warnings: statsData.warnings.map(e => e.message),
-    })
+    const messages = formatWebpackMessages(statsData)
     const isSuccessful = !messages.errors.length && !messages.warnings.length
     if (isSuccessful) {
       console.log(chalk.green('Compiled successfully!'))

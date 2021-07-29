@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
-// import { useAppState } from 'app/hooks'
-import { EpisodeStrip } from 'app/components/composite'
+// import { useAppState } from 'hooks'
+import { EpisodeStrip } from 'components/composite'
 
 export function Queue() {
   // const [queue] = useAppState<EpisodeId[]>('queue')

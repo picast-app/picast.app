@@ -1,4 +1,4 @@
-import type { API } from 'app/uiThreadAPI'
+import type { API } from 'uiThreadAPI'
 
 type Promisify<T> = T extends PromiseLike<infer I> ? Promise<I> : Promise<T>
 type MapProm<T extends { [K: string]: λ }> = {

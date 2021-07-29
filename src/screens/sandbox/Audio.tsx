@@ -1,10 +1,10 @@
 import React, { useEffect, useReducer, useState } from 'react'
-import { Input } from 'app/components/atoms'
-import { Screen } from 'app/components/structure'
+import { Input } from 'components/atoms'
+import { Screen } from 'components/structure'
 import styled from 'styled-components'
-import type AudioComp from 'app/components/webcomponents/audio.comp'
-import { bundleSync } from 'app/utils/function'
-import { wrapped } from 'app/utils/array'
+import type AudioComp from 'components/webcomponents/audio.comp'
+import { bundleSync } from 'utils/function'
+import { wrapped } from 'utils/array'
 
 const files = [
   'https://traffic.megaphone.fm/VMP4458584936.mp3',

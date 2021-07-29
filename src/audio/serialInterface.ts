@@ -1,10 +1,10 @@
 import { VirtualPlayer, Events } from './virtualPlayer'
-import { Proxied, key } from 'app/fiber/wellKnown'
-import { last } from 'app/utils/array'
-import { store } from 'app/store'
-import { callAll } from 'app/utils/function'
-import { forEach } from 'app/utils/object'
-import { methods } from 'app/utils/proto'
+import { Proxied, key } from 'fiber/wellKnown'
+import { last } from 'utils/array'
+import { store } from 'store'
+import { callAll } from 'utils/function'
+import { forEach } from 'utils/object'
+import { methods } from 'utils/proto'
 
 export type MsgOut =
   | { type: 'PLAY'; src: string; seconds: number }
@@ -50,10 +50,10 @@ export default function serialWrapper(player: VirtualPlayer) {
 
   forEach(handlers, (k, v) => player.addEventListener(k, v as any))
 
-  store.get('player.current').then(async v => {
+  store.get('player.current').then(v => {
     if (!v) return
     player.setTrack(v)
-    player.jumpTo((await store.get('episodes.*.currentTime', v[1])) ?? 0)
+    player.jumpTo(0) //
   })
 
   return {

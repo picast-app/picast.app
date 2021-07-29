@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { useStateX } from 'app/hooks'
+import { useStateX } from 'hooks'
 
 type Props = {
   id: EpisodeId

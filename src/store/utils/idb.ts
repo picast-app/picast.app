@@ -1,11 +1,11 @@
-import dbProm from 'app/main/idb/idb'
-import equal from 'app/utils/equal'
-import { forEach } from 'app/utils/object'
+import dbProm from 'main/idb/idb'
+import equal from 'utils/equal'
+import { forEach } from 'utils/object'
 
 export const idbWriter =
-  <T extends keyof IDBMeta = keyof IDBMeta>(key: T) =>
+  <T extends string = string>(key: T) =>
   async (value: any) =>
-    (await dbProm).put('meta', value, key)
+    (await dbProm).put('meta', value, key as string)
 
 type IDBMeta = {
   printLogs: boolean
@@ -13,7 +13,6 @@ type IDBMeta = {
   extractColor: boolean
   currentUser: string
   subscriptions: string[]
-  wpSubs: string[]
   libSort: string
   playerCurrent: EpisodeId
   playerQueue: string[]

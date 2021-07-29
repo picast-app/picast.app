@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Screen, Surface } from 'app/components/structure'
-import { Slider } from 'app/components/atoms'
-import { center } from 'app/styles/mixin'
+import { Screen, Surface } from 'components/structure'
+import { Slider } from 'components/atoms'
+import { center } from 'styles/mixin'
 
 export default function Elevation() {
   const [el, setEl] = useState(0)

@@ -7,12 +7,12 @@ import {
   useLocation,
   Link as HLink,
 } from '@picast-app/router'
-import { Screen } from 'app/components/structure'
-import Appbar from 'app/components/Appbar'
-import { Icon } from 'app/components/atoms'
-import { animateTo } from 'app/utils/animate'
-import { desktop, mobile } from 'app/styles/responsive'
-import { useMatchMedia } from 'app/hooks'
+import { Screen } from 'components/structure'
+import Appbar from 'components/Appbar'
+import { Icon } from 'components/atoms'
+import { animateTo } from 'utils/animate'
+import { desktop, mobile } from 'styles/responsive'
+import { useMatchMedia } from 'hooks'
 import About from './settings/About'
 import Appearance from './settings/Appearance'
 import Debug from './settings/Debug'

@@ -1,9 +1,9 @@
-import { store } from 'app/store'
+import { store } from 'store'
 import { Base as Feed, CB } from './base'
 import { Podcast } from './singlePodcast'
 import { MultiPodcast } from './multiPodcast'
-import epStore from 'app/main/episodeStore'
-import { proxy, release, Proxied } from 'app/fiber'
+import epStore from 'main/episodeStore'
+import { proxy, release, Proxied } from 'fiber'
 
 export async function feedSubscription(...podcasts: string[]) {
   const subs = await store.get('user.subscriptions')

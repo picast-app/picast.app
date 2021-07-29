@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Artwork } from 'app/components/atoms'
+import { Artwork } from 'components/atoms'
 import Controls from '../Controls'
 
 type Props = { podcast: Podcast; episode: EpisodeMin }

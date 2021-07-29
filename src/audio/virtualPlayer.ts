@@ -1,8 +1,8 @@
-import EventEmitter from 'app/utils/event'
-import equals from 'app/utils/equal'
-import { store } from 'app/store'
-import { bindThis } from 'app/utils/proto'
-import { clamp } from 'app/utils/math'
+import EventEmitter from 'utils/event'
+import equals from 'utils/equal'
+import { store } from 'store'
+import { bindThis } from 'utils/proto'
+import { clamp } from 'lodash'
 
 export type Events = {
   play: λ<[src: string, secs: number]>

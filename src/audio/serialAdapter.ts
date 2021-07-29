@@ -1,10 +1,10 @@
-import type Audio from 'app/components/webcomponents/audio.comp'
-import type { Events as AudioEvent } from 'app/components/webcomponents/audio.comp'
-import { main } from 'app/workers'
-import { proxy, release } from 'app/fiber'
-import { callAll } from 'app/utils/function'
-import { remove } from 'app/utils/array'
-import store from 'app/store/uiThread/api'
+import type Audio from 'components/webcomponents/audio.comp'
+import type { Events as AudioEvent } from 'components/webcomponents/audio.comp'
+import { main } from 'workers'
+import { proxy, release } from 'fiber'
+import { callAll } from 'utils/function'
+import { remove } from 'utils/array'
+import store from 'store/uiThread/api'
 
 export default () => {
   let audio: Audio | null = null

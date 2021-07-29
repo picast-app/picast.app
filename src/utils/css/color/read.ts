@@ -1,4 +1,4 @@
-import { style } from 'app/styles/jsUtil'
+import { style } from 'styles/jsUtil'
 import { parse } from './parse'
 
 type ColorName =

@@ -1,12 +1,12 @@
 import { APICall as API } from '../client'
-import qPodcast from 'app/gql/queries/podcast.gql'
-import qEpisode from 'app/gql/queries/episode.gql'
-import qFeed from 'app/gql/queries/feed.gql'
-import qSearch from 'app/gql/queries/search.gql'
-import qEpisodes from 'app/gql/queries/podcastEpisodes.gql'
-import qMe from 'app/gql/queries/me.gql'
-import qMetaSync from 'app/gql/queries/metaSync.gql'
-import qDiffEpisodes from 'app/gql/queries/episodes.gql'
+import qPodcast from 'gql/queries/podcast.gql'
+import qEpisode from 'gql/queries/episode.gql'
+import qFeed from 'gql/queries/feed.gql'
+import qSearch from 'gql/queries/search.gql'
+import qEpisodes from 'gql/queries/podcastEpisodes.gql'
+import qMe from 'gql/queries/me.gql'
+import qMetaSync from 'gql/queries/metaSync.gql'
+import qDiffEpisodes from 'gql/queries/episodes.gql'
 
 export const podcast = API<'PodcastPage'>(qPodcast)(
   (id: string) => ({ id }),

@@ -1,11 +1,8 @@
 import { useEffect, useCallback } from 'react'
-import { animateTo } from 'app/utils/animate'
-import {
-  GestureController,
-  VerticalSwipe,
-} from 'app/interaction/gesture/gestures'
-import { min } from 'app/utils/array'
-import { clamp } from 'app/utils/math'
+import { animateTo } from 'utils/animate'
+import { GestureController, VerticalSwipe } from 'interaction/gesture/gestures'
+import { min } from 'utils/array'
+import { clamp } from 'utils/math'
 
 export const useTransitionIn = (ref: HTMLDivElement | null) =>
   useEffect(() => {

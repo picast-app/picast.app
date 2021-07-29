@@ -1,6 +1,6 @@
 import { GraphQLClient } from 'graphql-request'
 import type { DocumentNode } from 'graphql'
-import type GQL from 'app/types/gql'
+import type GQL from 'types/gql'
 
 export const client = new GraphQLClient(process.env.REACT_APP_API as string, {
   headers: {},

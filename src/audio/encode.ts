@@ -1,4 +1,4 @@
-import { clamp } from 'app/utils/math'
+import { clamp } from 'utils/math'
 
 type Options = {
   float32?: boolean

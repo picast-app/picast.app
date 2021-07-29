@@ -1,5 +1,5 @@
-import { clamp, vec } from 'app/utils/math'
-import { wrapped } from 'app/utils/array'
+import { clamp, vec } from 'utils/math'
+import { wrapped } from 'utils/array'
 
 type Vertex = vec.Vec2D
 type Path = { path: Vertex[]; rounded?: Record<number, number> }

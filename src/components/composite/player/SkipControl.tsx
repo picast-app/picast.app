@@ -1,9 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Icon } from 'app/components/atoms'
-import { center } from 'app/styles/mixin'
-import { useMatchMedia } from 'app/hooks'
-import { mobile } from 'app/styles/responsive'
+import { Icon } from 'components/atoms'
+import { center } from 'styles/mixin'
+import { useMatchMedia } from 'hooks'
+import { mobile } from 'styles/responsive'
 
 type Props = {
   ms: number

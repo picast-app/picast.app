@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Switch, Route, Redirect, Link } from '@picast-app/router'
-import { Screen } from 'app/components/structure'
+import { Screen } from 'components/structure'
 import elevation from './sandbox/Elevation'
 import ease from './sandbox/Ease'
 import components from './sandbox/Components'

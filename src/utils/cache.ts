@@ -1,4 +1,4 @@
-import { oneOf } from 'app/utils/equal'
+import { oneOf } from 'utils/equal'
 
 const caches = new Map<λ, Record<number | string, any>>()
 

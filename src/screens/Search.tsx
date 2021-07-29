@@ -6,14 +6,14 @@ import {
   ExpandoGrid,
   ExpandoSC,
   Helmet,
-} from 'app/components/structure'
-import { ShowCard } from 'app/components/composite'
-import { Icon, Button } from 'app/components/atoms'
-import Appbar from 'app/components/Appbar'
-import PodcastSearch from 'app/components/PodcastSearch'
-import { useMatchMedia, useAPICall } from 'app/hooks'
-import { desktop, mobile } from 'app/styles/responsive'
-import { center } from 'app/styles/mixin'
+} from 'components/structure'
+import { ShowCard } from 'components/composite'
+import { Icon, Button } from 'components/atoms'
+import Appbar from 'components/Appbar'
+import PodcastSearch from 'components/PodcastSearch'
+import { useMatchMedia, useAPICall } from 'hooks'
+import { desktop, mobile } from 'styles/responsive'
+import { center } from 'styles/mixin'
 import { Redirect, useLocation } from '@picast-app/router'
 
 export default function Search() {

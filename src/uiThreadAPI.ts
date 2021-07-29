@@ -1,5 +1,5 @@
-import { querySub } from 'app/utils/css/query'
-import { proxy } from 'app/fiber'
+import { querySub } from 'utils/css/query'
+import { proxy } from 'fiber'
 
 const api = {
   alert: (msg?: any) => {

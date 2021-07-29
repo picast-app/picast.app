@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
-import { EpisodeStrip } from 'app/components/composite'
-import { VirtualList } from 'app/components/structure'
-import { useFeed } from 'app/hooks'
+import { EpisodeStrip } from 'components/composite'
+import { VirtualList } from 'components/structure'
+import { useFeed } from 'hooks'
 
 type Props = {
   podcast: string

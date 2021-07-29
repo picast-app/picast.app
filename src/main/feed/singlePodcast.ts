@@ -1,6 +1,6 @@
 import { Base, CB } from './base'
-import { store as storeX } from 'app/store'
-import type { Podcast as PodStore } from 'app/main/episodeStore'
+import { store as storeX } from 'store'
+import type { Podcast as PodStore } from 'main/episodeStore'
 
 export class Podcast extends Base {
   constructor(private readonly store: PodStore) {

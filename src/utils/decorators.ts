@@ -1,5 +1,5 @@
 import { asyncQueue as aq } from './promise'
-import { wrap } from 'app/utils/profile'
+import { wrap } from 'utils/profile'
 
 export const asyncQueue: MethodDecorator = (
   target,

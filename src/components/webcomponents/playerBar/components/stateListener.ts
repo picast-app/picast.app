@@ -1,10 +1,10 @@
 import Service from './base'
-import store from 'app/store/uiThread/api'
-import { main } from 'app/workers'
-import { proxy, release } from 'app/fiber'
-import { callAll } from 'app/utils/function'
-import { asyncCB } from 'app/utils/promise'
-import { MsgOut } from 'app/audio/serialInterface'
+import store from 'store/uiThread/api'
+import { main } from 'workers'
+import { proxy, release } from 'fiber'
+import { callAll } from 'utils/function'
+import { asyncCB } from 'utils/promise'
+import { MsgOut } from 'audio/serialInterface'
 
 export default class StateListener extends Service {
   enable() {

@@ -1,11 +1,11 @@
-import { key } from 'app/fiber/wellKnown'
-import type { Proxied } from 'app/fiber'
-import type { Episode } from 'app/store/state'
-import { isPromise } from 'app/utils/promise'
-import { store as storeX } from 'app/store'
-import { callAll } from 'app/utils/function'
-import type { Podcast as PodStore } from 'app/main/episodeStore'
-import { nullSet } from 'app/utils/map'
+import { key } from 'fiber/wellKnown'
+import type { Proxied } from 'fiber'
+import type { Episode } from 'store/state'
+import { isPromise } from 'utils/promise'
+import { store as storeX } from 'store'
+import { callAll } from 'utils/function'
+import type { Podcast as PodStore } from 'main/episodeStore'
+import { nullSet } from 'utils/map'
 
 export type CB = Proxied<λ<[Episode]>>
 

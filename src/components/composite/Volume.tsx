@@ -1,8 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Icon, Slider } from 'app/components/atoms'
-import { useStateX } from 'app/hooks'
-import store from 'app/store/uiThread/api'
+import { Icon, Slider } from 'components/atoms'
+import { useStateX } from 'hooks'
+import store from 'store/uiThread/api'
 
 export function Volume() {
   const [volume] = useStateX('player.volume')

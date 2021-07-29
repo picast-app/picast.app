@@ -1,4 +1,4 @@
-import { bindThis } from 'app/utils/proto'
+import { bindThis } from 'utils/proto'
 import type Player from '../player.comp'
 
 export default abstract class ServiceBase {

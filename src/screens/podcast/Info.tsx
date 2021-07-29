@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Icon, Artwork, Button } from 'app/components/atoms'
-import { ArtworkShowcase } from 'app/components/composite'
-import { Dialog } from 'app/components/structure'
-import { lineClamp } from 'app/styles/mixin'
-import { desktop, mobile } from 'app/styles/responsive'
-import { useMatchMedia, useStateX } from 'app/hooks'
+import { Icon, Artwork, Button } from 'components/atoms'
+import { ArtworkShowcase } from 'components/composite'
+import { Dialog } from 'components/structure'
+import { lineClamp } from 'styles/mixin'
+import { desktop, mobile } from 'styles/responsive'
+import { useMatchMedia, useStateX } from 'hooks'
 import ContextMenu, { SC as CM } from './ContextMenu'
-import { main } from 'app/workers'
-import type { Podcast } from 'app/store/state'
+import { main } from 'workers'
+import type { Podcast } from 'store/state'
 
 export default function Info(podcast: Partial<Podcast>) {
   const [showDescription, setShowDescription] = useState(false)
@@ -43,17 +43,15 @@ export default function Info(podcast: Partial<Podcast>) {
         {podcast.subscribed ? 'subscribed' : 'subscribe'}
       </Button>
       <ContextMenu id={podcast.id} feed={(podcast as any).feed} />
-      {podcast.subscribed && (
-        <Icon
-          icon={
-            `bell_${
-              wpSubs?.includes(podcast.id!) ? 'active' : 'inactive'
-            }` as const
-          }
-          label={`${wpActive ? 'disable' : 'enable'} push notifications`}
-          onClick={toggleNotifications}
-        />
-      )}
+      <Icon
+        icon={
+          `bell_${
+            wpSubs?.includes(podcast.id!) ? 'active' : 'inactive'
+          }` as const
+        }
+        label={`${wpActive ? 'disable' : 'enable'} push notifications`}
+        onClick={toggleNotifications}
+      ></Icon>
       <Icon
         icon={`expand_${showDescription ? 'less' : 'more'}` as any}
         onClick={() => setShowDescription(!showDescription)}
@@ -185,6 +183,8 @@ const S = {
     }
 
     & > button[data-style~='icon-wrap'] {
+      margin-left: 0.8rem;
+      margin-right: 0.2rem;
       opacity: 0.9;
 
       &:not(:last-of-type) {

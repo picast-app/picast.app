@@ -1,4 +1,4 @@
-import { pick } from 'app/utils/path'
+import { pick } from 'utils/path'
 
 export const stateToggle =
   (base: string, state: any, set: (path: any, v: any) => any) =>

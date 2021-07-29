@@ -1,10 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Screen, Surface } from 'app/components/structure'
-import { Plot, Datum } from 'app/components/atoms'
-import * as funcs from 'app/utils/ease'
-import { useComputed } from 'app/hooks'
-import { desktop } from 'app/styles/responsive'
+import { Screen, Surface } from 'components/structure'
+import { Plot, Datum } from 'components/atoms'
+import * as funcs from 'utils/ease'
+import { useComputed } from 'hooks'
+import { desktop } from 'styles/responsive'
 
 export default function Ease() {
   return (

@@ -1,13 +1,13 @@
-import 'app/styles'
-import 'app/polyfills'
-import { togglePrint } from 'app/utils/logger'
-import 'app/components/webcomponents'
+import 'styles'
+import 'polyfills'
+import { togglePrint } from 'utils/logger'
+import 'components/webcomponents'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import 'app/i18n/strings'
-import store from 'app/store/uiThread/api'
+import 'i18n/strings'
+import store from 'store/uiThread/api'
 import App from './App'
-import 'app/store/uiThread/hooks'
+import 'store/uiThread/hooks'
 
 store.listenX('settings.debug.printLogs', togglePrint)
 

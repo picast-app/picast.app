@@ -1,4 +1,4 @@
-import createSub, { Subscription } from 'app/utils/subscription'
+import createSub, { Subscription } from 'utils/subscription'
 
 const store: Record<string, Subscription<any>> = {}
 

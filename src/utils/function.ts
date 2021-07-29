@@ -1,4 +1,4 @@
-import { isPromise } from 'app/utils/promise'
+import { isPromise } from 'utils/promise'
 
 export const callAll = <T extends any[] = []>(
   list?: (((...args: T) => any) | undefined)[],
@@ -64,33 +64,5 @@ export const debounce = <T extends λ<TA>, TA extends any[]>(
   return (...args: TA) => {
     clearTimeout(toId)
     toId = setTimeout(() => f(...args), ms)
-  }
-}
-
-export const throttle = <T extends λ<TA>, TA extends any[]>(
-  func: T,
-  ms: number,
-  {
-    leading = true,
-    trailing = true,
-  }: { leading?: boolean; trailing?: boolean } = {}
-): λ<TA, void> => {
-  let toId: any
-  let lastInvoke = -Infinity
-  let lastArgs: TA | undefined
-
-  const invoke = () => {
-    lastInvoke = performance.now()
-    toId = undefined
-    func(...lastArgs!)
-  }
-
-  return (...args: TA) => {
-    if (!leading && !trailing) return
-    lastArgs = args
-    const dt = performance.now() - lastInvoke
-
-    if ((leading && lastInvoke === null) || dt >= ms) invoke()
-    else if (toId === undefined) toId = setTimeout(invoke, ms - dt)
   }
 }

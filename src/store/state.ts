@@ -1,5 +1,5 @@
-import type { Flatten } from 'app/store/core/types'
-import type { PlayState } from 'app/audio/state'
+import type { Flatten } from 'store/core/types'
+import type { PlayState } from 'audio/state'
 
 export type State = {
   settings: {
@@ -48,7 +48,6 @@ export type Value<T extends Key> = FlatState[T]
 export type Podcast = {
   id: string
   subscribed?: boolean
-  wpSubscribed?: boolean
   title: string
   author?: string
   artwork?: string
