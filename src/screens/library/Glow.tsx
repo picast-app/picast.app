@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import debounce from 'lodash/debounce'
+import { debounce } from 'utils/function'
 import { useCanvas, useComputed, useTheme } from 'hooks'
 import { desktopPts, cardPadd } from './grid'
 
@@ -109,15 +109,11 @@ function useMouseMoving() {
     }
     listenMove()
 
-    const stop = debounce(
-      () => {
-        window.removeEventListener('mousemove', stop)
-        setMoving(false)
-        listenMove()
-      },
-      100,
-      { leading: false, trailing: true }
-    )
+    const stop = debounce(() => {
+      window.removeEventListener('mousemove', stop)
+      setMoving(false)
+      listenMove()
+    }, 100)
 
     return () => window.removeEventListener('mousemove', stop)
   }, [])

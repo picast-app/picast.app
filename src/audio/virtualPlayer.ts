@@ -2,7 +2,7 @@ import EventEmitter from 'utils/event'
 import equals from 'utils/equal'
 import { store } from 'store'
 import { bindThis } from 'utils/proto'
-import { clamp } from 'lodash'
+import { clamp } from 'utils/math'
 
 export type Events = {
   play: λ<[src: string, secs: number]>

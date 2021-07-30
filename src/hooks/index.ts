@@ -8,7 +8,7 @@ import {
 } from 'react'
 import { Theme } from 'styles'
 import subscription, { Subscription } from 'utils/subscription'
-import throttle from 'lodash/throttle'
+import { throttle } from 'utils/function'
 import { main } from 'workers'
 import { isPromise } from 'utils/promise'
 import type { API } from 'main/main.worker'

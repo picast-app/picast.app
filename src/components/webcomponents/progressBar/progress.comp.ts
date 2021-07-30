@@ -1,6 +1,6 @@
 import content from './template.html'
 import Component from '../base.comp'
-import debounce from 'lodash/debounce'
+import { debounce } from 'utils/function'
 import { durAttr, formatDuration } from 'utils/time'
 import { desktop } from 'styles/responsive'
 import { bindThis } from 'utils/proto'
@@ -59,7 +59,7 @@ export default class Progress extends Component {
   }
 
   private readonly resizeObserver = new ResizeObserver(
-    debounce(this.resize.bind(this), 100, { leading: false, trailing: true })
+    debounce(this.resize.bind(this), 100)
   )
 
   constructor() {

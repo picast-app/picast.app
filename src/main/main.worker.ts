@@ -13,7 +13,7 @@ import { pullSubscriptions } from './sync'
 import { prefix } from 'utils/object'
 import { VirtualPlayer } from 'audio/virtualPlayer'
 import serialWrapper from 'audio/serialInterface'
-import audioSync from 'audio/audioSync'
+import audioSync from 'audio/sync'
 import * as feed from 'main/feed'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
