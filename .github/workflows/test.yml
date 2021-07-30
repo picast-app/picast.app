@@ -31,4 +31,4 @@ jobs:
           npm install
 
       - name: Run Tests
-        run: npm test -- --watchAll=false
+        run: npm test -- --watchAll=false --testPathIgnorePatterns=__tests__
