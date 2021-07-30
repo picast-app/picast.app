@@ -16,7 +16,6 @@ import {
 } from '@picast-app/router'
 
 const Signin: React.FC<RouteProps> = ({ location }) => {
-  // const [signedIn, signingIn] = useOAuthSignIn()
   const [user] = useStateX('user')
   const loading = useOAuthSignIn(user === undefined ? undefined : !!user)
   const [name, setName] = useState('')

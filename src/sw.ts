@@ -1,3 +1,4 @@
+import 'polyfills'
 import { togglePrint } from 'utils/logger'
 import { asyncNullChain } from 'utils/function'
 import { wrap, proxy, Wrapped } from 'fiber'

@@ -14,6 +14,10 @@ module.exports = {
   plugins: ['@typescript-eslint'],
   globals: {
     logger: 'readonly',
+    page: true,
+    browser: true,
+    context: true,
+    jestPuppeteer: true,
   },
   rules: {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
