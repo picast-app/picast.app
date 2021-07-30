@@ -33,9 +33,9 @@ function writeEpisodeData(
 
   if (!path.length) {
     data = filter(data)
-    if (equals(previous, data)) return true
+    if (equals(previous, data)) return false
     cache.set(id, data)
-    return false
+    return true
   }
 
   const old = mutate(state, data, ...path)
@@ -54,14 +54,15 @@ export default (store: Store) => {
 
   let subscriptions: Promise<string[]> = store.get('user.subscriptions')
 
-  store
-    .handler('episodes.*')
-    .set(async (data, path, { known, noChange }, id) => {
-      if (!data) return
-      if (writeEpisodeData(cache, data, ...seg(path, 1)))
-        if (!known && (await subscriptions).includes(cache.get(id)!.podcast))
-          await writeToDB(cache.get(id)!)
-    }, true)
+  store.handler('episodes.*').set(async (data, path, { known, subbed }, id) => {
+    if (!data) return
+    if (writeEpisodeData(cache, data, ...seg(path, 1)))
+      if (
+        !known &&
+        (subbed || (await subscriptions).includes(cache.get(id)!.podcast))
+      )
+        await writeToDB(cache.get(id)!)
+  }, true)
 
   store
     .handler('episodes.*')

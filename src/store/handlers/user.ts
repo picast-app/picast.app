@@ -16,7 +16,7 @@ export default class UserState extends MemCache<State['user']> {
     $: async state => {
       logger.info('state hook', state)
       await (state ? this.writeSignedIn(state) : this.writeSignedOut())
-      queueMicrotask(this.reattach)
+      queueMicrotask(() => this.reattach())
     },
     subscriptions: idbWriter('subscriptions'),
   }

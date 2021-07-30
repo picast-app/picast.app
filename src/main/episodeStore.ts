@@ -90,7 +90,9 @@ export class Podcast {
 
   public addEpisodes(episodes: Episode[], notify = false) {
     this.addKeys(Podcast.keys(episodes.map(({ id }) => id)))
-    episodes.map(data => store.set('episodes.*', data, {}, data.id))
+    episodes.map(data =>
+      store.set('episodes.*', data, { subbed: this.subscribed }, data.id)
+    )
     if (!notify) return
     store.set('podcasts.*.episodeCount', this.keys.length, {}, this.id)
     const indices = episodes.map(v =>
@@ -143,12 +145,15 @@ export class EpisodeStore {
     this.listenSubs()
   }
 
-  public getPodcast = async (id: string, subscribed?: boolean) =>
-    await (this.podcasts[id] ??= Podcast.create(
+  public getPodcast = async (id: string, subscribed?: boolean) => {
+    const podcast = await (this.podcasts[id] ??= Podcast.create(
       id,
       this.db,
       subscribed ?? (await this.subscriptions).includes(id)
     ))
+    if (subscribed && !podcast.isSubscribed) await podcast.subscribe()
+    return podcast
+  }
 
   private async listenSubs() {
     await this.subscriptions
