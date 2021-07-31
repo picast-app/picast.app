@@ -12,6 +12,7 @@ import Job from 'utils/job'
 import { main } from 'workers'
 import FakeAudio from 'audio/fakeAudio'
 import serialAudio from 'audio/serialAdapter'
+import { history } from '@picast-app/router'
 
 export default class Player extends Component {
   static tagName = 'picast-player'
@@ -41,6 +42,10 @@ export default class Player extends Component {
 
     this.audioAdapter.audio =
       this.shadowRoot!.querySelector<Audio>('picast-audio')!
+
+    this.select<HTMLAnchorElement>('.title').forEach(el =>
+      el.addEventListener('click', this.onTitleClick)
+    )
   }
 
   connectedCallback() {
@@ -111,10 +116,22 @@ export default class Player extends Component {
     const episode = await store.getX('episodes.*', id[1])
     if (!episode?.file) throw Error(`can't find file for ${id[0]} ${id[1]}`)
 
-    this.select('.title').forEach(el => (el.innerText = episode.title))
+    this.select<HTMLAnchorElement>('.title').forEach(el => {
+      el.innerText = episode.title
+      el.href = `?info=${episode.podcast}-${episode.id}`
+    })
 
     this.setProgressAttr('playing', false)
     this.setProgressAttr('current', 0)
+  }
+
+  onTitleClick(e: MouseEvent) {
+    e.preventDefault()
+
+    const search = (e.currentTarget as HTMLAnchorElement).href?.match(
+      /(\?.+?)(?=#|$)/
+    )?.[0]
+    if (search) history.push({ search })
   }
 
   onDurationChange(secs?: number) {
@@ -131,12 +148,6 @@ export default class Player extends Component {
   //     bar.scheduleFrame()
   //   }
   // }
-
-  async onEnded() {
-    // this.current = null
-    // this.audioService.setSrc(null)
-    // await this.syncProgress()
-  }
 
   onJump(seconds: number) {
     this.setProgressAttr('current', seconds)

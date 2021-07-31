@@ -106,6 +106,8 @@
     margin-top: 0.5rem;
     user-select: none;
     cursor: pointer;
+    color: unset;
+    text-decoration: unset;
   }
 
   .title:hover {
@@ -124,7 +126,7 @@
 
 <slot name="controls" class="ctrl"></slot>
 <div class="central">
-  <span class="title"></span>
+  <a class="title"></a>
   <player-progress inline></player-progress>
 </div>
 <slot name="info" class="info"></slot>
