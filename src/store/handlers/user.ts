@@ -26,6 +26,7 @@ export default class UserState extends MemCache<State['user']> {
   fbs: FBDict<State['user']> = {
     subscriptions: () => [],
     wpSubs: () => [],
+    wsAuth: () => undefined,
   }
 
   async init() {
@@ -85,6 +86,8 @@ export default class UserState extends MemCache<State['user']> {
     await Promise.all([
       db.delete('meta', 'currentUser'),
       db.delete('meta', 'subscriptions'),
+      db.delete('meta', 'wpSubs'),
+      db.delete('meta', 'wsAuth'),
       db.clear('podcasts'),
       db.clear('episodes'),
     ])

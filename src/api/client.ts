@@ -1,11 +1,14 @@
 import { GraphQLClient } from 'graphql-request'
 import type { DocumentNode } from 'graphql'
 import type GQL from 'types/gql'
+import dedupe from './dedupe'
 
 export const client = new GraphQLClient(process.env.REACT_APP_API as string, {
   headers: {},
   credentials: 'include',
 })
+
+client.request = dedupe(client)
 
 export const APICall =
   <T extends Calls>(query: DocumentNode) =>

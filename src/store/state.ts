@@ -39,6 +39,9 @@ export type State = {
     volume: number
     muted: boolean
   }
+  ep2Pod: {
+    '*': string | undefined
+  }
 }
 
 export type FlatState = Flatten<State>

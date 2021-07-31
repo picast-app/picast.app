@@ -16,6 +16,7 @@ export type GetDict<T, F = Flatten<T>> = {
   [K in keyof F]?: (...subs: string[]) => MaybeProm<F[K]>
 }
 
+// todo: support wildcard paths
 export default abstract class MemCache<T> {
   constructor(protected readonly store: Store) {
     queueMicrotask(async () => {

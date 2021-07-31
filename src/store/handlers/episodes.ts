@@ -6,6 +6,8 @@ import { diff } from 'utils/array'
 import { allFlat } from 'utils/promise'
 import * as o from 'utils/object'
 import equals from 'utils/equal'
+import { query } from 'api/calls'
+import * as convert from 'api/convert'
 
 function writeEpisodeData(
   cache: Map<string, Episode>,
@@ -66,12 +68,22 @@ export default (store: Store) => {
 
   store
     .handler('episodes.*')
-    .get(async (_, id) => cache.get(id) ?? (await readIDB(id)))
+    .get(
+      async (_, id) =>
+        cache.get(id) ?? (await readIDB(id)) ?? (await fetchSingle(id))
+    )
 
   async function readIDB(id: string) {
     const data = await (await idb).get('episodes', id)
     if (data) store.set('episodes.*', data, { known: true }, id)
     return data ?? null
+  }
+
+  async function fetchSingle(id: string) {
+    const podcast = await store.get('ep2Pod.*', id)
+    if (!podcast) throw Error(`can't find podcast id for episode ${id}`)
+    const data = await query.episode([podcast, id])
+    return convert.episode(data, podcast) ?? null
   }
 
   async function writeToDB(episode: Episode) {

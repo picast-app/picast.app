@@ -7,6 +7,7 @@ import library from 'store/handlers/library'
 import Player from 'store/handlers/player'
 import episodes from 'store/handlers/episodes'
 import shownotes from 'store/handlers/shownotes'
+import ep2Pod from 'store/handlers/episodePodMap'
 import { proxy } from 'fiber'
 import { omit } from 'utils/object'
 
@@ -39,10 +40,11 @@ settings.construct()
 export const user = new Account(store)
 user.construct()
 
+export const player = new Player(store)
+player.construct()
+
 podcasts(store)
 episodes(store)
 shownotes(store)
 library(store)
-
-export const player = new Player(store)
-player.construct()
+ep2Pod(store)
