@@ -63,6 +63,13 @@ export const omit = <T extends obj, K extends keyof T>(
     )
   ) as any
 
+export const omitNullish = <T extends obj>(
+  obj: T
+): OmitValue<T, undefined | null> =>
+  Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => v !== undefined && v !== null)
+  ) as any
+
 export const prefix = <
   T extends obj,
   TP extends string,

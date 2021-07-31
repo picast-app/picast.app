@@ -35,3 +35,9 @@ type CondArr<T, K> = T extends any[] ? K[] : K
 
 type λ<TA extends any[] = any[], TR = any> = (...args: TA) => TR
 type Fun = λ
+
+type OmitValue<T, O> = {
+  [K in keyof Required<T> as Exclude<T[K], O> extends never
+    ? never
+    : K]: Exclude<T[K], O>
+}

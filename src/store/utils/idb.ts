@@ -14,6 +14,7 @@ type IDBMeta = {
   currentUser: string
   subscriptions: string[]
   wpSubs: string[]
+  wsAuth: string
   libSort: string
   playerCurrent: EpisodeId
   playerQueue: string[]

@@ -6,6 +6,7 @@ import { idbDefaultReader, idbWriter } from 'store/utils/idb'
 import * as api from 'api/calls'
 import * as convert from 'api/convert'
 import epStore from 'main/episodeStore'
+import { omitNullish } from 'utils/object'
 
 export default class UserState extends MemCache<State['user']> {
   root = 'user'
@@ -14,12 +15,12 @@ export default class UserState extends MemCache<State['user']> {
 
   hooks: HookDict<State['user']> = {
     $: async state => {
-      logger.info('state hook', state)
       await (state ? this.writeSignedIn(state) : this.writeSignedOut())
       queueMicrotask(() => this.reattach())
     },
     subscriptions: idbWriter('subscriptions'),
     wpSubs: idbWriter('wpSubs'),
+    wsAuth: idbWriter('wsAuth'),
   }
 
   fbs: FBDict<State['user']> = {
@@ -32,6 +33,7 @@ export default class UserState extends MemCache<State['user']> {
       'currentUser',
       'subscriptions',
       'wpSubs',
+      'wsAuth',
     ])
 
     if (!state.currentUser) this.state = null
@@ -40,6 +42,7 @@ export default class UserState extends MemCache<State['user']> {
         id: state.currentUser,
         subscriptions: state.subscriptions ?? [],
         wpSubs: state.wpSubs ?? [],
+        wsAuth: state.wsAuth,
       }
       this.reattach()
     }
@@ -54,10 +57,12 @@ export default class UserState extends MemCache<State['user']> {
     await Promise.all(
       data.subscriptions.added.map(v => this.storePodcast(v, true))
     )
+
     this.store.set('user', {
       id: data.id,
       subscriptions: data.subscriptions.added.map(({ id }) => id),
       wpSubs: [],
+      ...omitNullish({ wsAuth: data.wsAuth }),
     })
   }
 
@@ -71,6 +76,8 @@ export default class UserState extends MemCache<State['user']> {
     const db = await idb
     await db.put('meta', user.id, 'currentUser')
     await db.put('meta', user.subscriptions, 'subscriptions')
+    await db.put('meta', user.wpSubs, 'wpSubs')
+    await db.put('meta', user.wsAuth, 'wsAuth')
   }
 
   private async writeSignedOut() {
