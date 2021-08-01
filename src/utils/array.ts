@@ -77,3 +77,14 @@ export const unzipWith = <
   ...unzippers: U
 ): { [I in keyof U]: ReturnType<U[I]> } =>
   zipped.reduce((a, c) => c.map((v, i) => unzippers[i](v, a[i])), [] as any)
+
+export const nestMap = <T extends Nested<any>, U>(
+  list: T,
+  cb: (v: T extends Nested<infer I> ? I : unknown) => U
+): MappedNested<T, U> =>
+  list.map(v => (Array.isArray(v) ? nestMap(v as T, cb) : cb(v))) as any
+
+type Nested<T> = (T | Nested<T>)[]
+type MappedNested<T extends Nested<any>, U> = {
+  [K in keyof T]: T[K] extends any[] ? MappedNested<T[K], U> : U
+}

@@ -1,14 +1,16 @@
 import type Audio from 'components/webcomponents/audio.comp'
 import type { Events as AudioEvent } from 'components/webcomponents/audio.comp'
+import EventManager from 'utils/event'
 import { main } from 'workers'
 import { proxy, release } from 'fiber'
 import { callAll } from 'utils/function'
-import { remove } from 'utils/array'
+import { nestMap, remove } from 'utils/array'
 import store from 'store/uiThread/api'
 
 export default () => {
   let audio: Audio | null = null
   const onAudioChange: λ<[Audio | null]>[] = []
+  const events = new EventManager<{ buffered: λ<[TimeRange[]]> }>()
 
   const onCleanup: (λ | undefined)[] = []
   const clean = <T extends λ>(f: T): T => {
@@ -103,6 +105,14 @@ export default () => {
       main.player$setDuration(audio.duration, audio.src!)
     })
 
+    events.call('buffered', [])
+    listen('buffered', ({ detail: ranges }) => {
+      events.call(
+        'buffered',
+        nestMap(ranges, n => n / audio.duration)
+      )
+    })
+
     const cleanup = () => {
       callAll(cleanups)
       remove(onAudioChange, cleanup)
@@ -118,5 +128,7 @@ export default () => {
       return audio
     },
     cleanup: () => callAll(onCleanup),
+    addEventListener: events.addEventListener.bind(events),
+    removeEventListener: events.removeEventListener.bind(events),
   }
 }

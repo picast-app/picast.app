@@ -5,6 +5,7 @@ export interface Events extends HTMLElementEventMap {
   state: CustomEvent<PlayState>
   event: CustomEvent<AudioEvent>
   src: CustomEvent<string | null>
+  buffered: CustomEvent<TimeRange[]>
 }
 
 export default class Audio extends HTMLElement {
@@ -60,7 +61,7 @@ export default class Audio extends HTMLElement {
     listener: (event: Events[T]) => any,
     options?: boolean | AddEventListenerOptions
   ) {
-    const target = ['state', 'event', 'src'].includes(type)
+    const target = ['state', 'event', 'src', 'buffered'].includes(type)
       ? Object.getPrototypeOf(Object.getPrototypeOf(this))
       : this.audio
     const ctx = target === this.audio ? target : this
@@ -152,6 +153,12 @@ export default class Audio extends HTMLElement {
     waiting: () => this.state.transition('waiting'),
     pause: () => this.state.transition('paused'),
     emptied: () => this.state.transition('paused'),
+    progress: () => {
+      const ranges: TimeRange[] = [...Array(this.audio.buffered.length)].map(
+        (_, i) => [this.audio.buffered.start(i), this.audio.buffered.end(i)]
+      )
+      this.dispatch('buffered', ranges)
+    },
   }
 }
 
@@ -175,4 +182,4 @@ const events = [
   'volumechange',
   'waiting',
 ] as const
-type AudioEvent = typeof events[number]
+type AudioEvent = typeof events[number] | 'progress'

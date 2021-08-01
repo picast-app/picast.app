@@ -47,3 +47,5 @@ declare namespace Intl {
     public format(list: string[]): string
   }
 }
+
+type TimeRange = [start: number, end: number]

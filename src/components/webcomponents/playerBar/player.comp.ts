@@ -10,7 +10,6 @@ import { bindThis } from 'utils/proto'
 import { PlayState } from 'audio/state'
 import Job from 'utils/job'
 import { main } from 'workers'
-import FakeAudio from 'audio/fakeAudio'
 import serialAudio from 'audio/serialAdapter'
 import { history } from '@picast-app/router'
 
@@ -21,7 +20,6 @@ export default class Player extends Component {
   private mediaSession = new MediaSession(this)
   private interaction = new Interaction(this)
   private stateListener = new StateListener(this)
-  // private audio = new FakeAudio()
   public audioAdapter = serialAudio()
 
   constructor() {
@@ -36,6 +34,8 @@ export default class Player extends Component {
     this.select<HTMLAnchorElement>('.title').forEach(el =>
       el.addEventListener('click', this.onTitleClick)
     )
+
+    this.audioAdapter.addEventListener('buffered', this.onBufferedChange)
   }
 
   connectedCallback() {
@@ -125,15 +125,12 @@ export default class Player extends Component {
     this.setProgressAttr('duration', secs)
   }
 
-  // onBufferedChange() {
-  //   // const buffered = this.audioService.buffered
-  //   const buffered = this.audio.buffered
-  //   logger.info({ buffered })
-  //   for (const bar of this.progressBars) {
-  //     bar.buffered = buffered
-  //     bar.scheduleFrame()
-  //   }
-  // }
+  onBufferedChange(ranges: TimeRange[]) {
+    for (const bar of this.progressBars) {
+      bar.buffered = ranges
+      bar.scheduleFrame()
+    }
+  }
 
   onJump(seconds: number) {
     this.setProgressAttr('current', seconds)
