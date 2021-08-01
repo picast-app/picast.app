@@ -7,6 +7,7 @@ import { clamp } from 'utils/math'
 export type Events = {
   play: λ<[src: string, secs: number]>
   stop: λ<[]>
+  finished: λ<[id: EpisodeId]>
   playing: λ<[]>
   waiting: λ<[]>
   changeTrack: λ<[id: EpisodeId | null, src: string | null]>
@@ -83,6 +84,7 @@ export class VirtualPlayer extends EventEmitter<Events> {
     if (src && src !== this.src) return
     this.pos = seconds
     if (this.src) this.call('jump', seconds, this.src)
+    this.scheduleEndCB()
   }
 
   public jumpBy(seconds: number, src?: string) {
@@ -90,12 +92,15 @@ export class VirtualPlayer extends EventEmitter<Events> {
     this.pos = clamp(0, this.getPosition() + seconds, this.duration ?? Infinity)
     this.playStart &&= Date.now()
     if (this.src) this.call('jump', this.getPosition(), this.src)
+    this.scheduleEndCB()
   }
 
   public getPosition() {
     if (!this.playing || typeof this.pos !== 'number') return this.pos ?? 0
     return this.pos + ((Date.now() - this.playStart!) / 1000) * this.rate
   }
+
+  private endedToId?: any
 
   public start() {
     if (this.playing || this.waiting) return
@@ -112,6 +117,7 @@ export class VirtualPlayer extends EventEmitter<Events> {
     delete this.playStart
     this.waiting = false
     this.call('stop')
+    this.stopEndCB()
   }
 
   public isWaiting(seconds?: number) {
@@ -120,6 +126,7 @@ export class VirtualPlayer extends EventEmitter<Events> {
     delete this.playStart
     this.waiting = true
     this.call('waiting')
+    this.stopEndCB()
   }
 
   public isPlaying(secs: number, ts: number) {
@@ -128,6 +135,30 @@ export class VirtualPlayer extends EventEmitter<Events> {
     this.initialStart ??= ts
     this.waiting = false
     this.call('playing')
+    this.scheduleEndCB()
+  }
+
+  private scheduleEndCB() {
+    this.stopEndCB()
+    logger.assert(this.duration)
+    const id = (this.endedToId = setTimeout(() => {
+      this.onEnded()
+      clearTimeout(id)
+      if (this.endedToId === id) delete this.endedToId
+    }, (this.duration! - this.getPosition()) * 1000))
+  }
+
+  private stopEndCB() {
+    if ('endedToId' in this) {
+      clearTimeout(this.endedToId)
+      delete this.endedToId
+    }
+  }
+
+  private onEnded() {
+    logger.info(`${this.track?.join(',')} playback finished`)
+    this.stop()
+    if (this.track) this.call('finished', [...this.track])
   }
 
   public setDuration(secs: number, src: string) {

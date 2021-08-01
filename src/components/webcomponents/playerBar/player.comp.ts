@@ -21,7 +21,6 @@ export default class Player extends Component {
   private mediaSession = new MediaSession(this)
   private interaction = new Interaction(this)
   private stateListener = new StateListener(this)
-  // private audio = this.shadowRoot!.querySelector<Audio>('picast-audio')!
   // private audio = new FakeAudio()
   public audioAdapter = serialAudio()
 
@@ -30,15 +29,6 @@ export default class Player extends Component {
     bindThis(this)
 
     customElements.upgrade(this.shadowRoot!)
-
-    // this.audio.addEventListener('state', ({ detail }) =>
-    //   this.onAudioStateChange(detail)
-    // )
-    // this.audio.addEventListener('progress', this.onBufferedChange)
-
-    // this.audio.addEventListener('durationchange', () =>
-    //   this.setProgressAttr('duration', this.audio.duration)
-    // )
 
     this.audioAdapter.audio =
       this.shadowRoot!.querySelector<Audio>('picast-audio')!
@@ -88,10 +78,6 @@ export default class Player extends Component {
     if (v) this.removeAttribute('hidden')
     else this.setAttribute('hidden', '')
   }
-
-  // private currentTimeJob = new Job(30000, () => {
-  //   this.setProgressAttr('current', this.audio.time)
-  // })
 
   private readPlaybackPosition = new Job(30000, async () => {
     const pos = await main.player$getPosition()

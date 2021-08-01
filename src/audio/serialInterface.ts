@@ -31,6 +31,9 @@ export default function serialWrapper(player: VirtualPlayer) {
       emit({ type: 'PAUSE' })
       store.set('player.status', 'paused')
     },
+    finished: () => {
+      store.set('player.current', null)
+    },
     changeTrack: (id, src) => {
       store.set('player.current', id)
       if (src) emit({ type: 'SELECT', src, position: 0 })
@@ -50,10 +53,10 @@ export default function serialWrapper(player: VirtualPlayer) {
 
   forEach(handlers, (k, v) => player.addEventListener(k, v as any))
 
-  store.get('player.current').then(v => {
-    if (!v) return
-    player.setTrack(v)
-    player.jumpTo(0) //
+  store.get('player.current').then(async id => {
+    if (!id) return
+    player.setTrack(id)
+    player.jumpTo((await store.get('episodes.*', id[1]))?.currentTime ?? 0)
   })
 
   return {
