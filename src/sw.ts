@@ -1,6 +1,6 @@
 import 'polyfills'
 import { togglePrint } from 'utils/logger'
-import { asyncNullChain } from 'utils/function'
+import { asyncNullishChain } from 'utils/function'
 import { wrap, proxy, Wrapped } from 'fiber'
 import type { API as MainAPI } from 'main/main.worker'
 
@@ -116,7 +116,11 @@ const coverHandler = async (e: FetchEvent) => {
 
 const defaultHandler = async (e: FetchEvent) => await fetch(e.request)
 
-const handleFetch = asyncNullChain(staticHandler, coverHandler, defaultHandler)
+const handleFetch = asyncNullishChain(
+  staticHandler,
+  coverHandler,
+  defaultHandler
+)
 
 self.addEventListener('fetch', event => {
   if (/audio|video|font|style/.test(event.request.destination)) return
@@ -134,7 +138,7 @@ self.addEventListener('fetch', event => {
   )
     return
 
-  event.respondWith(handleFetch(event))
+  event.respondWith(handleFetch(event) as any)
 })
 
 async function cacheStatic() {

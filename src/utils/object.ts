@@ -1,4 +1,5 @@
-import * as str from 'utils/string'
+import { prefix as strPrefix } from 'snatchblock/string'
+import type { Prefix, StringCase } from 'snatchblock/types'
 
 type obj = Record<string | number | symbol, any>
 
@@ -73,12 +74,12 @@ export const omitNullish = <T extends obj>(
 export const prefix = <
   T extends obj,
   TP extends string,
-  C extends str.Case | void = void
+  C extends StringCase | void = void
 >(
   obj: T,
   prefix: TP,
   caseMod?: C
-): { [K in keyof T as str.Prefix<K extends string ? K : '?', TP, C>]: T[K] } =>
+): { [K in keyof T as Prefix<K extends string ? K : '?', TP, C>]: T[K] } =>
   Object.fromEntries(
-    Object.entries(obj).map(([k, v]) => [str.prefix(prefix, k, caseMod), v])
+    Object.entries(obj).map(([k, v]) => [strPrefix(prefix, k, caseMod), v])
   ) as any

@@ -1,5 +1,5 @@
 import EventEmitter from 'utils/event'
-import equals from 'utils/equal'
+import equals from 'snatchblock/equal'
 import { store } from 'store'
 import { bindThis } from 'utils/proto'
 import { clamp } from 'utils/math'

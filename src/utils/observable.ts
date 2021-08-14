@@ -1,5 +1,5 @@
 import { callAll } from './function'
-import equals from './equal'
+import equals from 'snatchblock/equal'
 
 export default class Observable<T> {
   constructor(private _value: T) {}

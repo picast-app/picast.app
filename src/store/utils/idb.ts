@@ -1,5 +1,5 @@
 import dbProm from 'main/idb/idb'
-import equal from 'utils/equal'
+import equal from 'snatchblock/equal'
 import { forEach } from 'utils/object'
 
 export const idbWriter =

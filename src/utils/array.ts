@@ -1,5 +1,4 @@
-export const wrapped = <T>(arr: T[], i: number): T =>
-  arr[i >= 0 ? i % arr.length : (arr.length + i) % arr.length]
+export * from 'snatchblock/list'
 
 export const min = <T>(list: T[], sel: (el: T) => number): T => {
   if (list.length <= 1) return list[0]
@@ -44,39 +43,6 @@ export const remove = <T>(arr: T[], v: T) => {
 
 export const last = <T extends unknown[]>(arr: T) =>
   arr.slice(-1)[0] as T extends [...unknown[], infer U] ? U : undefined
-
-type Zip<T extends unknown[][]> = {
-  [I in keyof T]: T[I] extends (infer U)[] ? U : never
-}[]
-
-export const zip = <T extends unknown[][]>(...lists: T): Zip<T> =>
-  [...Array(Math.min(...lists.map(({ length }) => length)))].map((_, i) =>
-    lists.map(l => l[i])
-  ) as any
-
-export const zipWith = <T extends unknown[][], U>(
-  zipper: (...args: Zip<T>[0]) => U,
-  ...lists: T
-): U[] =>
-  [...Array(Math.min(...lists.map(({ length }) => length)))].map((_, i) =>
-    zipper(...(lists.map(l => l[i]) as any))
-  )
-
-type Unzip<T extends unknown[]> = { [I in keyof T]: T[I][] }
-
-export const unzip = <T extends unknown[]>(...zipped: T[]): Unzip<T> =>
-  zipped.reduce((a, c) => c.map((v, i) => [...(a[i] ?? []), v]), [] as any)
-
-export const unzipWith = <
-  T extends unknown[],
-  U extends {
-    [I in keyof T]: λ<[cur: T[I], acc: any]>
-  }
->(
-  zipped: T[],
-  ...unzippers: U
-): { [I in keyof U]: ReturnType<U[I]> } =>
-  zipped.reduce((a, c) => c.map((v, i) => unzippers[i](v, a[i])), [] as any)
 
 export const nestMap = <T extends Nested<any>, U>(
   list: T,

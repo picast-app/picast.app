@@ -4,7 +4,7 @@ import { Screen } from 'components/structure'
 import styled from 'styled-components'
 import type AudioComp from 'components/webcomponents/audio.comp'
 import { bundleSync } from 'utils/function'
-import { wrapped } from 'utils/array'
+import { atWrap } from 'utils/array'
 
 const files = [
   'https://traffic.megaphone.fm/VMP4458584936.mp3',
@@ -52,7 +52,7 @@ export default function Audio() {
           set
         </button>
         <button
-          onClick={() => setInput(wrapped(files, files.indexOf(input) + 1))}
+          onClick={() => setInput(atWrap(files, files.indexOf(input) + 1))}
         >
           ↓
         </button>

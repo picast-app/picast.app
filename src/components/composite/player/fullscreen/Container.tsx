@@ -5,7 +5,7 @@ import { Queue, EpisodeInfo } from 'components/composite'
 import { useEvent, useMatchMedia, useStateX } from 'hooks'
 import { desktop } from 'styles/responsive'
 import { scrollTo } from 'utils/animate'
-import { memoize } from 'utils/cache'
+import memoize from 'snatchblock/memoize'
 import { history, Link, useLocation, location } from '@picast-app/router'
 import {
   Container,

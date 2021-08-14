@@ -1,6 +1,6 @@
 import type { Store } from 'store'
 import type { Podcast } from 'store/state'
-import { memoize } from 'utils/cache'
+import memoize from 'snatchblock/memoize'
 
 export default (store: Store) => {
   store.handler('library')

@@ -13,11 +13,8 @@ const endpoint = new Endpoint({
 const connect = () =>
   browserWS(process.env.REACT_APP_WS!).connect<WSAPI>(endpoint)
 
-export const wsApi: Pick<
-  ReturnType<typeof connect>,
-  'call' | 'notify'
-> = process.env.DISABLE_WS
-  ? { async notify() {}, call: () => Promise.resolve() as any }
+export const wsApi: Partial<ReturnType<typeof connect>> = process.env.DISABLE_WS
+  ? {}
   : connect()
 
 export default endpoint

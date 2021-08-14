@@ -1,5 +1,5 @@
 import { clamp, vec } from 'utils/math'
-import { wrapped } from 'utils/array'
+import { atWrap } from 'utils/array'
 
 type Vertex = vec.Vec2D
 type Path = { path: Vertex[]; rounded?: Record<number, number> }
@@ -11,10 +11,10 @@ export const path = ({ path, rounded = {} }: Path): string => {
   let trailingQ = ''
 
   for (let i = 0; i < verts.length; i++) {
-    let next = wrapped(org, i + 1)
-    let last = wrapped(org, i - 1)
-    if (vec.equal(verts[i], next)) next = wrapped(org, i + 2)
-    if (vec.equal(verts[i], last)) last = wrapped(org, i - 2)
+    let next = atWrap(org, i + 1)
+    let last = atWrap(org, i - 1)
+    if (vec.equal(verts[i], next)) next = atWrap(org, i + 2)
+    if (vec.equal(verts[i], last)) last = atWrap(org, i - 2)
 
     let Q = ''
     if (i in rounded) {

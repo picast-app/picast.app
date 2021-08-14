@@ -3,7 +3,7 @@ import { mutate, pick, paths } from 'utils/path'
 import type { Store } from 'store'
 import type { Flatten, Schema } from 'store/core/types'
 import { Synchronized } from './tabSync'
-import equals from 'utils/equal'
+import equals from 'snatchblock/equal'
 
 export const _ = Symbol('deferred')
 

@@ -1,4 +1,4 @@
-import { oneOf } from 'utils/equal'
+import oneOf from 'snatchblock/oneOf'
 import { bound } from 'utils/function'
 import { mapValues, pick } from 'utils/object'
 import { unzipWith } from 'utils/array'
