@@ -8,3 +8,9 @@ docs
 src/types
 tmp
 /*.txt
+src/**/*.md
+/*.*profile
+/trace*
+cypress*
+benchmark
+src/**/*.txt

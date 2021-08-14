@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { useChanged } from 'utils/hooks'
+import { useChanged } from 'hooks'
 import styled from 'styled-components'
 import { interpolated, Interpolated, translate, scale } from 'utils/svgPath'
 import { vec, equiTriBoxRatio } from 'utils/math'
@@ -33,7 +33,11 @@ export function PlayButton({ playing, onPress, round = false }: Props) {
   }, [playing, paths])
 
   return (
-    <Button onClick={onPress} data-wrap={round ? 'round' : 'plain'}>
+    <Button
+      onClick={onPress}
+      data-wrap={round ? 'round' : 'plain'}
+      title={playing ? 'pause' : 'play'}
+    >
       <SVG viewBox="0 0 100 100" ref={svgRef}>
         {round && <circle cx="50" cy="50" r="50" />}
         <path d={paths[0](initial)} id="pbl" />

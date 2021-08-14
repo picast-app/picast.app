@@ -1,17 +1,18 @@
 import React from 'react'
 import styled from 'styled-components'
-import { useAppState } from 'utils/hooks'
+// import { useAppState } from 'hooks'
 import { EpisodeStrip } from 'components/composite'
 
 export function Queue() {
-  const [queue] = useAppState<EpisodeId[]>('queue')
+  // const [queue] = useAppState<EpisodeId[]>('queue')
+  const queue: any[] = []
 
   if (!queue) return null
   return (
     <S.Queue>
       {queue.map(id => (
         <S.Entry key={id[1]}>
-          <EpisodeStrip id={id} artwork clamp />
+          <EpisodeStrip id={id[1]} artwork clamp />
         </S.Entry>
       ))}
     </S.Queue>

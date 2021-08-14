@@ -1,28 +1,42 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import Appbar from 'components/Appbar'
-import { Icon } from 'components/atoms'
 import { ShowCard } from 'components/composite'
 import { Screen } from 'components/structure'
 import Glow from './library/Glow'
-import { useSubscriptions, useMatchMedia, useTheme } from 'utils/hooks'
+import { useMatchMedia, useTheme, useStateX } from 'hooks'
 import { desktop } from 'styles/responsive'
 import { snack } from 'utils/notification'
 import { main } from 'workers'
 import { cardPadd, mobileQueries, desktopQueries } from './library/grid'
 
 export default function Library() {
-  const [subs] = useSubscriptions()
-  const [loading, setLoading] = useState(false)
   const isDesktop = useMatchMedia(desktop)
   const theme = useTheme()
-  const [fullscreen, toggleFullscreen] = useFullscreen()
+  const [pull, loading] = usePullSubs()
+  const [library] = useStateX('library')
+
+  return (
+    <Screen refreshAction={pull} loading={loading}>
+      <Appbar title="Podcasts" scrollOut />
+      <S.Grid>
+        {library?.list.map(pod => (
+          <ShowCard podcast={pod} key={pod.id} eager />
+        ))}
+      </S.Grid>
+      {isDesktop && (theme !== 'light' || !library?.list?.length) && <Glow />}
+    </Screen>
+  )
+}
+
+function usePullSubs() {
+  const [loading, setLoading] = useState(false)
 
   async function sync() {
     setLoading(true)
     const subs = await main.pullSubscriptions()
     if (!subs) {
-      snack({ text: 'not logged in' })
+      snack({ text: 'not signed in' })
     } else {
       const { added, removed } = subs
       const msg =
@@ -47,41 +61,7 @@ export default function Library() {
     setLoading(false)
   }
 
-  return (
-    <Screen refreshAction={sync} loading={loading}>
-      <Appbar title="Podcasts" scrollOut>
-        <S.FSWrap>
-          <Icon
-            icon={fullscreen ? 'minimize' : 'maximize'}
-            label="fullscreen"
-            onClick={toggleFullscreen}
-          ></Icon>
-        </S.FSWrap>
-      </Appbar>
-      <S.Grid>
-        {subs?.map(podcast => (
-          <ShowCard podcast={podcast} key={podcast.id} eager />
-        ))}
-      </S.Grid>
-      {isDesktop && (theme !== 'light' || !subs?.length) && <Glow />}
-    </Screen>
-  )
-}
-
-function useFullscreen() {
-  const [fullscreen, setFullscreen] = useState(!!document.fullscreenElement)
-
-  const toggle = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen()
-      setFullscreen(true)
-    } else {
-      document.exitFullscreen?.()
-      setFullscreen(true)
-    }
-  }
-
-  return [fullscreen, toggle] as const
+  return [sync, loading] as const
 }
 
 const queries = [...mobileQueries, ...desktopQueries].map(

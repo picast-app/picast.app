@@ -4,7 +4,7 @@ import { Icon, Input } from 'components/atoms'
 import { Screen, Dialog } from 'components/structure'
 import Appbar from 'components/Appbar'
 import { main } from 'workers'
-import { useAppState } from 'utils/hooks'
+import { useStateX } from 'hooks/store'
 import * as wp from 'utils/webpush'
 import { mobile } from 'styles/responsive'
 import {
@@ -16,7 +16,8 @@ import {
 } from '@picast-app/router'
 
 const Signin: React.FC<RouteProps> = ({ location }) => {
-  const [signedIn, signingIn] = useOAuthSignIn()
+  const [user] = useStateX('user')
+  const loading = useOAuthSignIn(user === undefined ? undefined : !!user)
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [passConfirm, setPassConfirm] = useState('')
@@ -26,7 +27,6 @@ const Signin: React.FC<RouteProps> = ({ location }) => {
 
   async function signIn() {
     const response = await main.signInPassword(name, password)
-    logger.info(response)
     if (response.reason === 'unknown_ident') history.push('/signup')
     if (response.reason === 'incorrect_auth') {
       const input = document.getElementById('in-p') as HTMLInputElement
@@ -38,13 +38,12 @@ const Signin: React.FC<RouteProps> = ({ location }) => {
   async function signUp() {
     if (password !== passConfirm || !isSignUp) return
     const response = await main.signUpPassword(name, password)
-    logger.info(response)
     if (response.reason === 'duplicate_ident') setInUse(true)
   }
 
-  if (signedIn) return <Redirect to="/" />
+  if (user) return <Redirect to="/" />
   return (
-    <Screen padd loading={signingIn}>
+    <Screen padd loading={loading}>
       <Appbar title={title} {...(isSignUp && { back: '/signin' })} />
       <MainScreen
         {...{
@@ -65,7 +64,7 @@ const Signin: React.FC<RouteProps> = ({ location }) => {
         signup={isSignUp}
         onSubmit={isSignUp ? signUp : signIn}
       />
-      {signingIn && <S.Overlay />}
+      {loading && <S.Overlay />}
     </Screen>
   )
 }
@@ -206,20 +205,14 @@ function PasswordSignin({
   )
 }
 
-function useOAuthSignIn() {
+function useOAuthSignIn(signedIn?: boolean) {
   const [inProgress, setInProgress] = useState(false)
   const { path, hash } = useLocation()
-  const [stateSignedIn] = useAppState<boolean>('user.signedIn')
-  const [signedIn, setSignedIn] = useState(stateSignedIn ?? false)
-  useEffect(() => {
-    if (typeof stateSignedIn === 'boolean') setSignedIn(stateSignedIn)
-  }, [stateSignedIn])
-
   const accessToken = hash.match(/access_token=([^&]+)/)?.[1]
   if (accessToken) history.push(path, { replace: true })
 
   useEffect(() => {
-    if (!accessToken || inProgress || signedIn) return
+    if (!accessToken || inProgress) return
 
     setInProgress(true)
     signIn()
@@ -228,11 +221,10 @@ function useOAuthSignIn() {
       if (!accessToken) throw Error()
       await main.signIn({ accessToken }, await wp.getSubscription(true))
       setInProgress(false)
-      setSignedIn(true)
     }
   }, [accessToken, inProgress, signedIn])
 
-  return [signedIn, inProgress]
+  return inProgress
 }
 
 function googleURL() {

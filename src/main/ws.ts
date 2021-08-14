@@ -1,5 +1,7 @@
 import Endpoint from 'typerpc'
 import browserWS from 'typerpc/transport/ws/browser'
+import { store } from 'store'
+import epStore from 'main/episodeStore'
 import type { Schema as WSAPI } from 'types/ws'
 
 const endpoint = new Endpoint({
@@ -11,11 +13,28 @@ const endpoint = new Endpoint({
 const connect = () =>
   browserWS(process.env.REACT_APP_WS!).connect<WSAPI>(endpoint)
 
-export const wsApi: Pick<
-  ReturnType<typeof connect>,
-  'call' | 'notify'
-> = process.env.DISABLE_WS
-  ? { async notify() {}, call: () => Promise.resolve() as any }
+export const wsApi: Partial<ReturnType<typeof connect>> = process.env.DISABLE_WS
+  ? {}
   : connect()
 
 export default endpoint
+
+endpoint.on('episodeAdded', async ({ podcast, episodes }) => {
+  const formatted = episodes.map(({ url, published, ...rest }: any) => ({
+    file: url,
+    published: new Date(published).getTime(),
+    podcast,
+    ...rest,
+  }))
+  ;(await (await epStore).getPodcast(podcast)).addEpisodes(formatted, true)
+})
+
+endpoint.on('hasAllEpisodes', ({ podcast, total }) => {
+  logger.info('has all episodes', { podcast, total })
+})
+
+endpoint.on('hasCovers', ({ id, covers, palette }) => {
+  logger.info(`got covers for ${id}`, { covers, palette })
+  if (covers) store.set('podcasts.*.covers', covers, {}, id)
+  if (palette) store.set('podcasts.*.palette', palette)
+})

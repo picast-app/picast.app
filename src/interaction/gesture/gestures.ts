@@ -1,6 +1,6 @@
-import { state } from 'workers'
 import Registry, { TouchRegistryEvent } from './registry'
 import EventManager, { EventDef } from 'utils/event'
+import store from 'store/uiThread/api'
 
 const registry = new Registry()
 
@@ -145,7 +145,7 @@ export class GestureController<T extends Gesture> extends EventManager<{
 }
 
 let DEBUG = false
-state<boolean>('debug.touch', v => {
+store.listenX('settings.debug.showTouchPaths', v => {
   DEBUG = !!v
   GestureController.active.forEach(v => v.style())
 })

@@ -13,7 +13,7 @@ export const Progress = ({ active = true }: Props) => {
   useEffect(() => {
     clearTimeout(toId.current)
     if (active) setVisible(true)
-    else toId.current = setTimeout(() => setVisible(false), 500)
+    else toId.current = window.setTimeout(() => setVisible(false), 500)
   }, [active])
 
   if (!visible) return null

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Screen } from 'components/structure'
 import DocTree from 'components/DocTree'
-import { useComputed, useAPICall } from 'utils/hooks'
+import { useComputed, useAPICall } from 'hooks'
 
 export default function FeedView() {
   const url = location.href.slice(`${location.origin}/feedview/`.length)

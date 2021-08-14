@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { history } from '@picast-app/router'
 import { mobile, desktop } from 'styles/responsive'
-import { useMatchMedia } from 'utils/hooks'
+import { useMatchMedia } from 'hooks'
 import { useTransitionIn, useTransitionOut, useSwipe } from './interaction'
 
 export function Container({ children }: any) {

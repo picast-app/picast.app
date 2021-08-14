@@ -2,10 +2,6 @@ type ReactProps<
   T extends (...args: any[]) => JSX.Element | import('react').Component | null
 > = Parameters<T>[0]
 
-type PromiseType<T> = T extends PromiseLike<infer I> ? I : T
-
-type PickOpt<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
-
 type RGBA = number
 type RGBA_ = [number, number, number, number]
 
@@ -21,7 +17,7 @@ type EchoSnackEvent = CustomEvent<{
 }>
 
 type EpisodeId = [podcast: string, episode: string]
-type Podcast = import('main/store/types').Podcast
+type Podcast = import('store/state').Podcast
 type EpisodeMin = {
   id: string
   title: string
@@ -51,3 +47,5 @@ declare namespace Intl {
     public format(list: string[]): string
   }
 }
+
+type TimeRange = [start: number, end: number]

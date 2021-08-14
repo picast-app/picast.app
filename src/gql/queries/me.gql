@@ -1,6 +1,6 @@
 #import "../fragments/user.gql"
 
-query Me($known: [ID!]) {
+query Me($known: [ID!], $limit: Int = 50) {
   me {
     ...MeInitial
   }

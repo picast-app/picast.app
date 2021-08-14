@@ -17,6 +17,7 @@ type Props = {
   actions?: JSX.Element[]
   disabled?: boolean
   autoComplete?: string
+  autoFocus?: boolean
 }
 
 export function Input({

@@ -1,15 +1,17 @@
 import Service from './base'
+import { main } from 'workers'
+import store from 'store/uiThread/api'
 
 const ms = navigator.mediaSession
 
 export default class Session extends Service {
   public enable() {
     if (!ms) return
-    ms.setActionHandler('play', () => this.player.resume())
-    ms.setActionHandler('pause', () => this.player.pause())
-    ms.setActionHandler('stop', () => this.player.pause())
-    ms.setActionHandler('nexttrack', () => this.player.jump(30, true))
-    ms.setActionHandler('previoustrack', () => this.player.jump(-15, true))
+    ms.setActionHandler('play', main.player$start)
+    ms.setActionHandler('pause', main.player$stop)
+    // ms.setActionHandler('stop', () => main.playerPause())
+    // ms.setActionHandler('nexttrack', () => main.playerJump(30, true))
+    // ms.setActionHandler('previoustrack', () => main.playerJump(-15, true))
   }
 
   public disable() {
@@ -22,20 +24,29 @@ export default class Session extends Service {
     ms.setPositionState?.()
   }
 
-  public showInfo() {
-    if (!ms) return
-    const [podcast, episode] = this.player.current ?? []
-    if (!podcast) throw Error("couldn't set ms info, podcast missing")
-    if (!episode) throw Error("couldn't set ms info, episode missing")
+  public async showInfo(id: EpisodeId) {
+    if (!ms || !id) return
+
+    const [podcast, episode] = await Promise.all([
+      store.getX('podcasts.*', id[0]),
+      store.getX('episodes.*', id[1]),
+    ])
+    if (!podcast || !episode) throw Error("couldn't fetch ms info")
     if (ms.metadata?.title === episode.title) return
 
+    logger.info({ podcast, episode })
+
+    // const [podcast, episode] = this.player.current ?? []
+    // if (!podcast) throw Error("couldn't set ms info, podcast missing")
+    // if (!episode) throw Error("couldn't set ms info, episode missing")
+    //
     const meta = new MediaMetadata({
       title: episode.title,
       artist: podcast.author,
       album: podcast.title,
       artwork: this.formatArtwork(podcast.covers),
     })
-    logger.info('set media session metadata', meta)
+    // logger.info('set media session metadata', meta)
     ms.metadata = meta
   }
 

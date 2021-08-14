@@ -10,21 +10,22 @@ import {
   Icon,
 } from 'components/atoms'
 import { ShowCard } from 'components/composite'
-import { useComputed } from 'utils/hooks'
+import { useComputed } from 'hooks'
 
 export default function Components() {
   const [src, setSrc] = useState(
     'https://cdn.changelog.com/uploads/covers/the-changelog-original.png'
   )
-  const podcast = useComputed(src, (artwork): ReactProps<
-    typeof ShowCard
-  >['podcast'] => ({
-    id: 'bmJ0',
-    title: 'The Changelog: Software Dev & Open Source',
-    author: 'Changelog Media',
-    artwork,
-    covers: [],
-  }))
+  const podcast = useComputed(
+    src,
+    (artwork): ReactProps<typeof ShowCard>['podcast'] => ({
+      id: 'bmJ0',
+      title: 'The Changelog: Software Dev & Open Source',
+      author: 'Changelog Media',
+      artwork,
+      covers: [],
+    })
+  )
   const [playing, setPlaying] = useState(false)
 
   return (

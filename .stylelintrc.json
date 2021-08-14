@@ -3,7 +3,9 @@
     [
       "stylelint-processor-styled-components",
       {
-        "ignoreFiles": ["**/*.{css,scss}"]
+        "ignoreFiles": [
+          "**/*.{css,scss}"
+        ]
       }
     ]
   ],
@@ -27,10 +29,13 @@
     "comment-empty-line-before": null,
     "no-eol-whitespace": null,
     "media-feature-name-no-unknown": null,
+    "indentation": null,
     "length-zero-no-unit": [
       true,
       {
-        "ignore": ["custom-properties"]
+        "ignore": [
+          "custom-properties"
+        ]
       }
     ]
   }

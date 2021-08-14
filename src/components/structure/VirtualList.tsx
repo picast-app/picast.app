@@ -9,7 +9,7 @@ import React, {
   memo,
 } from 'react'
 import ReactDOM from 'react-dom'
-import { useMatchMedia, useWindowDimensions, useValueRef } from 'utils/hooks'
+import { useMatchMedia, useWindowDimensions, useValueRef } from 'hooks'
 import styled from 'styled-components'
 import { desktop } from 'styles/responsive'
 import { scrollParent } from 'utils/dom'
@@ -28,7 +28,7 @@ function _VirtualList<T>({ length, itemProps, children: item }: Props<T>) {
   const itemHeight = isDesktop ? ITEM_HEIGHT_DESKTOP : ITEM_HEIGHT_MOBILE
   const ihRef = useRef(itemHeight)
   ihRef.current = itemHeight
-  const numVisible = Math.ceil((height / itemHeight) * 3)
+  const numVisible = Math.min(Math.ceil((height / itemHeight) * 3), length)
   const total = useValueRef(length)
   const [ol, setOl] = useState<HTMLOListElement | null>(null)
   const offTop = useValueRef(
@@ -36,10 +36,10 @@ function _VirtualList<T>({ length, itemProps, children: item }: Props<T>) {
     useMemo(() => ol?.offsetTop! / itemHeight + numVisible / 4, [ol, isDesktop])
   )
 
-  const createChild = useCallback(i => createElement(item, itemProps?.(i)), [
-    item,
-    itemProps,
-  ])
+  const createChild = useCallback(
+    i => createElement(item, itemProps?.(i)),
+    [item, itemProps]
+  )
 
   const slots = useRef(new WeakMap<HTMLElement, [number, JSX.Element]>())
 

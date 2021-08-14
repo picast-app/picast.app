@@ -1,12 +1,13 @@
 import content from './template.html'
 import Component from '../base.comp'
-import debounce from 'lodash/debounce'
+import { debounce } from 'utils/function'
 import { durAttr, formatDuration } from 'utils/time'
 import { desktop } from 'styles/responsive'
 import { bindThis } from 'utils/proto'
 import * as cl from 'utils/css/color'
 import { clamp } from 'utils/math'
 import { easeOutSine, easeInOutCubic } from 'utils/ease'
+import { DelayMachine } from 'utils/state'
 
 export default class Progress extends Component {
   private readonly canvas: HTMLCanvasElement
@@ -18,7 +19,7 @@ export default class Progress extends Component {
   private current?: number
   private playing = false
   private playStart?: number
-  private loading = false
+  private loading = this.makeLoadState()
   private loadStart?: number
   private loadToggle?: number
   private dragX?: number
@@ -46,12 +47,19 @@ export default class Progress extends Component {
   private get progress(): number {
     return (this.current ?? 0) / this.duration!
   }
+  private get compProgress(): number {
+    return (
+      (this.progress * this.duration! +
+        (performance.now() - this.playStart!) / 1000) /
+      this.duration!
+    )
+  }
   private get remaining(): number {
     return this.duration! - (this.current ?? 0)
   }
 
   private readonly resizeObserver = new ResizeObserver(
-    debounce(this.resize.bind(this), 100, { leading: false, trailing: true })
+    debounce(this.resize.bind(this), 100)
   )
 
   constructor() {
@@ -95,6 +103,7 @@ export default class Progress extends Component {
   }
 
   attributeChangedCallback(name: string, old: string, current: string) {
+    if (old === current) return
     switch (name) {
       case 'current':
         this.current = parseFloat(current)
@@ -108,12 +117,10 @@ export default class Progress extends Component {
       case 'playing':
         this.playing = current === 'true'
         if (this.playing) this.playStart = performance.now()
-
+        else this.current = this.compProgress * this.duration!
         break
       case 'loading':
-        this.loading = /true/i.test(current)
-        this.loadToggle = performance.now()
-        if (this.loading) this.loadStart = this.loadToggle
+        this.loading.transition(/true/i.test(current))
         break
       case 'theme':
         this.setColors(current as any)
@@ -165,9 +172,7 @@ export default class Progress extends Component {
         ? this.dragProgress
         : !this.playing
         ? this.progress
-        : (this.progress * this.duration! +
-            (performance.now() - this.playStart!) / 1000) /
-          this.duration!
+        : this.compProgress
 
     progress = clamp(0, progress, 1)
 
@@ -197,9 +202,9 @@ export default class Progress extends Component {
     let loadTrans = this.loadToggle
       ? Math.min((performance.now() - this.loadToggle!) / 500, 1)
       : 1
-    if (!this.loading) loadTrans = 1 - loadTrans
+    if (!this.loading.current) loadTrans = 1 - loadTrans
     if (loadTrans > 0 && loadTrans < 1) loadTrans = easeInOutCubic(loadTrans)
-    if (!this.loading && loadTrans === 0) delete this.loadToggle
+    if (!this.loading.current && loadTrans === 0) delete this.loadToggle
 
     if (loadTrans < 1) {
       this.ctx.globalAlpha = 1 - loadTrans
@@ -368,6 +373,7 @@ export default class Progress extends Component {
     this.dragging = false
     const progress = this.dragProgress * this.duration!
     this.onDragCancel()
+    this.setAttribute('current', progress as any)
     this.dispatchEvent(new CustomEvent('jump', { detail: progress }))
 
     const fsWrap = this.closest<HTMLElement>('.fs-sec-wrap')
@@ -413,5 +419,20 @@ export default class Progress extends Component {
     this._labelRemains = n
     this.tsRemains.textContent = formatDuration(n)
     this.tsRemains.setAttribute('datetime', durAttr(n))
+  }
+
+  private makeLoadState() {
+    const state = new DelayMachine<boolean>(false)
+    state.addTransition(false, true, 100)
+    state.addTransition(true, false)
+
+    state.onChange(loading => {
+      this.loadToggle = performance.now()
+      if (!loading) return
+      this.loadStart = this.loadToggle
+      this.scheduleFrame()
+    })
+
+    return state
   }
 }

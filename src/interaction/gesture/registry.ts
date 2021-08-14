@@ -1,5 +1,5 @@
 import * as debug from './debug'
-import { state } from 'workers'
+import store from 'store/uiThread/api'
 import EventManager from 'utils/event'
 import { bindThis } from 'utils/proto'
 
@@ -110,7 +110,7 @@ export class TouchRegistryEvent extends EventManager<
   }
 }
 
-state<boolean>('debug.touch', v => {
+store.listenX('settings.debug.showTouchPaths', v => {
   if (v) {
     debug.createCanvas()
     TouchRegistry.render = debug.render

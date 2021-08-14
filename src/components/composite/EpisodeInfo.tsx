@@ -4,7 +4,7 @@ import { Link } from '@picast-app/router'
 import { Shownotes } from 'components/composite'
 import { desktop, mobile } from 'styles/responsive'
 import { ignore } from 'interaction/gesture/gestures'
-import type { Podcast, Episode } from 'main/store/types'
+import type { Podcast, Episode } from 'store/state'
 
 interface Props {
   podcast: Podcast
@@ -51,7 +51,7 @@ export function EpisodeInfo({ podcast, episode, touchCtrl }: Props) {
             <Link to={`/show/${podcast.id}`}>{podcast.title}</Link>
           </address>
           <S.NoteContainer>
-            <Shownotes>{episode.shownotes}</Shownotes>
+            <Shownotes id={[podcast.id, episode.id]} />
           </S.NoteContainer>
         </>
       )}

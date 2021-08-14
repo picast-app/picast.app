@@ -28,13 +28,12 @@ export default class Interaction extends Service {
   enable() {
     this.playerHeight = this.player.offsetHeight
     this.mainnav = document.getElementById('mainnav')!
-    this.fullscreen = this.player.shadowRoot!.querySelector<HTMLElement>(
-      '.fullscreen'
-    )!
+    this.fullscreen =
+      this.player.shadowRoot!.querySelector<HTMLElement>('.fullscreen')!
 
-    const container = (this.player.shadowRoot!.getElementById(
-      'touchbox'
-    ) as HTMLTemplateElement).content
+    const container = (
+      this.player.shadowRoot!.getElementById('touchbox') as HTMLTemplateElement
+    ).content
     this.touchBoxes.push(container.getElementById('closed')!)
     this.touchBoxes.push(container.getElementById('extended')!)
 
@@ -169,11 +168,11 @@ export default class Interaction extends Service {
   }
 
   private showEpisodeInfo() {
-    if (!this.player.current) return
-    const [{ id: pod }, { id: ep }] = this.player.current
-    history.push({
-      search: SearchParams.merge({ info: `${pod}-${ep}` }, location.search),
-    })
+    // if (!this.player.current) return
+    // const [{ id: pod }, { id: ep }] = this.player.current
+    // history.push({
+    //   search: SearchParams.merge({ info: `${pod}-${ep}` }, location.search),
+    // })
   }
 
   private onPlayerClick(e: PointerEvent) {

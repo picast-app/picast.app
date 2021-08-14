@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { Input } from './atoms'
-import { useDebouncedInputCall } from 'utils/hooks'
+import { useDebouncedInputCall } from 'hooks'
 import { useLocation, history } from '@picast-app/router'
 
 type Props = {
@@ -38,6 +38,7 @@ export default function Search({ visual }: Props) {
       blend={!visual}
       style={style}
       type="search"
+      autoFocus
     />
   )
 }

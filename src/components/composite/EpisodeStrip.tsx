@@ -3,12 +3,15 @@ import styled from 'styled-components'
 import { Icon, Artwork } from 'components/atoms'
 import { Link } from '@picast-app/router'
 import { main } from 'workers'
-import type { EpisodeBase } from 'main/store/types'
-import { proxy } from 'comlink'
+import { proxy } from 'fiber'
 import { mobile } from 'styles/responsive'
 import { center, transition } from 'styles/mixin'
-import { useArtwork } from 'utils/hooks'
-import { useEpisodeState, useEpisodeToggle } from 'utils/playerHooks'
+import { useConstant, useArtwork, useIsEpisodePlaying } from 'hooks'
+import store from 'store/uiThread/api'
+import type { Episode } from 'store/state'
+import { asyncCB } from 'utils/promise'
+import { release } from 'fiber/wellKnown'
+import { bundle } from 'utils/function'
 
 type Props = (
   | {
@@ -16,96 +19,94 @@ type Props = (
       index: number
     }
   | { id: EpisodeId }
-) & { artwork?: boolean; clamp?: boolean }
+) &
+  Omit<StripProps, 'episode'>
 
-export function EpisodeStrip({ artwork, clamp, ...props }: Props) {
-  const episode = useEpisode(props)
-
-  if (!episode) return null
-  return (
-    <S.Strip>
-      <Link
-        to={`?info=${episode.podcast}-${episode.id}`}
-        onAuxClick={e => e.preventDefault()}
-      >
-        {artwork && episode?.podcast && <Thumbnail podcast={episode.podcast} />}
-        <S.Title data-style={clamp ? 'clamp' : undefined}>
-          {episode.title}
-        </S.Title>
-        <Published>{episode.published}</Published>
-        <Duration>{episode.duration}</Duration>
-        <S.Actions
-          onClick={e => {
-            e.preventDefault()
-            e.stopPropagation()
-          }}
-        >
-          <PlayButton
-            id={[episode.podcast, episode.id] as any}
-            progress={episode.relProg ?? 0}
-          />
-        </S.Actions>
-      </Link>
-    </S.Strip>
+export function EpisodeStrip(props: Props) {
+  const episode = useConstant(
+    'id' in props ? useIdEpisode : useFeedEpisode,
+    // @ts-ignore
+    ...('id' in props ? [props.id] : [props.feed, props.index])
   )
+  if (!episode) return null
+  return <Strip episode={episode} {...props} key={episode.id} />
 }
 
-function Thumbnail({ podcast }: { podcast: string }) {
+type StripProps = {
+  episode: Episode
+  artwork?: boolean
+  clamp?: boolean
+}
+
+const Strip: React.FC<StripProps> = ({ episode, artwork, clamp }) => (
+  <S.Strip>
+    <Link to={`?info=${episode.podcast}-${episode.id}`}>
+      {artwork && <Thumbnail podcast={episode.podcast} />}
+      <S.Title data-style={clamp ? 'clamp' : undefined}>
+        {episode.title}
+      </S.Title>
+      <Published>{episode.published}</Published>
+      <Duration>{episode.duration}</Duration>
+      <S.Actions
+        onClick={e => {
+          e.preventDefault()
+          e.stopPropagation()
+        }}
+      >
+        <PlayButton
+          id={[episode.podcast, episode.id] as any}
+          progress={episode.relProg ?? 0}
+          duration={episode.duration || 1000}
+        />
+      </S.Actions>
+    </Link>
+  </S.Strip>
+)
+
+function Thumbnail({ podcast }: { podcast?: string }) {
   const covers = useArtwork(podcast)
   return <Artwork covers={covers} />
 }
 
-function useEpisode(
-  props: { feed: string; index: number } | { id: EpisodeId }
-) {
-  const [episode, setEpisode] = useState<EpisodeBase>()
+function useIdEpisode(id: string) {
+  const [episode, setEpisode] = useState<Episode | null>()
+  useEffect(() => store.listenX('episodes.*', setEpisode, id), [id])
+  return episode
+}
 
-  const { feed, index, id: [pod, ep] = [] } = props as any
+function useFeedEpisode(feed: string, index: number) {
+  const [episode, setEpisode] = useState<Episode | null>()
+
   useEffect(() => {
-    let cancelled = false
-    const cb = (v: EpisodeBase | null) => {
-      if (!cancelled && v) setEpisode(v)
-    }
-
-    const cancel =
-      'feed' in props
-        ? getEpisodeFromFeed(props, cb)
-        : getEpisodeFromId(props, cb)
-
-    return () => {
-      cancelled = true
-      if (typeof cancel === 'function') cancel()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [feed, index, pod, ep])
+    const cb = proxy(setEpisode)
+    const cancel = bundle(asyncCB(main.feedItem(feed, index, cb)), cb[release])
+    return () => void cancel()
+  }, [feed, index])
 
   return episode
 }
 
-type EpGetter<T> = (props: T, cb: (v: EpisodeBase | null) => void) => any
-
-const getEpisodeFromFeed: EpGetter<{ feed: string; index: number }> = (
-  { feed, index },
-  cb
-) => {
-  const unsub = new Promise<() => void>(async res => {
-    res((await main.feedItem(feed, index, proxy(cb))) as any)
-  })
-  return async () => (await unsub)?.()
-}
-
-const getEpisodeFromId: EpGetter<{ id: EpisodeId }> = async ({ id }, cb) =>
-  cb(await main.episode(id))
-
-function PlayButton({ id, progress }: { id: EpisodeId; progress: number }) {
-  const [playing, toggle] = useEpisodeToggle(id)
+function PlayButton({
+  id,
+  progress,
+  duration,
+}: {
+  id: EpisodeId
+  progress: number
+  duration: number
+}) {
+  const isPlaying = useIsEpisodePlaying(id)
   return (
     <S.Play>
-      <EpisodeProgress episode={id} initial={progress} playing={playing} />
+      <EpisodeProgress
+        playing={isPlaying}
+        progress={progress}
+        duration={duration}
+      />
       <Icon
-        icon={playing ? 'pause' : 'play'}
-        label={playing ? 'pause' : 'play'}
-        onClick={toggle}
+        icon={isPlaying ? 'pause' : 'play'}
+        label={isPlaying ? 'pause' : 'play'}
+        onClick={() => main.player$toggleTrack(id)}
       />
     </S.Play>
   )
@@ -115,40 +116,37 @@ const width = 8
 const rad = 50 - width / 2
 const circ = 2 * Math.PI * rad
 
-function EpisodeProgress({
-  episode,
-  initial,
+const EpisodeProgress = ({
   playing,
+  progress,
+  duration,
 }: {
-  episode: EpisodeId
-  initial: number
-  playing: boolean
-}) {
-  const { progress, duration } = useEpisodeState(episode, initial)
-  return (
-    <S.Progress
-      viewBox="0 0 100 100"
-      progress={progress}
-      remaining={duration * (1 - progress)}
-    >
+  playing?: boolean
+  progress: number
+  duration: number
+}) => (
+  <S.Progress
+    viewBox="0 0 100 100"
+    progress={progress}
+    remaining={duration * (1 - progress)}
+  >
+    <circle
+      cx={50}
+      cy={50}
+      r={rad}
+      data-style={progress > 0 || playing ? 'empty' : 'full'}
+    />
+    {progress < 1 && (
       <circle
         cx={50}
         cy={50}
         r={rad}
-        data-style={progress > 0 || playing ? 'empty' : 'full'}
+        strokeDasharray={`${circ} ${circ}`}
+        data-state={playing ? 'playing' : 'paused'}
       />
-      {progress < 1 && (
-        <circle
-          cx={50}
-          cy={50}
-          r={rad}
-          strokeDasharray={`${circ} ${circ}`}
-          data-state={playing ? 'playing' : 'paused'}
-        />
-      )}
-    </S.Progress>
-  )
-}
+    )}
+  </S.Progress>
+)
 
 function Duration({ children: dur }: { children: number }) {
   const txt =
@@ -178,6 +176,8 @@ function Published({ children: time }: { children: number }) {
 function formatDate(raw: number) {
   return format(raw)
 }
+
+type SVGAttrs = { progress: number; remaining: number }
 
 const S = {
   Strip: styled.article`
@@ -348,7 +348,7 @@ const S = {
 
         button > svg {
           fill: var(--cl-surface);
-          transform: scale(1.2);
+          transform: translate(-50%, -50%) scale(1.2);
         }
       }
     }
@@ -364,7 +364,12 @@ const S = {
     }
   `,
 
-  Progress: styled.svg<{ progress: number; remaining: number }>`
+  Progress: styled.svg.attrs<SVGAttrs>(({ progress, remaining }) => ({
+    style: {
+      '--anim': `${remaining}s linear progress`,
+      '--off': progress * circ,
+    },
+  }))<SVGAttrs>`
     width: 100%;
     height: 100%;
 
@@ -381,11 +386,11 @@ const S = {
     circle:last-of-type {
       transform-origin: 50% 50%;
       transform: scaleX(-1) rotate(-90deg);
-      stroke-dashoffset: ${({ progress }) => progress * circ};
+      stroke-dashoffset: var(--off);
       animation-fill-mode: forwards;
 
       &[data-state='playing'] {
-        animation: ${({ remaining }) => remaining}s linear progress;
+        animation: var(--anim);
       }
     }
 

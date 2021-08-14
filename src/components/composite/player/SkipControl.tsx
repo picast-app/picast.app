@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Icon } from 'components/atoms'
 import { center } from 'styles/mixin'
-import { useMatchMedia } from 'utils/hooks'
+import { useMatchMedia } from 'hooks'
 import { mobile } from 'styles/responsive'
 
 type Props = {

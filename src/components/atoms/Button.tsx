@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { mobile } from 'styles/responsive'
-import { useMatchMedia } from 'utils/hooks'
+import { useMatchMedia } from 'hooks'
 
 type Props = {
   onClick?(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void
@@ -64,7 +64,7 @@ function useRipple(el: HTMLElement | null, setOrigin = true) {
   }
 
   const timeout = (ms: number, cb: (...args: any[]) => void) =>
-    cancellable(() => setTimeout(cb, ms), clearTimeout)
+    cancellable(() => window.setTimeout(cb, ms), clearTimeout)
 
   const animationFrame = (cb: (...args: any[]) => void) =>
     cancellable(() => requestAnimationFrame(cb), cancelAnimationFrame)
@@ -127,6 +127,14 @@ const S = {
       width: var(--icon-size);
       height: var(--icon-size);
       box-sizing: content-box;
+      position: relative;
+
+      svg {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
     }
 
     &[data-style~='text'] {

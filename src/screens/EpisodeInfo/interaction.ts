@@ -15,21 +15,19 @@ export const useTransitionIn = (ref: HTMLDivElement | null) =>
     )
   }, [ref])
 
-export const useTransitionOut = (
-  ref: HTMLDivElement | null,
-  cb: () => void
-) => async () => {
-  if (!ref) return cb()
-  await Promise.all([
-    animateTo(ref, { backgroundColor: '#0000' }, { duration: 200 }),
-    animateTo(
-      ref.firstChild as any,
-      { transform: 'translateY(0)' },
-      { duration: 200, easing: 'ease-in' }
-    ),
-  ])
-  cb()
-}
+export const useTransitionOut =
+  (ref: HTMLDivElement | null, cb: () => void) => async () => {
+    if (!ref) return cb()
+    await Promise.all([
+      animateTo(ref, { backgroundColor: '#0000' }, { duration: 200 }),
+      animateTo(
+        ref.firstChild as any,
+        { transform: 'translateY(0)' },
+        { duration: 200, easing: 'ease-in' }
+      ),
+    ])
+    cb()
+  }
 
 export function useSwipe(ref: HTMLElement | null, _close: () => void) {
   // eslint-disable-next-line react-hooks/exhaustive-deps

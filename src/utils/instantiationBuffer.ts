@@ -1,7 +1,7 @@
 import { isPromise } from 'utils/promise'
 
 type Methods<T> = {
-  [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never
+  [K in keyof T]: T[K] extends λ ? K : never
 }[keyof T]
 
 type BufferReturn<T> = T extends PromiseLike<any> ? T : PromiseLike<T>

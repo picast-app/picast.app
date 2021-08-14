@@ -4,7 +4,7 @@ import { Screen, VirtualList } from 'components/structure'
 import { EpisodeStrip } from 'components/composite'
 import Appbar from 'components/Appbar'
 import { center } from 'styles/mixin'
-import { useAppState, useFeed } from 'utils/hooks'
+import { useFeed, useStateX } from 'hooks'
 import { Link } from '@picast-app/router'
 
 export default function Wrap() {
@@ -17,14 +17,15 @@ export default function Wrap() {
 }
 
 function Main() {
-  const [signedIn, loading] = useAppState<boolean>('user.signedIn')
-  if (loading) return null
-  if (!signedIn) return <Intro />
+  const [user] = useStateX('user')
+  if (user === undefined) return null
+  if (!user) return <Intro />
   return <Feed />
 }
 
 function Feed() {
   const feed = useFeed('*')
+  const [total] = useStateX('library.totalEpisodeCount')
 
   const props = useCallback(
     (index: number) => ({ index, feed: feed!, artwork: true }),
@@ -33,7 +34,7 @@ function Feed() {
 
   if (!feed) return null
   return (
-    <VirtualList length={10000} itemProps={props}>
+    <VirtualList length={total ?? 1000} itemProps={props}>
       {EpisodeStrip}
     </VirtualList>
   )

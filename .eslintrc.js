@@ -14,6 +14,10 @@ module.exports = {
   plugins: ['@typescript-eslint'],
   globals: {
     logger: 'readonly',
+    page: true,
+    browser: true,
+    context: true,
+    jestPuppeteer: true,
   },
   rules: {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -33,7 +37,7 @@ module.exports = {
     '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
     '@typescript-eslint/no-empty-function': 'off',
     'no-debugger': 'warn',
-    'no-constant-condition': 'warn',
+    'no-constant-condition': ['error', { checkLoops: false }],
     '@typescript-eslint/ban-types': ['warn', { types: { '{}': false } }],
     'require-await': 'off',
     '@typescript-eslint/require-await': 'warn',

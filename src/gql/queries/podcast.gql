@@ -1,6 +1,6 @@
 #import "../fragments/podcast.gql"
 
-query PodcastPage($id: ID!) {
+query PodcastPage($id: ID!, $limit: Int = 50) {
   podcast(id: $id) {
     ...PodcastPageInfo
   }

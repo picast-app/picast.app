@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import debounce from 'lodash/debounce'
-import { useCanvas, useComputed, useTheme } from 'utils/hooks'
+import { debounce } from 'utils/function'
+import { useCanvas, useComputed, useTheme } from 'hooks'
 import { desktopPts, cardPadd } from './grid'
 
 const sidebarWidth = 15 * 16
@@ -24,9 +24,9 @@ export default function Glow() {
     const grid = ref.previousElementSibling!
 
     const update = () => {
-      const boxes = (Array.from(grid.children).filter(
-        node => node.nodeName === 'A'
-      ) as any).map((v: HTMLElement) => {
+      const boxes = (
+        Array.from(grid.children).filter(node => node.nodeName === 'A') as any
+      ).map((v: HTMLElement) => {
         const el: HTMLElement = v.firstElementChild as any
         const x = el.offsetLeft * devicePixelRatio
         const y = el.offsetTop * devicePixelRatio
@@ -109,15 +109,11 @@ function useMouseMoving() {
     }
     listenMove()
 
-    const stop = debounce(
-      () => {
-        window.removeEventListener('mousemove', stop)
-        setMoving(false)
-        listenMove()
-      },
-      100,
-      { leading: false, trailing: true }
-    )
+    const stop = debounce(() => {
+      window.removeEventListener('mousemove', stop)
+      setMoving(false)
+      listenMove()
+    }, 100)
 
     return () => window.removeEventListener('mousemove', stop)
   }, [])

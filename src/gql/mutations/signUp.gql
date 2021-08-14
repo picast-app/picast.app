@@ -1,6 +1,11 @@
 #import "../fragments/user.gql"
 
-mutation SignUp($ident: String!, $password: String!, $known: [ID!] = []) {
+mutation SignUp(
+  $ident: String!
+  $password: String!
+  $known: [ID!] = []
+  $limit: Int = 10000
+) {
   signUp(ident: $ident, password: $password) {
     reason
     user {

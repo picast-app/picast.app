@@ -4,7 +4,6 @@ const store: Record<string, Subscription<any>> = {}
 
 export function querySub<T = boolean>(query: string): Subscription<T> {
   const sub = (store[query] ??= createSub<T>(() => {
-    logger.info('setup query', query)
     const mql = window.matchMedia(query)
     sub.setState(mql.matches)
 

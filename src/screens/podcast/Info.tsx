@@ -2,22 +2,24 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Icon, Artwork, Button } from 'components/atoms'
 import { ArtworkShowcase } from 'components/composite'
+import { Dialog } from 'components/structure'
 import { lineClamp } from 'styles/mixin'
 import { desktop, mobile } from 'styles/responsive'
-import { useMatchMedia, useSubscriptions, useAppState } from 'utils/hooks'
+import { useMatchMedia, useStateX } from 'hooks'
 import ContextMenu, { SC as CM } from './ContextMenu'
 import { main } from 'workers'
+import type { Podcast } from 'store/state'
 
 export default function Info(podcast: Partial<Podcast>) {
   const [showDescription, setShowDescription] = useState(false)
   const isDesktop = useMatchMedia(desktop)
-  const [subscriptions, subscribe, unsubscribe] = useSubscriptions()
   const [showcaseArt, setShowcaseArt] = useState(false)
-  const [wpSubs = []] = useAppState<string[]>('wpSubs')
+  const [wpSubs] = useStateX('user.wpSubs')
+  const [msgSignIn, setMsgSignIn] = useState(false)
 
   if (!podcast?.id) return <S.Info />
 
-  const wpActive = wpSubs.includes(podcast.id!)
+  const wpActive = wpSubs?.includes(podcast.id!)
 
   async function toggleNotifications() {
     if (!podcast.id) return
@@ -25,25 +27,33 @@ export default function Info(podcast: Partial<Podcast>) {
     else await main.enablePushNotifications(podcast.id)
   }
 
+  async function toggleSub() {
+    if (!podcast.id) return
+    if (
+      !(await main[podcast.subscribed ? 'unsubscribe' : 'subscribe'](
+        podcast.id
+      ))
+    )
+      setMsgSignIn(true)
+  }
+
   const actions = (
     <S.Actions>
-      {podcast.id && subscriptions?.some(({ id }) => id === podcast.id) ? (
-        <Button onClick={() => unsubscribe(podcast.id!)} text>
-          subscribed
-        </Button>
-      ) : (
-        <Button onClick={() => subscribe(podcast as any)}>Subscribe</Button>
-      )}
+      <Button onClick={toggleSub} text={podcast.subscribed}>
+        {podcast.subscribed ? 'subscribed' : 'subscribe'}
+      </Button>
       <ContextMenu id={podcast.id} feed={(podcast as any).feed} />
-      <Icon
-        icon={
-          `bell_${
-            wpSubs.includes(podcast.id!) ? 'active' : 'inactive'
-          }` as const
-        }
-        label={`${wpActive ? 'disable' : 'enable'} push notifications`}
-        onClick={toggleNotifications}
-      ></Icon>
+      {podcast.subscribed && (
+        <Icon
+          icon={
+            `bell_${
+              wpSubs?.includes(podcast.id!) ? 'active' : 'inactive'
+            }` as const
+          }
+          label={`${wpActive ? 'disable' : 'enable'} push notifications`}
+          onClick={toggleNotifications}
+        />
+      )}
       <Icon
         icon={`expand_${showDescription ? 'less' : 'more'}` as any}
         onClick={() => setShowDescription(!showDescription)}
@@ -82,6 +92,12 @@ export default function Info(podcast: Partial<Podcast>) {
           onClose={() => setShowcaseArt(false)}
         />
       )}
+      <Dialog open={msgSignIn} onClose={() => setMsgSignIn(false)}>
+        <p>
+          Please sign in or create an account to subscribe to{' '}
+          {podcast?.title ?? 'this podcast'}.
+        </p>
+      </Dialog>
     </S.Info>
   )
 }
@@ -169,8 +185,6 @@ const S = {
     }
 
     & > button[data-style~='icon-wrap'] {
-      margin-left: 0.8rem;
-      margin-right: 0.2rem;
       opacity: 0.9;
 
       &:not(:last-of-type) {

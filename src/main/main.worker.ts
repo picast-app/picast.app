@@ -1,14 +1,20 @@
-import { expose, proxy } from 'comlink'
-import { togglePrint } from 'utils/logger'
-import * as apiCalls from './api'
-import IDBInterface from './store/idbInterface'
+import 'polyfills'
+import 'utils/logger'
+import { expose } from 'fiber'
+import { query, mutate } from 'api/calls'
+import IDBInterface from './idb/idbInterface'
+import dbProm from './idb/idb'
 import bufferInstance from 'utils/instantiationBuffer'
-import dbProm from './store/idb'
-import store from './store'
-import * as account from './account'
-import appState, { State } from './appState'
 import { deleteDB } from 'idb'
-import * as playback from './playback'
+import { threaded } from 'store'
+import { registerUICall } from './ui'
+import { actions as accountActions } from './account'
+import { pullSubscriptions } from './sync'
+import { prefix } from 'utils/object'
+import { VirtualPlayer } from 'audio/virtualPlayer'
+import serialWrapper from 'audio/serialInterface'
+import audioSync from 'audio/sync'
+import * as feed from 'main/feed'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const self: DedicatedWorkerGlobalScope
@@ -26,39 +32,17 @@ async function deleteIDB() {
   })
 }
 
-const state = async <T = unknown>(p: string, f: (v: T) => void) => {
-  const { subscribe } = await appState
-  return proxy(subscribe(p, f))
-}
-
-appState.then(({ subscribe }) => {
-  subscribe('debug.print_logs', togglePrint)
-})
-
-const readState = async <T = any>(path: string): Promise<T> => {
-  return await new Promise<T>(res => {
-    const sp = state<T>(path, state => {
-      res(state)
-      sp.then(unsub => unsub())
-    })
-  })
-}
-
-async function updateDebug(...args: Parameters<State['debug']['set']>) {
-  const { state } = await appState
-  state.debug.set(...args)
-}
-
 const api = {
-  ...apiCalls,
+  ...query,
+  ...mutate,
   ...idbInterface,
-  ...store,
-  ...playback,
-  ...account,
-  state,
-  readState,
-  updateDebug: proxy(updateDebug),
+  ...accountActions,
+  ...threaded,
+  pullSubscriptions,
   deleteIDB,
+  registerUICall,
+  ...prefix(serialWrapper(audioSync(new VirtualPlayer())), 'player$'),
+  ...feed,
 } as const
 
 export type API = typeof api

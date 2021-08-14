@@ -1,3 +1,5 @@
+import { callAll } from './function'
+
 export type EventDef = { [K: string]: (...args: any[]) => void }
 
 export default class EventManager<T extends EventDef> {
@@ -11,8 +13,8 @@ export default class EventManager<T extends EventDef> {
     this.listeners[event] = this.listeners[event]?.filter(f => f !== handler)
   }
 
-  public call<K extends keyof T>(event: K, ...payload: Parameters<T[K]>) {
+  public async call<K extends keyof T>(event: K, ...payload: Parameters<T[K]>) {
     if (!(event in this.listeners)) return
-    for (const listener of this.listeners[event]!) listener(...payload)
+    await Promise.all(callAll(this.listeners[event]!, ...payload))
   }
 }

@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef, forwardRef } from 'react'
 import Background from './Background'
 import Player from './Player'
 import { Queue, EpisodeInfo } from 'components/composite'
-import { useEvent, useMatchMedia } from 'utils/hooks'
+import { useEvent, useMatchMedia, useStateX } from 'hooks'
 import { desktop } from 'styles/responsive'
 import { scrollTo } from 'utils/animate'
-import { memoize } from 'utils/cache'
+import memoize from 'snatchblock/memoize'
 import { history, Link, useLocation, location } from '@picast-app/router'
 import {
   Container,
@@ -17,15 +17,14 @@ import {
 } from './styles'
 
 interface Props {
-  podcast: Podcast
-  episode: EpisodeMin
+  id: EpisodeId
   slot?: string
 }
 
 export default (props: Props) =>
   useMatchMedia(desktop) ? null : <FullscreenContainer {...props} />
 
-function FullscreenContainer({ podcast, episode, ...props }: Props) {
+function FullscreenContainer({ id, ...props }: Props) {
   useLocation()
   const [activeTab, setActiveTab] = useState(activeTabIndex)
   const [sectionRef, setSecRef] = useState<HTMLElement | null>()
@@ -34,6 +33,8 @@ function FullscreenContainer({ podcast, episode, ...props }: Props) {
   const swipeRef = useRef<(n: number) => void>()
   const [isExtended, setExtended] = useState(activeTabIndex(false) >= 0)
   const wasExtended = useRef<boolean | null>(null)
+  const [podcast] = useStateX('podcasts.*', id[0])
+  const [episode] = useStateX('episodes.*', id[1])
 
   const _tab = activeTabIndex()
   useEffect(() => {
@@ -93,7 +94,7 @@ function FullscreenContainer({ podcast, episode, ...props }: Props) {
 
   return (
     <Container {...props}>
-      <Background podcast={podcast} />
+      {podcast && <Background podcast={podcast} />}
       <TabWrap>
         <TabContainer onClick={onTabClick}>
           {tabs.map((title, i) => (
@@ -111,7 +112,7 @@ function FullscreenContainer({ podcast, episode, ...props }: Props) {
           )}
         </Section>
         <Section>
-          <Player podcast={podcast} episode={episode} />
+          {podcast && episode && <Player podcast={podcast} episode={episode} />}
         </Section>
         <Section>
           <Queue />

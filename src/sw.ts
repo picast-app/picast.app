@@ -1,6 +1,7 @@
+import 'polyfills'
 import { togglePrint } from 'utils/logger'
-import { wrap, proxy } from 'comlink'
-import type { Remote } from 'comlink'
+import { asyncNullishChain } from 'utils/function'
+import { wrap, proxy, Wrapped } from 'fiber'
 import type { API as MainAPI } from 'main/main.worker'
 
 declare let self: ServiceWorkerGlobalScope
@@ -14,8 +15,8 @@ const expectedCaches = [STATIC_CACHE, PHOTO_CACHE]
 const IS_LOCAL = ['localhost', '127.0.0.1'].includes(self.location.hostname)
 const IMG_HOST = /^https:\/\/(img|photon)\.picast\.app/
 
-let setMainWorker: (v: Remote<MainAPI>) => void
-const mainWorker: Promise<Remote<MainAPI>> = new Promise(res => {
+let setMainWorker: (v: Wrapped<MainAPI>) => void
+const mainWorker: Promise<Wrapped<MainAPI>> = new Promise(res => {
   setMainWorker = res
 })
 
@@ -24,7 +25,7 @@ self.addEventListener('message', ({ data: { type, ...data } }) => {
   if (type === 'MAIN_WORKER_PORT') {
     const main = wrap<MainAPI>(data.port)
     setMainWorker(main)
-    main.state('debug.print_logs', proxy(togglePrint as any))
+    main.listenX('settings.debug.printLogs', proxy(togglePrint))
   }
 })
 
@@ -92,11 +93,7 @@ async function handleNotificationClick({
   else await self.clients.openWindow(url)
 }
 
-type FetchHandler<T extends boolean = false> = (
-  e: FetchEvent
-) => T extends false ? Promise<Response | void> : Promise<Response>
-
-const staticHandler: FetchHandler = async e => {
+const staticHandler = async (e: FetchEvent) => {
   if (e.request.method !== 'GET' || IS_LOCAL) return
   const isNav = e.request.mode === 'navigate'
   if (isNav) e.waitUntil(checkForUpdate())
@@ -104,7 +101,7 @@ const staticHandler: FetchHandler = async e => {
   return await cache.match(isNav ? '/index.html' : e.request)
 }
 
-const coverHandler: FetchHandler = async e => {
+const coverHandler = async (e: FetchEvent) => {
   if (!e.request.url.includes(process.env.IMG_HOST!)) return
   const cache = await caches.open(PHOTO_CACHE)
   return (
@@ -117,14 +114,13 @@ const coverHandler: FetchHandler = async e => {
   )
 }
 
-const defaultHandler: FetchHandler<true> = async e => await fetch(e.request)
+const defaultHandler = async (e: FetchEvent) => await fetch(e.request)
 
-// prettier-ignore
-const handleFetch = async (e: FetchEvent): Promise<Response> =>
-  // @ts-ignore
-  await staticHandler(e) ?? 
-  await coverHandler(e) ??
-  await defaultHandler(e)
+const handleFetch = asyncNullishChain(
+  staticHandler,
+  coverHandler,
+  defaultHandler
+)
 
 self.addEventListener('fetch', event => {
   if (/audio|video|font|style/.test(event.request.destination)) return
@@ -142,7 +138,7 @@ self.addEventListener('fetch', event => {
   )
     return
 
-  event.respondWith(handleFetch(event))
+  event.respondWith(handleFetch(event) as any)
 })
 
 async function cacheStatic() {

@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react'
 import styled, { AnyStyledComponent } from 'styled-components'
 import * as cl from 'utils/css/color'
 import { shadow } from 'styles/shadow'
-import { useTheme } from 'utils/hooks'
+import { useTheme } from 'hooks'
 import { easeOutCubic } from 'utils/ease'
 
 type Props = {
