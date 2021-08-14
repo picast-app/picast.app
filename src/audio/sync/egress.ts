@@ -18,7 +18,12 @@ export default class EgressInterface {
     for (const [, episode] of this.episodes)
       msgs.push(...episode.queue.splice(0))
 
-    await Promise.all(msgs.map(msg => ws.notify('playSync', { msg, token })))
+    if (!msgs.length) return
+    const batch = ws.batch?.()
+    if (!batch) return
+
+    msgs.forEach(msg => batch.notify('playSync', { msg, token }))
+    await batch
   }
 }
 
@@ -28,8 +33,11 @@ class EpisodeSync {
 
   private last: { [K in Type]?: Message<K> } = {}
 
-  private addMessage<T extends Type>(msg: Message<T>) {
-    this.queue.push((this.last[msg.type] = msg as any))
+  private addMessage<T extends Type>(
+    msg: PickOpt<Message<T>, 'time'>,
+    time = new Date().toISOString()
+  ) {
+    this.queue.push((this.last[msg.type] = { time, ...msg } as any))
   }
 
   public currentTime(seconds: number) {
@@ -38,8 +46,12 @@ class EpisodeSync {
       type: 'SET_PLAYBACK_TIME',
       id: this.id,
       pos: seconds,
-      time: new Date().toISOString(),
     })
+    EgressInterface.pull()
+  }
+
+  public setCurrent(pos: number) {
+    this.addMessage({ type: 'SET_ACTIVE', id: this.id, pos })
     EgressInterface.pull()
   }
 }

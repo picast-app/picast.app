@@ -144,6 +144,9 @@ const shared =
       mode: isEnvProduction ? 'production' : isEnvDevelopment && 'development',
       // Stop compilation early in production
       bail: isEnvProduction,
+      externals: {
+        perf_hooks: 'perf_hooks',
+      },
       output: {
         // The build folder.
         path: isEnvProduction ? paths.appBuild : undefined,

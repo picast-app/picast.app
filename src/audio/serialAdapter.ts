@@ -12,10 +12,10 @@ export default () => {
   const onAudioChange: λ<[Audio | null]>[] = []
   const events = new EventManager<{ buffered: λ<[TimeRange[]]> }>()
 
-  const onCleanup: (λ | undefined)[] = []
+  const onCleanup: λ[] = []
   const clean = <T extends λ>(f: T): T => {
     const wrapped = proxy(f)
-    onCleanup.push(wrapped[release])
+    onCleanup.push(wrapped[release]!)
     return wrapped
   }
 

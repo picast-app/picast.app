@@ -5,7 +5,7 @@ import { seg, mutate } from 'utils/path'
 import { diff } from 'utils/array'
 import { allFlat } from 'utils/promise'
 import * as o from 'utils/object'
-import equals from 'utils/equal'
+import equals from 'snatchblock/equal'
 import { query } from 'api/calls'
 import * as convert from 'api/convert'
 

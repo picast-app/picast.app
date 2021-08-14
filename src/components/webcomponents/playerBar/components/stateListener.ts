@@ -19,7 +19,7 @@ export default class StateListener extends Service {
 
     const _proxy = <T extends λ>(f: T) => {
       const prox = proxy(f)
-      this.cancellers.push(prox[release])
+      this.cancellers.push(prox[release]!)
       return prox
     }
 
@@ -39,5 +39,5 @@ export default class StateListener extends Service {
     this.cancellers = []
   }
 
-  private cancellers: ((() => void) | undefined)[] = []
+  private cancellers: (() => void)[] = []
 }
