@@ -1,5 +1,5 @@
-import { key } from 'fiber/wellKnown'
-import type { Proxied } from 'fiber'
+import { key } from '@picast-app/fiber/wellKnown'
+import type { Proxied } from '@picast-app/fiber'
 import type { Episode } from 'store/state'
 import { isPromise } from 'utils/promise'
 import { store as storeX } from 'store'

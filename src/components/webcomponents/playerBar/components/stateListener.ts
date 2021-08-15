@@ -1,7 +1,7 @@
 import Service from './base'
 import store from 'store/uiThread/api'
 import { main } from 'workers'
-import { proxy, release } from 'fiber'
+import { proxy, release } from '@picast-app/fiber'
 import { callAll } from 'utils/function'
 import { asyncCB } from 'utils/promise'
 import { MsgOut } from 'audio/serialInterface'

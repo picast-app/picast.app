@@ -1,6 +1,6 @@
 import 'polyfills'
 import 'utils/logger'
-import { expose } from 'fiber'
+import { expose } from '@picast-app/fiber'
 import { query, mutate } from 'api/calls'
 import IDBInterface from './idb/idbInterface'
 import dbProm from './idb/idb'
@@ -47,4 +47,4 @@ const api = {
 
 export type API = typeof api
 
-expose(api)
+expose(api, self, process.env.NODE_ENV !== 'production')

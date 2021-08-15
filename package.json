@@ -20,6 +20,7 @@
     "strings": "node scripts/bundleLocales"
   },
   "dependencies": {
+    "@picast-app/fiber": "^1.0.2",
     "@picast-app/router": "^0.5.1",
     "crc": "^3.8.0",
     "graphql-request": "^3.3.0",

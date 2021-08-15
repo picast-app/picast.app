@@ -1,6 +1,6 @@
 import MainWorker from 'main/main.worker'
 import type { API } from 'main/main.worker'
-import { wrap, proxy } from 'fiber'
+import { wrap, proxy } from '@picast-app/fiber'
 import { snack } from 'utils/notification'
 import uiAPI from './uiThreadAPI'
 
@@ -10,7 +10,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')
 
 const mainWorker: Worker = new (MainWorker as any)()
 
-export const main = wrap<API>(mainWorker)
+export const main = wrap<API>(mainWorker, process.env.NODE_ENV !== 'production')
 
 async function init() {
   const { active } = await navigator.serviceWorker.ready

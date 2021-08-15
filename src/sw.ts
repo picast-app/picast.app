@@ -1,7 +1,7 @@
 import 'polyfills'
 import { togglePrint } from 'utils/logger'
 import { asyncNullishChain } from 'utils/function'
-import { wrap, proxy, Wrapped } from 'fiber'
+import { wrap, proxy, Wrapped } from '@picast-app/fiber'
 import type { API as MainAPI } from 'main/main.worker'
 
 declare let self: ServiceWorkerGlobalScope
@@ -23,7 +23,7 @@ const mainWorker: Promise<Wrapped<MainAPI>> = new Promise(res => {
 self.addEventListener('message', ({ data: { type, ...data } }) => {
   logger.info('sw msg', type, data)
   if (type === 'MAIN_WORKER_PORT') {
-    const main = wrap<MainAPI>(data.port)
+    const main = wrap<MainAPI>(data.port, process.env.NODE_ENV !== 'production')
     setMainWorker(main)
     main.listenX('settings.debug.printLogs', proxy(togglePrint))
   }

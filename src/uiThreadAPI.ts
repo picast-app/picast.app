@@ -1,5 +1,5 @@
 import { querySub } from 'utils/css/query'
-import { proxy } from 'fiber'
+import { proxy } from '@picast-app/fiber'
 
 const api = {
   alert: (msg?: any) => {

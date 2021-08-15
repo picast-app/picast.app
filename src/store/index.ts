@@ -8,7 +8,7 @@ import Player from 'store/handlers/player'
 import episodes from 'store/handlers/episodes'
 import shownotes from 'store/handlers/shownotes'
 import ep2Pod from 'store/handlers/episodePodMap'
-import { proxy } from 'fiber'
+import { proxy } from '@picast-app/fiber'
 import { omit } from 'utils/object'
 
 export type Store = StoreX<State>

@@ -1,5 +1,5 @@
 import { VirtualPlayer, Events } from './virtualPlayer'
-import { Proxied, key } from 'fiber/wellKnown'
+import { Proxied, key } from '@picast-app/fiber/wellKnown'
 import { last } from 'utils/array'
 import { store } from 'store'
 import { callAll } from 'utils/function'
