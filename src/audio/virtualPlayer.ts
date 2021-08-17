@@ -54,6 +54,7 @@ export class VirtualPlayer extends EventEmitter<Events> {
 
   public async playTrack(id: EpisodeId) {
     await this.setTrack(id)
+    this.jumpTo((await store.get('episodes.*.currentTime', id[1])) ?? 0)
     this.start()
   }
 
