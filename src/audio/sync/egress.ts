@@ -20,7 +20,7 @@ export default class EgressInterface {
 
     if (!msgs.length) return
     const batch = ws.batch?.()
-    if (!batch) return
+    if (!batch) return logger.info('play sync', ...msgs)
 
     msgs.forEach(msg => batch.notify('playSync', { msg, token }))
     await batch
@@ -41,7 +41,19 @@ class EpisodeSync {
   }
 
   public currentTime(seconds: number) {
-    if (this.last.SET_PLAYBACK_TIME?.pos === seconds) return
+    if (
+      Math.abs(
+        (this.last.SET_PLAYBACK_TIME?.pos ?? this.initialTime!) - seconds
+      ) < 2
+    )
+      return
+    logger.info(
+      'set time',
+      ...this.id,
+      seconds,
+      'was',
+      this.last.SET_PLAYBACK_TIME?.pos ?? this.initialTime
+    )
     this.addMessage({
       type: 'SET_PLAYBACK_TIME',
       id: this.id,
@@ -50,8 +62,12 @@ class EpisodeSync {
     EgressInterface.pull()
   }
 
-  public setCurrent(pos: number) {
+  public setCurrent(pos: number, passive = false) {
+    this.initialTime = pos
+    if (passive) return
     this.addMessage({ type: 'SET_ACTIVE', id: this.id, pos })
     EgressInterface.pull()
   }
+
+  private initialTime?: number
 }

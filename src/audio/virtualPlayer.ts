@@ -10,7 +10,14 @@ export type Events = {
   finished: λ<[id: EpisodeId]>
   playing: λ<[]>
   waiting: λ<[]>
-  changeTrack: λ<[id: EpisodeId | null, src: string | null]>
+  changeTrack: λ<
+    [
+      id: EpisodeId | null,
+      src: string | null,
+      pos: number | null,
+      passive: boolean
+    ]
+  >
   changeDuration: λ<[secs: number]>
   jump: λ<[secs: number, src: string]>
   finalize: λ<[id: EpisodeId]>
@@ -35,13 +42,13 @@ export class VirtualPlayer extends EventEmitter<Events> {
     return typeof this.playStart === 'number'
   }
 
-  public async setTrack(id: EpisodeId) {
+  public async setTrack(id: EpisodeId, passive = false, time = 0) {
     if (equals(this.track, id)) return
     if (this.src) await this.finalize()
     this.reset()
 
     this.track = id
-    if (!id) return this.call('changeTrack', null, null)
+    if (!id) return this.call('changeTrack', null, null, null, passive)
     const file = await store.get('episodes.*.file', id[1])
     if (!file) throw Error(`can't find file for ${id[0]} ${id[1]}`)
     this.src = file
@@ -49,12 +56,16 @@ export class VirtualPlayer extends EventEmitter<Events> {
       (await store.get('episodes.*.duration', id[1])) ?? 1200,
       file
     )
-    this.call('changeTrack', id, file)
+    this.call('changeTrack', id, file, time, passive)
+    if (this.getPosition() !== time) this.jumpTo(time)
   }
 
-  public async playTrack(id: EpisodeId) {
-    await this.setTrack(id)
-    this.jumpTo((await store.get('episodes.*.currentTime', id[1])) ?? 0)
+  public async playTrack(id: EpisodeId, passive = false) {
+    await this.setTrack(
+      id,
+      passive,
+      (await store.get('episodes.*.currentTime', id[1])) ?? 0
+    )
     this.start()
   }
 
@@ -165,5 +176,6 @@ export class VirtualPlayer extends EventEmitter<Events> {
   public setDuration(secs: number, src: string) {
     if (src !== this.src || secs === this.duration) return
     this.call('changeDuration', (this.duration = secs))
+    this.scheduleEndCB()
   }
 }

@@ -55,8 +55,11 @@ export default function serialWrapper(player: VirtualPlayer) {
 
   store.get('player.current').then(async id => {
     if (!id) return
-    player.setTrack(id)
-    player.jumpTo((await store.get('episodes.*', id[1]))?.currentTime ?? 0)
+    player.setTrack(
+      id,
+      true,
+      (await store.get('episodes.*', id[1]))?.currentTime ?? 0
+    )
   })
 
   return {

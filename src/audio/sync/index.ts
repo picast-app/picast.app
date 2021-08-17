@@ -17,11 +17,9 @@ export default function observe(player: VirtualPlayer): VirtualPlayer {
         store.set('episodes.*.relProg', prog, {}, id[1])
     })
 
-  player.addEventListener('changeTrack', () => {
-    const pos = player.getPosition()
-    const id = player.track
+  player.addEventListener('changeTrack', (id, src, pos, passive) => {
     if (!id || typeof pos !== 'number') return
-    Egress.episode(id).setCurrent(pos)
+    Egress.episode(id).setCurrent(pos, passive)
   })
 
   return player
