@@ -9,9 +9,9 @@ export default class Session extends Service {
     if (!ms) return
     ms.setActionHandler('play', main.player$start)
     ms.setActionHandler('pause', main.player$stop)
-    // ms.setActionHandler('stop', () => main.playerPause())
-    // ms.setActionHandler('nexttrack', () => main.playerJump(30, true))
-    // ms.setActionHandler('previoustrack', () => main.playerJump(-15, true))
+    ms.setActionHandler('stop', main.player$stop)
+    ms.setActionHandler('nexttrack', () => main.player$jumpBy(30))
+    ms.setActionHandler('previoustrack', () => main.player$jumpBy(-15))
   }
 
   public disable() {
@@ -34,19 +34,13 @@ export default class Session extends Service {
     if (!podcast || !episode) throw Error("couldn't fetch ms info")
     if (ms.metadata?.title === episode.title) return
 
-    logger.info({ podcast, episode })
-
-    // const [podcast, episode] = this.player.current ?? []
-    // if (!podcast) throw Error("couldn't set ms info, podcast missing")
-    // if (!episode) throw Error("couldn't set ms info, episode missing")
-    //
     const meta = new MediaMetadata({
       title: episode.title,
       artist: podcast.author,
       album: podcast.title,
       artwork: this.formatArtwork(podcast.covers),
     })
-    // logger.info('set media session metadata', meta)
+    logger.info('set media session metadata', meta)
     ms.metadata = meta
   }
 
