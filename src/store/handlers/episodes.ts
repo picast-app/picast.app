@@ -66,12 +66,15 @@ export default (store: Store) => {
         await writeToDB(cache.get(id)!)
   }, true)
 
-  store
-    .handler('episodes.*')
-    .get(
-      async (_, id) =>
-        cache.get(id) ?? (await readIDB(id)) ?? (await fetchSingle(id))
-    )
+  store.handler('episodes.*').get(
+    async (_, id) =>
+      ({
+        currentTime: 0,
+        relProg: 0,
+        completed: false,
+        ...(cache.get(id) ?? (await readIDB(id)) ?? (await fetchSingle(id))),
+      } as any)
+  )
 
   async function readIDB(id: string) {
     const data = await (await idb).get('episodes', id)
