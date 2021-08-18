@@ -26,6 +26,7 @@ endpoint.on('episodeAdded', async ({ podcast, episodes }) => {
     podcast,
     ...rest,
   }))
+  logger.info('episodeAdded', formatted)
   ;(await (await epStore).getPodcast(podcast)).addEpisodes(formatted, true)
 })
 
@@ -37,4 +38,8 @@ endpoint.on('hasCovers', ({ id, covers, palette }) => {
   logger.info(`got covers for ${id}`, { covers, palette })
   if (covers) store.set('podcasts.*.covers', covers, {}, id)
   if (palette) store.set('podcasts.*.palette', palette)
+})
+
+store.listen('user.wsAuth', token => {
+  if (token) wsApi.notify?.('identify', token)
 })
