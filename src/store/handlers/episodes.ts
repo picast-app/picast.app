@@ -9,6 +9,8 @@ import equals from 'snatchblock/equal'
 import { query } from 'api/calls'
 import * as convert from 'api/convert'
 
+// update cache data at path
+// return true if data has changed
 function writeEpisodeData(
   cache: Map<string, Episode>,
   data: any,
@@ -45,10 +47,10 @@ function writeEpisodeData(
 
   if (!previous) {
     cache.set(id, state)
-    return false
+    return true
   }
 
-  return equals(old, data)
+  return !equals(old, data)
 }
 
 export default (store: Store) => {

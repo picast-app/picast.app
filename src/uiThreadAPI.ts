@@ -17,6 +17,12 @@ const api = {
       cb(sub.state)
     })
   },
+  addEventListener<T extends keyof WindowEventMap>(
+    event: T,
+    handler: λ<[WindowEventMap[T]]>
+  ) {
+    window.addEventListener(event, handler)
+  },
 }
 export type API = typeof api
 export default api
