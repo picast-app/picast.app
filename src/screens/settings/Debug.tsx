@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react'
 import Section from './Section'
-import { Switch } from 'components/atoms'
+import { Switch, Button } from 'components/atoms'
 import { useStateX } from 'hooks/store'
 import { stateToggle } from './util'
+import { main } from 'workers'
 
 export default function Debug() {
   const [state, { set }] = useStateX('settings.debug')
@@ -22,6 +23,14 @@ export default function Debug() {
       <Switch {...toggle('showTouchPaths')} />
       <span>{$`@settings.toggle_playback`}</span>
       <Switch {...toggle('playbackLoading')} />
+      <span>{$`@settings.pull_pods`}</span>
+      <Button
+        onClick={() =>
+          main.pullPodcasts({ meta: true, episodes: true, force: true })
+        }
+      >
+        {$`@settings.pull`}
+      </Button>
     </Section>
   )
 }

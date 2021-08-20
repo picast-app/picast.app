@@ -17,3 +17,5 @@ concurrency: Concurrency
 print_logs: Print logs
 show_touch: Show touch paths
 toggle_playback: Toggle playback loading
+pull_pods: Pull podcasts
+:pull

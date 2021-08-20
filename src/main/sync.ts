@@ -25,18 +25,26 @@ function saveCheckDate(checks: CheckParam[]) {
 }
 
 export async function pullPodcasts(
-  opts: { meta?: boolean; episodes?: boolean } = { meta: true, episodes: true }
+  opts: { meta?: boolean; episodes?: boolean; force?: boolean } = {
+    meta: true,
+    episodes: true,
+    force: false,
+  }
 ) {
   const podcasts = collection(await store.get('library.list'), ({ id }) => id)
+  const isExpired = opts.force ? () => true : expired
 
   let checks = await Promise.all(
     mapList(podcasts, async ({ id }) => {
       const check: CheckParam = { id }
 
-      if (opts.meta && expired(META_RATE, podcasts[id].lastMetaCheck))
+      if (opts.meta && isExpired(META_RATE, podcasts[id].lastMetaCheck))
         check.meta = podcasts[id].check
 
-      if (opts.episodes && expired(EPISODE_RATE, podcasts[id].lastEpisodeCheck))
+      if (
+        opts.episodes &&
+        isExpired(EPISODE_RATE, podcasts[id].lastEpisodeCheck)
+      )
         check.episodes = await episodeCRC(id)
 
       logger.info({ check, podcast: podcasts[id] })
@@ -51,6 +59,7 @@ export async function pullPodcasts(
 
   saveCheckDate(checks)
   const updates = await api.query.metaSync(checks)
+  logger.info({ updates })
 
   const eps: string[] = []
 

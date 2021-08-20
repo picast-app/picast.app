@@ -9,7 +9,7 @@ import { deleteDB } from 'idb'
 import { threaded } from 'store'
 import { registerUICall } from './ui'
 import { actions as accountActions } from './account'
-import { pullSubscriptions } from './sync'
+import { pullSubscriptions, pullPodcasts } from './sync'
 import { prefix } from 'utils/object'
 import { VirtualPlayer } from 'audio/virtualPlayer'
 import serialWrapper from 'audio/serialInterface'
@@ -39,6 +39,7 @@ const api = {
   ...accountActions,
   ...threaded,
   pullSubscriptions,
+  pullPodcasts,
   deleteIDB,
   registerUICall,
   ...prefix(serialWrapper(audioSync(new VirtualPlayer())), 'player$'),
