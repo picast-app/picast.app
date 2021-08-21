@@ -53,7 +53,7 @@ export class VirtualPlayer extends EventEmitter<Events> {
     if (!file) throw Error(`can't find file for ${id[0]} ${id[1]}`)
     this.src = file
     this.setDuration(
-      (await store.get('episodes.*.duration', id[1])) ?? 1200,
+      (await store.get('episodes.*.duration', id[1])) || 1200,
       file
     )
     this.call('changeTrack', id, file, time, passive)
@@ -152,7 +152,7 @@ export class VirtualPlayer extends EventEmitter<Events> {
 
   private scheduleEndCB() {
     this.stopEndCB()
-    logger.assert(this.duration)
+    logger.assert(this.duration, `duration is ${this.duration}`)
     const id = (this.endedToId = setTimeout(() => {
       this.onEnded()
       clearTimeout(id)
@@ -174,6 +174,7 @@ export class VirtualPlayer extends EventEmitter<Events> {
   }
 
   public setDuration(secs: number, src: string) {
+    if (!secs) return logger.warn('tried to set duration to', secs)
     if (src !== this.src || secs === this.duration) return
     this.call('changeDuration', (this.duration = secs))
     this.scheduleEndCB()
