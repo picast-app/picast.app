@@ -17,7 +17,7 @@ export default async (store: Store) => {
   store.handler('podcasts.*').get(async (_, id) => {
     const pods = await podcasts
     pods[id] ??= fetchPodcast(id)
-    return await pods[id]
+    return { covers: [], ...(await pods[id]) } as Podcast
   })
 
   const persisted: (keyof Podcast)[] = ['lastMetaCheck', 'lastEpisodeCheck']

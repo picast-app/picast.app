@@ -39,6 +39,13 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     const [skip, noChange] = flag()
     const m = { ...meta, noChange, unlock: () => {} }
 
+    if (process.env.BRANCH !== 'master')
+      ((globalThis as any).storeTransactions ??= []).push({
+        time: new Date().toISOString(),
+        key,
+        value,
+      })
+
     const blocked = this.createBlockSet()
 
     const matches = (handler: λ) => {
