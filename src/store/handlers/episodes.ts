@@ -60,12 +60,17 @@ export default (store: Store) => {
 
   store.handler('episodes.*').set(async (data, path, { known, subbed }, id) => {
     if (!data) return
-    if (writeEpisodeData(cache, data, ...seg(path, 1)))
+    if (writeEpisodeData(cache, data, ...seg(path, 1))) {
       if (
         !known &&
         (subbed || (await subscriptions).includes(cache.get(id)!.podcast))
       )
         await writeToDB(cache.get(id)!)
+      else
+        logger.info(
+          `don't write ${id} (not subbed to ${cache.get(id)?.podcast})`
+        )
+    } else logger.info(`${id} didn't change`, path, data)
   }, true)
 
   store.handler('episodes.*').get(

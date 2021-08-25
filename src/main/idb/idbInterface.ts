@@ -27,4 +27,15 @@ export default class IDBInterface {
   ) {
     await this.db.put(table, value, key)
   }
+
+  public async getAll<T extends Parameters<DB['getAll']>[0]>(table: T) {
+    return await this.db.getAll(table)
+  }
+
+  public async getAllKeysFromIndex<
+    T extends keyof Schema,
+    I extends Schema[T] extends { indexes: infer TI } ? keyof TI : never
+  >(table: T, index: I, query: any) {
+    return await this.db.getAllKeysFromIndex(table, index, query)
+  }
 }
