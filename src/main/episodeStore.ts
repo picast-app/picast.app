@@ -100,6 +100,7 @@ export class Podcast {
     logger.info(`[epStore ${this.id}] add ${episodes.length} episodes`, {
       subscribed: this.subscribed,
       keys: this.keys,
+      episodes,
     })
     episodes.map(data =>
       store.set('episodes.*', data, { subbed: this.subscribed }, data.id)

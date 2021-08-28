@@ -4,6 +4,7 @@ import { Switch, Button } from 'components/atoms'
 import { useStateX } from 'hooks/store'
 import { stateToggle } from './util'
 import { main } from 'workers'
+import { Link } from '@picast-app/router'
 
 export default function Debug() {
   const [state, { set }] = useStateX('settings.debug')
@@ -31,6 +32,8 @@ export default function Debug() {
       >
         {$`@settings.pull`}
       </Button>
+      <span>state info</span>
+      <Link to="/debug/state">/debug/state</Link>
     </Section>
   )
 }
