@@ -151,12 +151,16 @@ async function cacheStatic() {
 }
 
 async function getStatic() {
-  const { files } = await fetch('/asset-manifest.json').then(res => res.json())
+  const { files } = await fetch('/asset-manifest.json', {
+    cache: 'no-cache',
+  }).then(res => res.json())
   const staticFiles = (Object.values(files) as string[]).filter(
     file => !/\.map$/.test(file)
   )
 
-  const html = await fetch('/index.html').then(res => res.text())
+  const html = await fetch('/index.html', { cache: 'no-cache' }).then(res =>
+    res.text()
+  )
 
   try {
     const head = html.match(/<head>(.*)(?=<\/head>)/s)?.[1]
@@ -180,7 +184,9 @@ async function checkForUpdate() {
     const cache = await caches.open(STATIC_CACHE)
     const cached = await cache.match('/index.html')
     if (!cached) return
-    const latest = await fetch('/index.html').then(res => res.text())
+    const latest = await fetch('/index.html', { cache: 'no-cache' }).then(res =>
+      res.text()
+    )
     if ((await cached.text()) !== latest) {
       await cacheStatic()
       await main.idbPut('meta', 'EVICT_PENDING', 'updateStatus')

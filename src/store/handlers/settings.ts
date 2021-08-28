@@ -4,8 +4,6 @@ import type { Store, State } from 'store'
 import uiThread from 'main/ui'
 import { proxy } from '@picast-app/fiber'
 import { idbWriter, idbDefaultReader } from 'store/utils/idb'
-import { bundle } from 'utils/function'
-import { togglePrint } from 'utils/logger'
 
 const IDBKeys = ['printLogs', 'showTouchPaths', 'extractColor'] as const
 type Key = typeof IDBKeys[number]
@@ -27,7 +25,7 @@ export default class Settings extends MemCache<State['settings']> {
   }
 
   hooks: HookDict<State['settings']> = {
-    'debug.printLogs': bundle(idbWriter<Key>('printLogs'), togglePrint),
+    'debug.printLogs': idbWriter<Key>('printLogs'),
     'debug.showTouchPaths': idbWriter<Key>('showTouchPaths'),
     'appearance.extractColor': idbWriter<Key>('extractColor'),
     'appearance.useSystemTheme': v => {

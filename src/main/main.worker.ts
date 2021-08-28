@@ -1,12 +1,12 @@
 import 'polyfills'
-import 'utils/logger'
+import { togglePrint } from 'utils/logger'
 import { expose } from '@picast-app/fiber'
 import { query, mutate } from 'api/calls'
 import IDBInterface from './idb/idbInterface'
 import dbProm from './idb/idb'
 import bufferInstance from 'utils/instantiationBuffer'
 import { deleteDB } from 'idb'
-import { threaded } from 'store'
+import { store, threaded } from 'store'
 import { registerUICall } from './ui'
 import { actions as accountActions } from './account'
 import { pullSubscriptions, pullPodcasts } from './sync'
@@ -15,6 +15,8 @@ import { VirtualPlayer } from 'audio/virtualPlayer'
 import serialWrapper from 'audio/serialInterface'
 import audioSync from 'audio/sync'
 import * as feed from 'main/feed'
+
+store.listen('settings.debug.printLogs', togglePrint)
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const self: DedicatedWorkerGlobalScope

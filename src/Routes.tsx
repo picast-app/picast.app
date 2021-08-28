@@ -13,6 +13,7 @@ const Sandbox = React.lazy(() => import('screens/Sandbox'))
 const FeedView = React.lazy(() => import('screens/FeedView'))
 const SignIn = React.lazy(() => import('screens/SignIn'))
 const Settings = React.lazy(() => import('screens/Settings'))
+const DebugState = React.lazy(() => import('screens/debug/state'))
 const S404 = React.lazy(() => import('screens/404'))
 
 export default () => (
@@ -29,6 +30,7 @@ export default () => (
         <Route path="/settings/:page?">{Settings}</Route>
         <Route path="/sandbox/:sub?">{Sandbox}</Route>
         <Route path="/feedview/.*">{FeedView}</Route>
+        <Route path="/debug/state">{DebugState}</Route>
         <Route path="/404">{S404}</Route>
         <Redirect to="/" />
       </Switch>

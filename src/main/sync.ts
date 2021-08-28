@@ -47,8 +47,6 @@ export async function pullPodcasts(
       )
         check.episodes = await episodeCRC(id)
 
-      logger.info({ check, podcast: podcasts[id] })
-
       return check
     })
   )
@@ -90,14 +88,22 @@ async function pullDiffEpisodes(podIds: string[]) {
     )
   )
 
-  const results = await api.query.diffEpisodes(
-    ...podIds.map(id => [id, encodeIds(stores[id].episodeIds)] as const)
+  const checks = podIds.map(
+    id => [id, encodeIds(stores[id].episodeIds)] as const
   )
+
+  const results = await api.query.diffEpisodes(...checks)
+  logger.info({
+    stores,
+    ids: podIds.map(id => stores[id].episodeIds),
+    checks,
+    results,
+  })
 
   for (const { podcast, added, removed } of results) {
     if (removed?.length) logger.info(`removed from ${podcast}`, ...removed)
     if (added?.length) {
-      logger.info(`added to ${podcast}`, ...added)
+      logger.info(`added ${added.length} episodes to ${podcast}`)
       stores[podcast].addEpisodes(
         added.map(v => convert.episode(v, podcast)),
         true

@@ -52,12 +52,15 @@ export default class UserState extends MemCache<State['user']> {
   }
 
   public async signIn(data: GQL.MeInitial) {
+    logger.info('signin', data)
     await this.initialized
+    logger.info('initialized')
     if (this.state) throw Error('already signed in')
 
     await Promise.all(
       data.subscriptions.added.map(v => this.storePodcast(v, true))
     )
+    logger.info('podcasts stored')
 
     this.store.set('user', {
       id: data.id,
@@ -138,6 +141,9 @@ export default class UserState extends MemCache<State['user']> {
     podcast: GQL.Me_me_subscriptions_added,
     subscribed?: true
   ) {
+    logger.info(
+      `[user] store podcast ${podcast.id} with ${podcast.episodes?.edges.length} episodes`
+    )
     this.store.set(
       'podcasts.*',
       convert.podcast(podcast),

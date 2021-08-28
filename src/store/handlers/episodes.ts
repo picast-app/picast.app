@@ -60,12 +60,18 @@ export default (store: Store) => {
 
   store.handler('episodes.*').set(async (data, path, { known, subbed }, id) => {
     if (!data) return
-    if (writeEpisodeData(cache, data, ...seg(path, 1)))
+    if (writeEpisodeData(cache, data, ...seg(path, 1))) {
       if (
         !known &&
         (subbed || (await subscriptions).includes(cache.get(id)!.podcast))
       )
         await writeToDB(cache.get(id)!)
+      else
+        logger.info(
+          `don't write ${id} (not subbed to ${cache.get(id)?.podcast})`,
+          { subbed, subscriptions: await subscriptions }
+        )
+    } else logger.info(`${id} didn't change`, path, data)
   }, true)
 
   store.handler('episodes.*').get(
@@ -91,8 +97,24 @@ export default (store: Store) => {
     return convert.episode(data, podcast) ?? null
   }
 
+  // async function writeToDB(episode: Episode) {
+  //   await (await idb).put('episodes', episode)
+  // }
+
+  const queue: Episode[] = []
+  let writing = false
+
   async function writeToDB(episode: Episode) {
-    await (await idb).put('episodes', episode)
+    queue.unshift(episode)
+    if (writing) return
+    writing = true
+    try {
+      let episode: Episode | undefined
+      const db = await idb
+      while ((episode = queue.pop())) await db.put('episodes', episode)
+    } finally {
+      writing = false
+    }
   }
 
   async function removeFromDB(...podcasts: string[]) {

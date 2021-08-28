@@ -12,8 +12,9 @@ export class Podcast {
   public hasFeedStart = false
   private tasks: Promise<any>[] = []
   private listeners: ((...i: number[]) => void)[] = []
+  private static created: string[] = []
 
-  constructor(
+  private constructor(
     public readonly id: string,
     private readonly db: PromType<typeof dbProm>,
     private keys: Key[],
@@ -25,8 +26,14 @@ export class Podcast {
     db: PromType<typeof dbProm>,
     subscribed: boolean
   ) {
+    logger.assert(
+      !Podcast.created.includes(id),
+      `episode store ${id} already created`
+    )
+    Podcast.created.push(id)
     const ids = await db.getAllKeysFromIndex('episodes', 'podcast', id)
     const keys = Podcast.keys(ids)
+    logger.info(`create epStore ${id} with`, { ids, keys })
     return new Podcast(id, db, keys, subscribed)
   }
 
@@ -90,6 +97,11 @@ export class Podcast {
 
   public addEpisodes(episodes: Episode[], notify = false) {
     this.addKeys(Podcast.keys(episodes.map(({ id }) => id)))
+    logger.info(`[epStore ${this.id}] add ${episodes.length} episodes`, {
+      subscribed: this.subscribed,
+      keys: this.keys,
+      episodes,
+    })
     episodes.map(data =>
       store.set('episodes.*', data, { subbed: this.subscribed }, data.id)
     )
@@ -146,11 +158,9 @@ export class EpisodeStore {
   }
 
   public getPodcast = async (id: string, subscribed?: boolean) => {
-    const podcast = await (this.podcasts[id] ??= Podcast.create(
-      id,
-      this.db,
-      subscribed ?? (await this.subscriptions).includes(id)
-    ))
+    const podcast = await (this.podcasts[id] ??= (
+      subscribed ? Promise.resolve([id]) : this.subscriptions
+    ).then(subs => Podcast.create(id, this.db, subs.includes(id))))
     if (subscribed && !podcast.isSubscribed) await podcast.subscribe()
     return podcast
   }
@@ -173,4 +183,6 @@ export class EpisodeStore {
   }
 }
 
-export default dbProm.then(db => new EpisodeStore(db))
+export default dbProm.then(
+  db => ((globalThis as any).epStore = new EpisodeStore(db))
+)
