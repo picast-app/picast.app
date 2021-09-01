@@ -179,6 +179,7 @@ const S = {
   Chart: styled.svg`
     width: 10rem;
     height: 10rem;
+    flex-shrink: 0;
   `,
 
   ColorSquare: styled.div`

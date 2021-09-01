@@ -54,3 +54,9 @@ type Nested<T> = (T | Nested<T>)[]
 type MappedNested<T extends Nested<any>, U> = {
   [K in keyof T]: T[K] extends any[] ? MappedNested<T[K], U> : U
 }
+
+const isNotNullish = <T>(v: T | null | undefined): v is T =>
+  v !== null && v !== undefined
+
+export const notNullish = <T>(arr: (T | null | undefined)[]): T[] =>
+  arr.filter(isNotNullish)

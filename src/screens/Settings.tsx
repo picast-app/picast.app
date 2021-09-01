@@ -13,6 +13,7 @@ import { Icon } from 'components/atoms'
 import { animateTo } from 'utils/animate'
 import { desktop, mobile } from 'styles/responsive'
 import { useMatchMedia } from 'hooks'
+import General from './settings/General'
 import About from './settings/About'
 import Appearance from './settings/Appearance'
 import Debug from './settings/Debug'
@@ -28,7 +29,7 @@ type SettingsRoute = {
 }
 
 let routes: SettingsRoute[] = [
-  { name: $.c`general`, icon: 'gear' },
+  { name: $.c`general`, icon: 'gear', component: General },
   { name: $.c`appearance`, icon: 'palette', component: Appearance },
   { name: $.c`notifications`, icon: 'bell', component: Notifications },
   {

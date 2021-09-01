@@ -22,6 +22,7 @@ export default function Components() {
       id: 'bmJ0',
       title: 'The Changelog: Software Dev & Open Source',
       author: 'Changelog Media',
+      feed: '',
       artwork,
       covers: [],
     })
