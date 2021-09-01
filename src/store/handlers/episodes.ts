@@ -56,6 +56,7 @@ function writeEpisodeData(
 export default (store: Store) => {
   const cache = new Map<string, Episode>()
 
+  // FIXME: resolving subscriptions becomes undefined
   let subscriptions: Promise<string[]> = store.get('user.subscriptions')
 
   store.handler('episodes.*').set(async (data, path, { known, subbed }, id) => {
@@ -66,7 +67,7 @@ export default (store: Store) => {
         (subbed || (await subscriptions).includes(cache.get(id)!.podcast))
       )
         await writeToDB(cache.get(id)!)
-      else
+      else if (!known)
         logger.info(
           `don't write ${id} (not subbed to ${cache.get(id)?.podcast})`,
           { subbed, subscriptions: await subscriptions }

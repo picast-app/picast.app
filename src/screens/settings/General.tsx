@@ -9,14 +9,9 @@ export default function General() {
   return (
     <Section title={$.c`general`}>
       <label>export OPML</label>
-      <Button onClick={exportOPML}>export</Button>
+      <Button onClick={downloadOPML}>export</Button>
     </Section>
   )
-}
-
-async function exportOPML() {
-  const opml = await createOPML()
-  logger.info(new XMLSerializer().serializeToString(opml))
 }
 
 async function createOPML() {
@@ -33,13 +28,28 @@ async function createOPML() {
   const subs = notNullish(
     await store.getJoined('user.subscriptions', 'podcasts.*')
   )
-  subs.forEach(({ title, feed }) =>
-    setAttributes(createAppended('outline', outline), {
-      type: 'rss',
-      text: title,
-      xmlUrl: feed,
-    })
-  )
+  subs
+    .sort(({ title: a }, { title: b }) => a.localeCompare(b))
+    .forEach(({ title, feed }) =>
+      setAttributes(createAppended('outline', outline), {
+        type: 'rss',
+        text: title,
+        xmlUrl: feed,
+      })
+    )
 
   return doc
+}
+
+async function downloadOPML() {
+  const link = document.createElement('a')
+  link.setAttribute(
+    'href',
+    `data:text/plain;charset=utf-8,${encodeURIComponent(
+      new XMLSerializer().serializeToString(await createOPML())
+    )}`
+  )
+  link.setAttribute('download', 'picast_feeds.xml')
+  logger.info(link)
+  link.click()
 }
