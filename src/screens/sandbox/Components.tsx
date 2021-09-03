@@ -9,6 +9,8 @@ import {
   Button,
   Icon,
   CheckList,
+  Spinner,
+  Checkbox,
 } from 'components/atoms'
 import { ShowCard } from 'components/composite'
 import { useComputed } from 'hooks'
@@ -29,17 +31,21 @@ export default function Components() {
     })
   )
   const [playing, setPlaying] = useState(false)
-
   const [active, setActive] = useState([false, false, false])
+  const [checked, setChecked] = useState(false)
 
   return (
     <Screen padd style={S.Page}>
       <Title h1>Components</Title>
-      <CheckList active={active} onChange={setActive}>
-        <span>a</span>
-        <span>b</span>
-        <span>b</span>
-      </CheckList>
+      <section>
+        <Spinner />
+        <Checkbox checked={checked} onChange={setChecked} />
+        <CheckList active={active} onChange={setActive}>
+          <span>a</span>
+          <span>b</span>
+          <span>b</span>
+        </CheckList>
+      </section>
       <S.Podcast>
         <Title h2>Podcast Card</Title>
         <Input value={src} onChange={setSrc} />
@@ -118,6 +124,10 @@ const S = {
 
     section:first-of-type {
       padding-top: 0;
+    }
+
+    section > * {
+      margin: 1rem 0;
     }
 
     .pb > button {
