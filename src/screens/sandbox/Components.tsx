@@ -8,6 +8,7 @@ import {
   PlayButton,
   Button,
   Icon,
+  CheckList,
 } from 'components/atoms'
 import { ShowCard } from 'components/composite'
 import { useComputed } from 'hooks'
@@ -29,9 +30,16 @@ export default function Components() {
   )
   const [playing, setPlaying] = useState(false)
 
+  const [active, setActive] = useState([false, false, false])
+
   return (
     <Screen padd style={S.Page}>
       <Title h1>Components</Title>
+      <CheckList active={active} onChange={setActive}>
+        <span>a</span>
+        <span>b</span>
+        <span>b</span>
+      </CheckList>
       <S.Podcast>
         <Title h2>Podcast Card</Title>
         <Input value={src} onChange={setSrc} />

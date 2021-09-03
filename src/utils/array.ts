@@ -33,8 +33,8 @@ export const diff = <T>(
   oldSet.filter(v => !newSet.includes(v)),
 ]
 
-export const set = <T extends any[]>(arr: T, i: number, v: T) =>
-  [...[...arr, ...Array(i)].slice(0, i), v, ...arr.slice(i + 1)] as T
+export const set = <T>(arr: T[], i: number, v: T) =>
+  [...[...arr, ...Array(i)].slice(0, i), v, ...arr.slice(i + 1)] as T[]
 
 export const remove = <T>(arr: T[], v: T) => {
   let i: number
