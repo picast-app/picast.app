@@ -1,16 +1,19 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { set } from 'utils/array'
+import { Checkbox } from 'components/atoms/Checkbox'
 
 type Props = {
   active?: boolean[]
   onChange?: (active: boolean[]) => void
+  disabled?: boolean
 }
 
 export const CheckList: React.FC<Props> = ({
   children,
   active = [],
   onChange,
+  disabled,
 }) => {
   const items = React.Children.toArray(children)
   const [id] = useState(((Math.random() * 1e6) | 0).toString(36))
@@ -19,11 +22,11 @@ export const CheckList: React.FC<Props> = ({
     <ul>
       {items.map((item, i) => (
         <S.Item key={i}>
-          <input
-            type="checkbox"
+          <Checkbox
             id={`${id}-${i}`}
             checked={active[i] ?? false}
             onChange={() => onChange?.(set(active, i, !active[i]))}
+            disabled={disabled}
           />
           <label htmlFor={`${id}-${i}`}>{item}</label>
         </S.Item>

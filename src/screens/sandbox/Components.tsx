@@ -33,18 +33,21 @@ export default function Components() {
   const [playing, setPlaying] = useState(false)
   const [active, setActive] = useState([false, false, false])
   const [checked, setChecked] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   return (
     <Screen padd style={S.Page}>
       <Title h1>Components</Title>
       <section>
-        <Spinner />
-        <Checkbox checked={checked} onChange={setChecked} />
-        <CheckList active={active} onChange={setActive}>
+        <Checkbox checked={checked} onChange={setChecked} loading={loading} />
+        <Checkbox checked={checked} onChange={setChecked} disabled />
+        <Checkbox checked={loading} onChange={setLoading} />
+        <CheckList active={active} onChange={setActive} disabled={checked}>
           <span>a</span>
           <span>b</span>
           <span>b</span>
         </CheckList>
+        <Spinner />
       </section>
       <S.Podcast>
         <Title h2>Podcast Card</Title>
