@@ -1,3 +1,9 @@
+# /general
+imp_add:  import $0
+imp_dup:  already subscribed to $0
+imp_miss: couldn't locate $0
+imp_del:  unsubscribe from $0
+
 # /appearance
 pick_theme:     Color theme
 use_system:     Use system theme
@@ -13,9 +19,9 @@ clear_all: Clear all data
 
 # /debug
 :dppx
-concurrency: Concurrency
-print_logs: Print logs
-show_touch: Show touch paths
+concurrency:     Concurrency
+print_logs:      Print logs
+show_touch:      Show touch paths
 toggle_playback: Toggle playback loading
-pull_pods: Pull podcasts
+pull_pods:       Pull podcasts
 :pull

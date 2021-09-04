@@ -1,3 +1,4 @@
+import * as predicate from './predicate'
 export * from 'snatchblock/list'
 
 export const min = <T>(list: T[], sel: (el: T) => number): T => {
@@ -55,8 +56,19 @@ type MappedNested<T extends Nested<any>, U> = {
   [K in keyof T]: T[K] extends any[] ? MappedNested<T[K], U> : U
 }
 
-const isNotNullish = <T>(v: T | null | undefined): v is T =>
-  v !== null && v !== undefined
-
 export const notNullish = <T>(arr: (T | null | undefined)[]): T[] =>
-  arr.filter(isNotNullish)
+  arr.filter(predicate.notNullish)
+
+type Part = {
+  <T, S extends T>(list: T[], predicate: (el: T) => el is S): [
+    S[],
+    Exclude<T, S>[]
+  ]
+  <T>(list: T[], predicate: (el: T) => unknown): [T[], T[]]
+}
+
+export const partition: Part = <T>(list: T[], predicate: (el: T) => unknown) =>
+  list.reduce(
+    ([t, f], c) => (predicate(c) ? [[...t, c], f] : [t, [...f, c]]) as any,
+    [[], []]
+  ) as any

@@ -1,0 +1,7 @@
+query ImportSearch($feeds: [String!]!) {
+  searchByFeed(feeds: $feeds) {
+    id
+    title
+    feed
+  }
+}

@@ -105,22 +105,6 @@ export default class Store<T extends Schema, TF = Flatten<T>> {
     }
   }
 
-  public async getJoined<
-    K extends keyof TF & string,
-    KJ extends keyof TF & string
-  >(on: K, key: KJ): Promise<CondArr<TF[K], TF[KJ]>> {
-    const joiner = await this.get(on)
-    const list = Array.isArray(joiner) ? joiner : [joiner]
-
-    const res = await Promise.all(
-      list.map(k => {
-        if (typeof k !== 'string') throw Error(`can't join on ${k}`)
-        return this.get(key, k)
-      })
-    )
-    return Array.isArray(joiner) ? res : (res[0] as any)
-  }
-
   public listenJoined<
     K extends keyof TF & string,
     KJ extends keyof TF & string

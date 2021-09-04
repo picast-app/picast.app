@@ -5,6 +5,7 @@ import { Checkbox } from 'components/atoms/Checkbox'
 
 type Props = {
   active?: boolean[]
+  loading?: number[]
   onChange?: (active: boolean[]) => void
   disabled?: boolean
 }
@@ -12,6 +13,7 @@ type Props = {
 export const CheckList: React.FC<Props> = ({
   children,
   active = [],
+  loading = [],
   onChange,
   disabled,
 }) => {
@@ -19,7 +21,7 @@ export const CheckList: React.FC<Props> = ({
   const [id] = useState(((Math.random() * 1e6) | 0).toString(36))
 
   return (
-    <ul>
+    <ul {...(disabled && { 'data-disabled': '' })}>
       {items.map((item, i) => (
         <S.Item key={i}>
           <Checkbox
@@ -27,6 +29,7 @@ export const CheckList: React.FC<Props> = ({
             checked={active[i] ?? false}
             onChange={() => onChange?.(set(active, i, !active[i]))}
             disabled={disabled}
+            loading={loading.includes(i)}
           />
           <label htmlFor={`${id}-${i}`}>{item}</label>
         </S.Item>
@@ -48,6 +51,10 @@ const S = {
 
     &:not(:first-of-type) {
       margin-top: 0.5rem;
+    }
+
+    [data-disabled] & > *:not(input[type='checkbox']) {
+      opacity: 0.3;
     }
   `,
 }

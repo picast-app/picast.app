@@ -6,9 +6,15 @@ import { ptInBox } from 'utils/geometry'
 type Props = {
   open: boolean
   onClose(): void
+  rescale?: boolean
 }
 
-export const Dialog: React.FC<Props> = ({ open, onClose, children }) => {
+export const Dialog: React.FC<Props> = ({
+  open,
+  onClose,
+  children,
+  rescale,
+}) => {
   const [ref, setRef] = useState<HTMLDialogElement | null>(null)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const close = useCallback(onClose, [])
@@ -32,7 +38,12 @@ export const Dialog: React.FC<Props> = ({ open, onClose, children }) => {
   }
 
   return createPortal(
-    <Comp ref={setRef} hidden={!open} onClick={onClick}>
+    <Comp
+      ref={setRef}
+      hidden={!open}
+      onClick={onClick}
+      {...(rescale && { 'data-rescale': '' })}
+    >
       {children}
     </Comp>,
     document.getElementById('root')!
@@ -40,7 +51,6 @@ export const Dialog: React.FC<Props> = ({ open, onClose, children }) => {
 }
 
 const Base = styled.dialog`
-  width: clamp(25rem, 30vw, 45rem);
   max-width: 100vw;
   max-height: 100vh;
   overflow-y: auto;
@@ -48,6 +58,10 @@ const Base = styled.dialog`
   background-color: var(--cl-surface);
   color: var(--cl-text);
   line-height: 1.2;
+
+  &:not([data-rescale]) {
+    width: clamp(25rem, 30vw, 45rem);
+  }
 
   p + p {
     margin-top: 0.5rem;

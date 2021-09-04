@@ -20,3 +20,9 @@ export function useStateX<T extends Key>(key: T, ...subs: string[]) {
 
   return [value, { set: storeX.setX, merge: storeX.mergeX }] as const
 }
+
+export function useJoinedX<T extends Key, K extends Key>(on: T, key: K) {
+  const [value, setValue] = useState<CondArr<Value<T>, Value<K>>>()
+  useEffect(() => storeX.listenJoinedX(on, key, v => setValue(v)), [on, key])
+  return value
+}

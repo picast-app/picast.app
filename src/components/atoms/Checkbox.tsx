@@ -60,7 +60,7 @@ const SC = styled.input`
 
   &:disabled {
     cursor: default;
-    opacity: 0.5;
+    opacity: 0.3;
   }
 
   &:checked {
@@ -86,29 +86,32 @@ const SC = styled.input`
     background-color: var(--cl-primary);
   }
 
-  &::before {
-    content: '';
-    position: absolute;
-    left: -75%;
-    top: -75%;
-    width: 250%;
-    height: 250%;
-    background-color: var(--cl-text);
-    border-radius: 50%;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
+  @media (hover: hover) {
+    &::before {
+      content: '';
+      position: absolute;
+      left: -75%;
+      top: -75%;
+      width: 250%;
+      height: 250%;
+      background-color: var(--cl-text);
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
 
-  &:hover:not(:disabled)::before {
-    opacity: 0.1;
-  }
+    &:hover:not(:disabled)::before {
+      opacity: 0.1;
+    }
 
-  &:checked::before {
-    background-color: var(--cl-primary);
-  }
+    &:checked::before {
+      background-color: var(--cl-primary);
+    }
 
-  &:active::before {
-    opacity: 0.02;
+    &:active::before {
+      opacity: 0.02;
+    }
   }
 `
 

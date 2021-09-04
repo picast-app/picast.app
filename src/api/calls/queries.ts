@@ -7,6 +7,7 @@ import qEpisodes from 'gql/queries/podcastEpisodes.gql'
 import qMe from 'gql/queries/me.gql'
 import qMetaSync from 'gql/queries/metaSync.gql'
 import qDiffEpisodes from 'gql/queries/episodes.gql'
+import qImportSearch from 'gql/queries/importSearch.gql'
 
 export const podcast = API<'PodcastPage'>(qPodcast)(
   (id: string) => ({ id }),
@@ -52,4 +53,9 @@ export const diffEpisodes = API<'FetchEpisodeDiff'>(qDiffEpisodes)(
     podcasts: podcasts.map(([id, known]) => ({ id, known })),
   }),
   ({ episodeDiff }) => episodeDiff
+)
+
+export const importSearch = API<'ImportSearch'>(qImportSearch)(
+  (feeds: string[]) => ({ feeds }),
+  ({ searchByFeed }) => searchByFeed
 )

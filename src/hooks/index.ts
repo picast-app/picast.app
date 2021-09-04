@@ -15,6 +15,8 @@ import type { API } from 'main/main.worker'
 import * as palette from 'styles/palette'
 import { querySub } from 'utils/css/query'
 import storeX from 'store/uiThread/api'
+import equal from 'snatchblock/equal'
+import clone from 'snatchblock/clone'
 
 export * from './store'
 export * from './player'
@@ -87,23 +89,46 @@ export function useScrollPos(
   return pos
 }
 
-export function useComputed<T, K>(
+export const useComputed = <T, K>(
   v: T,
   compute: (v: T) => K,
-  strategy: 'shallow' | 'json' = 'shallow'
-): K {
+  strategy: 'shallow' | 'json' | 'comp' = 'shallow'
+) => useDependent(v, compute, strategy)[0]
+
+export function useDependent<T, K = T>(
+  v: T,
+  compute: (v: T) => K = v => v as any,
+  strategy: 'shallow' | 'json' | 'comp' = 'shallow'
+): [K, (value: K) => void] {
   const [computed, setComputed] = useState<K>(() => compute(v))
-  const comp = strategy === 'shallow' ? v : JSON.stringify(v)
   const init = useRef(false)
+  const last = useRef(v)
+  const key = useConstant(strategy === 'comp' ? useEquality : null, v)
+  const comp =
+    strategy === 'json' ? JSON.stringify(v) : strategy === 'comp' ? key : v
 
   useEffect(() => {
     if (init.current) setComputed(compute(v))
     init.current = true
+    last.current = v
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comp])
 
-  return computed
+  return [computed, setComputed]
 }
+
+function useEquality(value: unknown) {
+  const key = useRef(0)
+  const last = useRef(clone(value))
+  if (value === last.current || equal(value, last.current)) return key.current
+  last.current = clone(value)
+  return ++key.current
+}
+
+export const useMany = <T extends any[], K>(
+  compute: (...v: T) => K,
+  ...v: T
+): K => useDependent(v, d => compute(...d), 'comp')[0]
 
 export function useDebouncedInputCall<T>(
   input: T,
@@ -485,10 +510,10 @@ export function useChanged(cb: Parameters<typeof useEffect>[0], deps?: any[]) {
   }, deps)
 }
 
-export function useConstant<T extends λ>(
+export function useConstant<T extends λ | null>(
   hook: T,
-  ...args: Parameters<T>
-): ReturnType<T> {
+  ...args: T extends λ ? Parameters<T> : any[]
+): T extends λ ? ReturnType<T> : undefined {
   const ref = useRef(hook)
-  return ref.current(...args)
+  return ref.current?.(...args)
 }

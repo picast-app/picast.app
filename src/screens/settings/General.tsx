@@ -4,12 +4,15 @@ import { Button } from 'components/atoms'
 import { store } from 'store'
 import { createAppended, setAttributes } from 'utils/dom'
 import { notNullish } from 'utils/array'
+import { Import } from './Import'
 
 export default function General() {
   return (
     <Section title={$.c`general`}>
       <label>export OPML</label>
       <Button onClick={downloadOPML}>export</Button>
+      <label>import OPML</label>
+      <Import />
     </Section>
   )
 }
@@ -26,7 +29,7 @@ async function createOPML() {
   outline.setAttribute('text', 'feeds')
 
   const subs = notNullish(
-    await store.getJoined('user.subscriptions', 'podcasts.*')
+    await store.get('user.subscriptions').join('podcasts.*')
   )
   subs
     .sort(({ title: a }, { title: b }) => a.localeCompare(b))

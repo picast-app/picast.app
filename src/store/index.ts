@@ -20,13 +20,19 @@ export const threaded = {
     proxy(
       store.listen(
         key,
-        (
-          v: any,
-          path: string,
-          meta: Parameters<Setter>[2],
-          ...subs: string[]
-        ) => cb(v, path, omit(meta, 'noChange'), ...subs),
+        (v, path, meta, ...subs) =>
+          cb(v, path, omit(meta, 'noChange'), ...subs),
         ...subs
+      )
+    ),
+  listenJoinedX: <T extends keyof FlatState, K extends keyof FlatState>(
+    on: T,
+    key: K,
+    cb: Setter
+  ) =>
+    proxy(
+      store.listenJoined(on, key, (v, path, meta) =>
+        cb(v, path, omit(meta, 'noChange'))
       )
     ),
   setX: store.set.bind(store),

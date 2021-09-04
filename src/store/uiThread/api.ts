@@ -9,6 +9,7 @@ const api = {
   setX: main.setX as unknown as API['setX'],
   mergeX: main.mergeX as unknown as API['mergeX'],
   listenX: listen,
+  listenJoinedX: main.listenJoinedX as unknown as API['listenJoinedX'],
 }
 export default api
 ;(globalThis as any).storeX = api
