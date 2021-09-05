@@ -58,11 +58,14 @@ function Modal({ items, onClose }: { items: OPMLItem[]; onClose(): void }) {
     onClose()
   }
 
+  const subIds =
+    subscriptions?.map(v => v?.id).filter(predicate.notNullish) ?? []
+
   return (
     <S.Modal onSubmit={submit} onReset={onClose}>
       <Add
         items={items}
-        subs={subscriptions?.filter(predicate.notNullish).map(v => v.id) ?? []}
+        subs={subIds}
         feeds={feeds}
         setAdd={setAdd}
         setLoading={setLoading}
@@ -70,7 +73,7 @@ function Modal({ items, onClose }: { items: OPMLItem[]; onClose(): void }) {
       <List
         title="@settings.imp_dup"
         items={items.filter(
-          ({ xmlUrl }) => feeds[xmlUrl] && add.includes(feeds[xmlUrl]!.id)
+          ({ xmlUrl }) => feeds[xmlUrl] && subIds.includes(feeds[xmlUrl]!.id)
         )}
       />
       <List
@@ -139,7 +142,8 @@ const Add: React.FC<{
         .sort((a, b) => a.text.localeCompare(b.text)),
     ],
     items,
-    mapValues(feeds, v => v?.id ?? null)
+    mapValues(feeds, v => v?.id ?? null),
+    subs
   )
   const [add, setAddInds] = useDependent(newItems, ({ length }) =>
     Array<boolean>(length).fill(true)
@@ -195,7 +199,7 @@ const Remove: React.FC<{
     imported
   )
   const [remove, setRemoveInds] = useDependent(removable, ({ length }) =>
-    Array<boolean>(length).fill(true)
+    Array<boolean>(length).fill(false)
   )
   const selection = useMany(
     (sel, ids) => sel.map((v, i) => v && ids[i]).filter(predicate.truthy),
