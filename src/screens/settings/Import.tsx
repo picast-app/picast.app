@@ -17,6 +17,7 @@ import type * as GQL from 'types/gql'
 import type { Key as StrKey } from 'i18n/strings'
 import * as predicate from 'utils/predicate'
 import { Podcast } from 'store/state'
+import { useLocation, history } from '@picast-app/router'
 
 export function Import() {
   const [open, setOpen] = useState(false)
@@ -104,11 +105,13 @@ const Add: React.FC<{
   const [loading, newItems] = useMany(
     (items, known) => [
       items.flatMap(({ xmlUrl }, i) => (xmlUrl in known ? [] : [i])),
-      items.filter(
-        ({ xmlUrl }) =>
-          !(xmlUrl in known) ||
-          (known[xmlUrl] && !subs.includes(known[xmlUrl]!))
-      ),
+      items
+        .filter(
+          ({ xmlUrl }) =>
+            !(xmlUrl in known) ||
+            (known[xmlUrl] && !subs.includes(known[xmlUrl]!))
+        )
+        .sort((a, b) => a.text.localeCompare(b.text)),
     ],
     items,
     mapValues(feeds, v => v?.id ?? null)
@@ -249,42 +252,45 @@ type OPMLItem = { text: string; xmlUrl: string }
 
 export const useImport = () => {
   const [items, setItems] = useState<OPMLItem[] | null>(null)
+  const [text, setText] = useState<string>()
+
+  const loc = useLocation()
+  const query = new URLSearchParams(loc.search).get('opml')
+  useEffect(() => {
+    if (!query) return
+    setText(query)
+    history.push(location.pathname)
+  }, [query])
+
+  useEffect(() => {
+    if (!text) return setItems(null)
+
+    const doc = new DOMParser().parseFromString(text, 'text/xml')
+
+    if (!doc.querySelector('outline[xmlUrl]')) return logInvalidType()
+
+    setItems(
+      [...doc.querySelectorAll('outline[xmlUrl]')].map(
+        v =>
+          Object.fromEntries(
+            ['text', 'xmlUrl'].map(k => [k, v.getAttribute(k)])
+          ) as any
+      )
+    )
+  }, [text])
 
   const ref = useCallbackRef(input => {
     const reader = new FileReader()
     let file: File
 
     reader.addEventListener('load', e => {
-      const doc = new DOMParser().parseFromString(
-        e.target!.result as string,
-        'text/xml'
-      )
-
-      if (!doc.querySelector('outline[xmlUrl]'))
-        return logInvalidType(file?.name)
-
-      setItems(
-        [...doc.querySelectorAll('outline[xmlUrl]')].map(
-          v =>
-            Object.fromEntries(
-              ['text', 'xmlUrl'].map(k => [k, v.getAttribute(k)])
-            ) as any
-        )
-      )
+      setText(e.target!.result as string)
     })
 
     function onChange({ target }: Event) {
       file = (target as HTMLInputElement).files![0]
       if (!file) return setItems(null)
       reader.readAsText(file)
-    }
-
-    function logInvalidType(file = 'This', err?: unknown) {
-      if (err) logger.error(err)
-      notify.snack({
-        lvl: 'error',
-        text: `${file} is not a valid OPML file.`,
-      })
     }
 
     input.addEventListener('change', onChange)
@@ -295,6 +301,14 @@ export const useImport = () => {
   })
 
   return [ref, items] as const
+}
+
+function logInvalidType(file = 'This', err?: unknown) {
+  if (err) logger.error(err)
+  notify.snack({
+    lvl: 'error',
+    text: `${file} is not a valid OPML file.`,
+  })
 }
 
 const S = {

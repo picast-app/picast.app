@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@picast-app/fiber": "^1.0.2",
-    "@picast-app/router": "^0.5.1",
+    "@picast-app/router": "^0.5.2",
     "crc": "^3.8.0",
     "graphql-request": "^3.3.0",
     "idb": "^5.0.7",

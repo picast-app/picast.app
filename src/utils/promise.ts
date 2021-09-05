@@ -75,3 +75,18 @@ export const asyncCB =
     new Promise((res, rej) =>
       prom.then(f => res(f?.(...args))).catch(rej)
     ) as any
+
+export const retry = async <T>(
+  max: number,
+  delay: number,
+  attempt: () => T
+): Promise<T extends Promise<infer I> ? I : T> => {
+  try {
+    return await (attempt as any)()
+  } catch (err) {
+    if (max <= 1) throw err
+    logger.warn(`attempt failed, ${max - 1} attempts left`)
+    await wait(setTimeout, delay)
+    return await retry(max - 1, delay, attempt)
+  }
+}

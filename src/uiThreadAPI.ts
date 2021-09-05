@@ -1,5 +1,6 @@
 import { querySub } from 'utils/css/query'
 import { proxy } from '@picast-app/fiber'
+import { history } from '@picast-app/router'
 
 const api = {
   alert: (msg?: any) => {
@@ -22,6 +23,9 @@ const api = {
     handler: λ<[WindowEventMap[T]]>
   ) {
     window.addEventListener(event, handler)
+  },
+  navigate: (target: Parameters<typeof history['push']>[0]) => {
+    history.push(target)
   },
 }
 export type API = typeof api
