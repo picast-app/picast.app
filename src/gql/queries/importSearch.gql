@@ -1,6 +1,6 @@
 #import "../fragments/podcast.gql"
 
-query ImportSearch($feeds: [String!]!, $limit: Int = 50) {
+query ImportSearch($feeds: [String!]!, $limit: Int = 5000) {
   searchByFeed(feeds: $feeds) {
     ...PodcastPageInfo
   }

@@ -10,7 +10,7 @@ import {
 import * as notify from 'utils/notification'
 import { mapValues } from 'utils/object'
 import { notNullish } from 'utils/array'
-import { Checkbox, CheckList, Button } from 'components/atoms'
+import { Checkbox, CheckList, Button, Spinner } from 'components/atoms'
 import { Dialog } from 'components/structure'
 import { main } from 'workers'
 import type * as GQL from 'types/gql'
@@ -43,14 +43,18 @@ function Modal({ items, onClose }: { items: OPMLItem[]; onClose(): void }) {
   const [add, setAdd] = useState<string[]>([])
   const [remove, setRemove] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [importing, setImporting] = useState(false)
 
   async function submit(e: any) {
     e.preventDefault()
     logger.info({ add, remove })
-    await Promise.all([
+    setImporting(true)
+    const res = await Promise.allSettled([
       ...add.map(id => main.subscribe(id)),
       ...remove.map(id => main.unsubscribe(id)),
     ])
+    res.filter(predicate.isRejected).forEach(v => logger.error(v.reason))
+    setImporting(false)
     onClose()
   }
 
@@ -90,6 +94,11 @@ function Modal({ items, onClose }: { items: OPMLItem[]; onClose(): void }) {
           Save
         </Button>
       </S.BTWrap>
+      {importing && (
+        <S.Loading>
+          <Spinner />
+        </S.Loading>
+      )}
     </S.Modal>
   )
 }
@@ -384,5 +393,17 @@ const S = {
     button {
       width: 11ch;
     }
+  `,
+
+  Loading: styled.div`
+    position: absolute;
+    left: -1rem;
+    top: -1rem;
+    width: calc(100% + 2rem);
+    height: calc(100% + 6rem);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
   `,
 }

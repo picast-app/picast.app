@@ -17,3 +17,11 @@ type PickTruthy<T> =
   | (T extends string ? Exclude<T, ''> : never)
   | (T extends number ? Exclude<T, 0> : never)
   | Exclude<T, undefined | null | string | number | boolean>
+
+export const isFulfilled = <T>(
+  v: PromiseSettledResult<T>
+): v is PromiseFulfilledResult<T> => v.status === 'fulfilled'
+
+export const isRejected = (
+  v: PromiseSettledResult<unknown>
+): v is PromiseRejectedResult => v.status === 'rejected'
