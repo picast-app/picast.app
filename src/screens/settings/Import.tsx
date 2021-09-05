@@ -19,9 +19,9 @@ import * as predicate from 'utils/predicate'
 import { Podcast } from 'store/state'
 import { useLocation, history } from '@picast-app/router'
 
-export function Import() {
+export function Import({ file }: { file?: File }) {
   const [open, setOpen] = useState(false)
-  const [ref, items] = useImport()
+  const [ref, items] = useImport(file)
 
   useEffect(() => {
     if (items) setOpen(true)
@@ -29,7 +29,7 @@ export function Import() {
 
   return (
     <>
-      <input type="file" accept="text/xml" ref={ref} />
+      <input type="file" accept="text/xml" ref={ref} id="in-import" />
       <Dialog open={open} onClose={() => setOpen(false)} rescale>
         <Modal items={items ?? []} />
       </Dialog>
@@ -43,8 +43,6 @@ function Modal({ items }: { items: OPMLItem[] }) {
   const [add, setAdd] = useState<string[]>([])
   const [remove, setRemove] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
-
-  logger.info({ add, remove })
 
   return (
     <S.Modal>
@@ -250,9 +248,13 @@ function useFeeds(feeds: string[]) {
 
 type OPMLItem = { text: string; xmlUrl: string }
 
-export const useImport = () => {
+export const useImport = (file_?: File) => {
   const [items, setItems] = useState<OPMLItem[] | null>(null)
   const [text, setText] = useState<string>()
+  const [file, setFile] = useDependent(file_)
+
+  const name = useRef(file?.name)
+  if (file) name.current = file?.name
 
   const loc = useLocation()
   const query = new URLSearchParams(loc.search).get('opml')
@@ -264,10 +266,9 @@ export const useImport = () => {
 
   useEffect(() => {
     if (!text) return setItems(null)
-
     const doc = new DOMParser().parseFromString(text, 'text/xml')
-
-    if (!doc.querySelector('outline[xmlUrl]')) return logInvalidType()
+    if (!doc.querySelector('outline[xmlUrl]'))
+      return logInvalidType(name.current)
 
     setItems(
       [...doc.querySelectorAll('outline[xmlUrl]')].map(
@@ -280,17 +281,8 @@ export const useImport = () => {
   }, [text])
 
   const ref = useCallbackRef(input => {
-    const reader = new FileReader()
-    let file: File
-
-    reader.addEventListener('load', e => {
-      setText(e.target!.result as string)
-    })
-
     function onChange({ target }: Event) {
-      file = (target as HTMLInputElement).files![0]
-      if (!file) return setItems(null)
-      reader.readAsText(file)
+      setFile((target as HTMLInputElement).files![0])
     }
 
     input.addEventListener('change', onChange)
@@ -300,6 +292,15 @@ export const useImport = () => {
     }
   })
 
+  useEffect(() => {
+    if (!file) return
+    const reader = new FileReader()
+    reader.addEventListener('load', e => {
+      setText(e.target!.result as string)
+    })
+    reader.readAsText(file)
+  }, [file])
+
   return [ref, items] as const
 }
 
@@ -307,7 +308,7 @@ function logInvalidType(file = 'This', err?: unknown) {
   if (err) logger.error(err)
   notify.snack({
     lvl: 'error',
-    text: `${file} is not a valid OPML file.`,
+    text: `${file} does not look like a valid OPML file.`,
   })
 }
 

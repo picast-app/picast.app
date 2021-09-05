@@ -1,21 +1,52 @@
-import React from 'react'
+import React, { useState } from 'react'
+import styled from 'styled-components'
 import Section from './Section'
-import { Button } from 'components/atoms'
+import { Button, Dropzone } from 'components/atoms'
 import { store } from 'store'
 import { createAppended, setAttributes } from 'utils/dom'
 import { notNullish } from 'utils/array'
 import { Import } from './Import'
+import { sc } from 'utils/react'
 
 export default function General() {
+  const [file, setFile] = useState<File>()
+
   return (
     <Section title={$.c`general`}>
-      <label>export OPML</label>
-      <Button onClick={downloadOPML}>export</Button>
-      <label>import OPML</label>
-      <Import />
+      <InOutWrap>
+        <label>export OPML</label>
+        <Button onClick={downloadOPML}>export</Button>
+        <label>import OPML</label>
+        <Dropzone for="in-import" onDrop={setFile}></Dropzone>
+        <Import file={file} />
+      </InOutWrap>
     </Section>
   )
 }
+
+const InOutWrap = styled.div`
+  display: contents;
+
+  & > button {
+    justify-self: right;
+  }
+
+  & > label {
+    height: var(--row-height);
+    line-height: var(--row-height);
+  }
+
+  ${sc(Dropzone)} {
+    grid-column: 1/3;
+    grid-row: span 2;
+    height: 100%;
+    align-self: start;
+
+    & + input[type='file'] {
+      display: none;
+    }
+  }
+`
 
 async function createOPML() {
   const doc = document.implementation.createDocument(null, 'opml')

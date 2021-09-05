@@ -59,6 +59,7 @@ const S = {
     span {
       color: var(--cl-text-strong);
       font-size: 1rem;
+      line-height: 1.3;
     }
 
     button {
