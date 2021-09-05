@@ -39,11 +39,13 @@ const signedInGuard =
   }
 
 export const subscribe = signedInGuard(async (user, id: string) => {
+  logger.info('subscribe to', id)
   store.set('user.subscriptions', set.add(user.subscriptions, id))
   await mutate.subscribe(id)
 })
 
 export const unsubscribe = signedInGuard(async (user, id: string) => {
+  logger.info('unsubscribe from', id)
   store.set('user.subscriptions', set.remove(user.subscriptions, id))
   await mutate.unsubscribe(id)
 })

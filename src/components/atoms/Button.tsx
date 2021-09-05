@@ -10,14 +10,16 @@ type Props = {
   autoFocus?: boolean
   tabIndex?: number
   feedback?: boolean
+  plain?: boolean
 }
 
-export const Button: React.FC<Props> = ({
+export const Button: React.FC<Props & React.HTMLProps<HTMLButtonElement>> = ({
   iconWrap,
   text,
   onClick,
   children,
   feedback,
+  plain,
   ...props
 }) => {
   const [ref, setRef] = useState<HTMLButtonElement | null>(null)
@@ -34,10 +36,10 @@ export const Button: React.FC<Props> = ({
   const styles: string[] = []
   if (iconWrap) styles.push('icon-wrap')
   if (text) styles.push('text')
+  if (plain) styles.push('plain')
   return (
     <S.Button
-      type="button"
-      {...props}
+      {...(props as any)}
       {...(styles.length && { ['data-style']: styles.join(' ') })}
       onClick={handleClick}
       {...(iconWrap && { title: iconWrap })}
@@ -103,16 +105,19 @@ const S = {
   Button: styled.button`
     appearance: none;
     cursor: pointer;
+
+    --color: var(--cl-primary);
+
     --height: 2rem;
     --border-size: 2px;
     height: var(--height);
     padding: 0 1rem;
     font-family: inherit;
     font-size: 0.9rem;
-    color: var(--cl-primary);
+    color: var(--color);
     line-height: calc(var(--height) - var(--border-size) * 2);
     background-color: var(--cl-background);
-    border: var(--border-size) solid var(--cl-primary);
+    border: var(--border-size) solid var(--color);
     border-radius: 1rem;
     -webkit-tap-highlight-color: transparent;
     position: relative;
@@ -140,13 +145,23 @@ const S = {
     &[data-style~='text'] {
       padding: 0;
       background-color: transparent;
-      color: var(--cl-primary);
+      color: var(--color);
       font-size: 0.75rem;
       font-weight: 400;
       border-radius: unset;
       border: none;
       text-transform: uppercase;
       letter-spacing: 0.1rem;
+    }
+
+    &[data-style~='plain'] {
+      --color: var(--cl-text);
+      opacity: 0.8;
+    }
+
+    &[disabled] {
+      cursor: unset;
+      opacity: 0.6;
     }
 
     &:focus {

@@ -46,6 +46,12 @@ const InOutWrap = styled.div`
       display: none;
     }
   }
+
+  @media (min-width: 1000px) {
+    ${sc(Dropzone)} {
+      grid-row: span 3;
+    }
+  }
 `
 
 async function createOPML() {

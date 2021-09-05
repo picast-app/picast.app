@@ -30,6 +30,7 @@
     "no-eol-whitespace": null,
     "media-feature-name-no-unknown": null,
     "indentation": null,
+    "number-leading-zero": null,
     "length-zero-no-unit": [
       true,
       {

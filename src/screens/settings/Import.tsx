@@ -10,7 +10,7 @@ import {
 import * as notify from 'utils/notification'
 import { mapValues } from 'utils/object'
 import { notNullish } from 'utils/array'
-import { Checkbox, CheckList } from 'components/atoms'
+import { Checkbox, CheckList, Button } from 'components/atoms'
 import { Dialog } from 'components/structure'
 import { main } from 'workers'
 import type * as GQL from 'types/gql'
@@ -31,21 +31,31 @@ export function Import({ file }: { file?: File }) {
     <>
       <input type="file" accept="text/xml" ref={ref} id="in-import" />
       <Dialog open={open} onClose={() => setOpen(false)} rescale>
-        <Modal items={items ?? []} />
+        <Modal items={items ?? []} onClose={() => setOpen(false)} />
       </Dialog>
     </>
   )
 }
 
-function Modal({ items }: { items: OPMLItem[] }) {
+function Modal({ items, onClose }: { items: OPMLItem[]; onClose(): void }) {
   const subscriptions = useJoinedX('user.subscriptions', 'podcasts.*')
   const feeds = useFeeds(items.map(({ xmlUrl }) => xmlUrl))
   const [add, setAdd] = useState<string[]>([])
   const [remove, setRemove] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
 
+  async function submit(e: any) {
+    e.preventDefault()
+    logger.info({ add, remove })
+    await Promise.all([
+      ...add.map(id => main.subscribe(id)),
+      ...remove.map(id => main.unsubscribe(id)),
+    ])
+    onClose()
+  }
+
   return (
-    <S.Modal>
+    <S.Modal onSubmit={submit} onReset={onClose}>
       <Add
         items={items}
         subs={subscriptions?.filter(predicate.notNullish).map(v => v.id) ?? []}
@@ -72,6 +82,14 @@ function Modal({ items }: { items: OPMLItem[] }) {
           setRemove={setRemove}
         />
       )}
+      <S.BTWrap>
+        <Button type="reset" plain>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={loading}>
+          Save
+        </Button>
+      </S.BTWrap>
     </S.Modal>
   )
 }
@@ -83,11 +101,11 @@ const List: React.FC<{ title: StrKey; items: OPMLItem[] }> = ({
   !items?.length ? null : (
     <details>
       <summary>{$(title, $.count('podcast', items.length))}</summary>
-      <ul>
+      <S.List>
         {items.map(({ xmlUrl, text }) => (
           <li key={xmlUrl}>{text}</li>
         ))}
-      </ul>
+      </S.List>
     </details>
   )
 
@@ -118,9 +136,10 @@ const Add: React.FC<{
     Array<boolean>(length).fill(true)
   )
   const selection = useMany(
-    (sel, ids) => sel.map((v, i) => v && ids[i]).filter(predicate.truthy),
+    (sel, ids) =>
+      sel.map((v, i) => v && ids[newItems[i].xmlUrl]).filter(predicate.truthy),
     add,
-    subs
+    mapValues(feeds, v => v?.id)
   )
   useEffect(() => setAdd(selection), [setAdd, selection])
   useEffect(() => setLoading(loading.length > 0), [setLoading, loading.length])
@@ -167,7 +186,7 @@ const Remove: React.FC<{
     imported
   )
   const [remove, setRemoveInds] = useDependent(removable, ({ length }) =>
-    Array<boolean>(length).fill(false)
+    Array<boolean>(length).fill(true)
   )
   const selection = useMany(
     (sel, ids) => sel.map((v, i) => v && ids[i]).filter(predicate.truthy),
@@ -313,25 +332,57 @@ function logInvalidType(file = 'This', err?: unknown) {
 }
 
 const S = {
-  Modal: styled.div`
+  Modal: styled.form`
     width: 35rem;
     max-width: calc(100vw - 2rem);
+    position: relative;
+    padding-bottom: 4rem;
 
     ul {
-      max-height: 30vh;
+      max-height: 47vh;
       overflow-y: scroll;
-      padding: 1rem 0;
+      margin-top: 0.8rem;
+      width: calc(100% + 1rem);
     }
 
     & > * + :is(details, span) {
       display: block;
       margin-top: 1rem;
     }
+
+    @media (max-width: 600px) and (orientation: portrait) {
+      min-height: calc(100vh - 2rem);
+    }
+  `,
+
+  List: styled.ul`
+    padding-inline-start: 1.5rem;
+    list-style-type: disc;
+    max-height: 33vh;
+
+    li {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      line-height: 1.5;
+    }
   `,
 
   Action: styled.summary`
     input {
       float: right;
+    }
+  `,
+
+  BTWrap: styled.div`
+    display: flex;
+    justify-content: space-around;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+
+    button {
+      width: 11ch;
     }
   `,
 }

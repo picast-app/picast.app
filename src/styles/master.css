@@ -47,3 +47,11 @@ a {
 a.icon-wrap {
   line-height: 0;
 }
+
+details > summary {
+  cursor: ns-resize;
+}
+
+details[open] > summary {
+  cursor: n-resize;
+}

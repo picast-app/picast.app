@@ -50,11 +50,16 @@ const S = {
     }
 
     &:not(:first-of-type) {
-      margin-top: 0.5rem;
+      margin-top: 0.8rem;
     }
 
     [data-disabled] & > *:not(input[type='checkbox']) {
       opacity: 0.3;
+    }
+
+    label {
+      font-size: 0.9rem;
+      opacity: 0.9;
     }
   `,
 }

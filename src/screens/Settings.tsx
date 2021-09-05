@@ -89,7 +89,7 @@ const Routes = ({ isDesktop }: { isDesktop: boolean }) => (
         {component}
       </Route>
     ))}
-    {isDesktop && <Redirect to="/settings/appearance" />}
+    {isDesktop && <Redirect to="/settings/general" />}
   </Switch>
 )
 
@@ -213,6 +213,7 @@ const S = {
       padding-right: var(--padd);
       padding-bottom: var(--padd);
       margin-left: 1vw;
+      max-width: 45rem;
     }
   `,
 }

@@ -22,7 +22,7 @@ export const Dropzone = scComp(
         {...(hovered && { 'data-hovered': '' })}
       >
         <span>
-          Drag &amp; drop or <label htmlFor={p.for}>select file</label>
+          Drag &amp; drop or <label htmlFor={p.for}>select a file</label>
         </span>
       </Zone>
     )
