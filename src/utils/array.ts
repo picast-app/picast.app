@@ -42,6 +42,15 @@ export const remove = <T>(arr: T[], v: T) => {
   while ((i = arr.indexOf(v)) >= 0) arr.splice(i, 1)
 }
 
+export const removeMatch = <T>(arr: T[], match: (v: T) => boolean) => {
+  const i = arr.findIndex(v => match(v))
+  if (i >= 0) arr.splice(i, 1)
+}
+
+export const removeMatchAll = <T>(arr: T[], match: (v: T) => boolean) => {
+  for (let i = 0; i < arr.length; i++) if (match(arr[i])) arr.splice(i--, 1)
+}
+
 export const last = <T extends unknown[]>(arr: T) =>
   arr.slice(-1)[0] as T extends [...unknown[], infer U] ? U : undefined
 

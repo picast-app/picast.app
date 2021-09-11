@@ -7,6 +7,7 @@ import * as convert from 'api/convert'
 import epStore from 'main/episodeStore'
 import { set } from 'utils/path'
 import { waiter } from 'utils/promise'
+import { dbPodcast, podKeys } from 'main/idb/schema'
 
 export default async (store: Store) => {
   const [podcasts, init] =
@@ -20,24 +21,22 @@ export default async (store: Store) => {
     return { covers: [], ...(await pods[id]) } as Podcast
   })
 
-  const persisted: (keyof Podcast)[] = ['lastMetaCheck', 'lastEpisodeCheck']
-
   store.handler('podcasts.*').set(async (data, path, meta, id) => {
     const pods = await podcasts
     if (/^\w+\.\w+$/.test(path)) {
       pods[id] = data
-      if (data && (subs.includes(id) || meta.subscribed))
-        await (await dbProm).put('podcasts', data, id)
+      if (data && (subs.includes(id) || meta.subscribed)) await writeDB(data)
     } else {
       let pod = await pods[id]
       if (pod) {
         pod = pods[id] = set(pod, data, ...path.split('.').slice(2))
+        logger.info({ pod })
       }
       if (
         subs.includes(id) &&
-        persisted.includes(path.replace(/^\w+\.\w+\./, '') as keyof Podcast)
+        podKeys.all.includes(path.replace(/^\w+\.\w+\./, '') as any)
       )
-        await (await dbProm).put('podcasts', pod!, id)
+        await writeDB(pod!)
     }
   })
 
@@ -101,4 +100,11 @@ export default async (store: Store) => {
       })
     )
   )
+}
+
+async function writeDB(podcast: Podcast) {
+  if (!podcast) return
+  const db = await dbProm
+  const data = dbPodcast(podcast)
+  await db.put('podcasts', data, data.id)
 }

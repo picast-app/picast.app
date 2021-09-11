@@ -72,7 +72,7 @@ export default (store: Store) => {
           `don't write ${id} (not subbed to ${cache.get(id)?.podcast})`,
           { subbed, subscriptions: await subscriptions }
         )
-    } else logger.info(`${id} didn't change`, path, data)
+    }
   }, true)
 
   store.handler('episodes.*').get(
