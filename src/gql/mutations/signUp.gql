@@ -4,7 +4,7 @@ mutation SignUp(
   $ident: String!
   $password: String!
   $known: [ID!] = []
-  $limit: Int = 10000
+  $limit: Int = 0
 ) {
   signUp(ident: $ident, password: $password) {
     reason

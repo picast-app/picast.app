@@ -6,6 +6,8 @@ import type { Schema as WSAPI } from 'types/ws'
 
 const endpoint = new Endpoint({
   episodeAdded: { params: { podcast: String, episodes: Object } },
+  addEpisodes: { params: Object },
+  seedComplete: { params: { podcasts: Object } },
   hasAllEpisodes: { params: { podcast: String, total: Number } },
   hasCovers: { params: { id: String, covers: Object, palette: Object } },
 })
@@ -28,6 +30,28 @@ endpoint.on('episodeAdded', async ({ podcast, episodes }) => {
   }))
   logger.info('episodeAdded', formatted)
   ;(await (await epStore).getPodcast(podcast)).addEpisodes(formatted, true)
+})
+
+endpoint.on('addEpisodes', async podcasts => {
+  const podStore = await epStore
+  Object.entries(podcasts).map(async ([podcast, episodes]) => {
+    const podEpStore = await podStore.getPodcast(podcast)
+    const formatted = (episodes as any[]).map(
+      ({ url, published, ...rest }: any) => ({
+        file: url,
+        published: new Date(published).getTime(),
+        podcast,
+        ...rest,
+      })
+    )
+    podEpStore.addEpisodes(formatted, true)
+  })
+})
+
+endpoint.on('seedComplete', ({ podcasts }) => {
+  ;(podcasts as string[]).map(id =>
+    store.set('podcasts.*.seeding', false, {}, id)
+  )
 })
 
 endpoint.on('hasAllEpisodes', ({ podcast, total }) => {

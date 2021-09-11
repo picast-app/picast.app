@@ -4,7 +4,7 @@ mutation SignInGoogle(
   $accessToken: ID!
   $known: [ID!] = []
   $wpSub: ID
-  $limit: Int = 10000
+  $limit: Int = 0
 ) {
   signInGoogle(accessToken: $accessToken, wpSub: $wpSub) {
     ...MeInitial

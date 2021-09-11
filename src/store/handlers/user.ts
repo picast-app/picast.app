@@ -58,7 +58,7 @@ export default class UserState extends MemCache<State['user']> {
     if (this.state) throw Error('already signed in')
 
     await Promise.all(
-      data.subscriptions.added.map(v => this.storePodcast(v, true))
+      data.subscriptions.added.map(v => this.storePodcast(v, true, true))
     )
     logger.info('podcasts stored')
 
@@ -139,17 +139,15 @@ export default class UserState extends MemCache<State['user']> {
 
   private async storePodcast(
     podcast: GQL.Me_me_subscriptions_added,
-    subscribed?: true
+    subscribed?: true,
+    seeding?: boolean
   ) {
     logger.info(
       `[user] store podcast ${podcast.id} with ${podcast.episodes?.edges.length} episodes`
     )
-    this.store.set(
-      'podcasts.*',
-      convert.podcast(podcast),
-      { subscribed },
-      podcast.id
-    )
+    const data = convert.podcast(podcast)
+    if (seeding && data) data.seeding = true
+    this.store.set('podcasts.*', data, { subscribed }, podcast.id)
     if (!podcast.episodes?.edges.length) return
     const store = await (await epStore).getPodcast(podcast.id, subscribed)
     store.addEpisodes(

@@ -31,7 +31,10 @@ export async function pullPodcasts(
     force: false,
   }
 ) {
-  const podcasts = collection(await store.get('library.list'), ({ id }) => id)
+  const podcasts = collection(
+    (await store.get('library.list')).filter(v => !v.seeding),
+    ({ id }) => id
+  )
   const isExpired = opts.force ? () => true : expired
 
   let checks = await Promise.all(

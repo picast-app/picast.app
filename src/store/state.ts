@@ -72,6 +72,7 @@ export type Podcast = {
   check?: string
   lastMetaCheck?: number
   lastEpisodeCheck?: number
+  seeding?: boolean // initial data isn't yet complete
 }
 
 export type Episode = {
