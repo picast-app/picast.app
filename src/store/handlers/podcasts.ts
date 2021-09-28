@@ -30,7 +30,6 @@ export default async (store: Store) => {
       let pod = await pods[id]
       if (pod) {
         pod = pods[id] = set(pod, data, ...path.split('.').slice(2))
-        logger.info({ pod })
       }
       if (
         subs.includes(id) &&

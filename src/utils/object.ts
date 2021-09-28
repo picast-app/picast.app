@@ -1,5 +1,6 @@
 import { prefix as strPrefix } from 'snatchblock/string'
 import type { Prefix, StringCase } from 'snatchblock/types'
+export { pick, omit } from 'snatchblock/object'
 
 type obj = Record<string | number | symbol, any>
 
@@ -47,22 +48,6 @@ export const filter = <T extends obj>(
   Object.fromEntries(
     Object.entries(o).filter(([k, v]) => func(k as any, v))
   ) as Partial<T>
-
-export const pick = <T extends obj, K extends keyof T>(
-  v: T,
-  ...keys: K[]
-): Pick<T, K> =>
-  Object.fromEntries(keys.filter(k => k in v).map(k => [k, v[k]])) as any
-
-export const omit = <T extends obj, K extends keyof T>(
-  v: T,
-  ...keys: K[]
-): Omit<T, K> =>
-  Object.fromEntries(
-    Object.entries(v).flatMap(([k, v]) =>
-      keys.includes(k as any) ? [] : [[k, v]]
-    )
-  ) as any
 
 export const omitNullish = <T extends obj>(
   obj: T

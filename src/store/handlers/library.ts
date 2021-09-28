@@ -25,11 +25,7 @@ export default (store: Store) => {
     totalEpisodeCount = v
   })
   store.handler('library.list').set(pods => {
-    const total = pods.reduce(
-      (a, c) =>
-        a + (c?.episodeCount ?? (logger.warn('no episode count for', c), 1000)),
-      0
-    )
+    const total = pods.reduce((a, c) => a + (c?.episodeCount ?? 1000), 0)
     store.set('library.totalEpisodeCount', total)
   })
 

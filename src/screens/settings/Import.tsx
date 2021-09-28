@@ -15,7 +15,7 @@ import { Dialog } from 'components/structure'
 import { main } from 'workers'
 import type * as GQL from 'types/gql'
 import type { Key as StrKey } from 'i18n/strings'
-import * as predicate from 'utils/predicate'
+import * as predicate from 'snatchblock/predicate'
 import { Podcast } from 'store/state'
 import { useLocation, history } from '@picast-app/router'
 

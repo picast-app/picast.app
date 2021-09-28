@@ -1,5 +1,5 @@
 import Endpoint from 'typerpc'
-import browserWS from 'typerpc/transport/ws/browser'
+import browserWS from 'utils/wsTransport'
 import { store } from 'store'
 import epStore from 'main/episodeStore'
 import type { Schema as WSAPI } from 'types/ws'

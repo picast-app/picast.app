@@ -1,4 +1,4 @@
-import * as predicate from './predicate'
+import * as predicate from 'snatchblock/predicate'
 export * from 'snatchblock/list'
 
 export const min = <T>(list: T[], sel: (el: T) => number): T => {
