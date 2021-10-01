@@ -72,6 +72,8 @@ export default (store: Store) => {
           `don't write ${id} (not subbed to ${cache.get(id)?.podcast})`,
           { subbed, subscriptions: await subscriptions }
         )
+    } else {
+      if (subbed) logger.warn(`don't write data {subbed}`, { data })
     }
   }, true)
 

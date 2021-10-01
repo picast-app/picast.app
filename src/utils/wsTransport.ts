@@ -2,10 +2,20 @@ import type { Transport } from 'typerpc'
 import type Endpoint from 'typerpc'
 import type Connection from 'typerpc/connection'
 import type { Schema } from 'typerpc/types'
+import { store } from 'store'
 
 type WsTransport = Transport<string> & {
   connect<T extends Schema>(endpoint: Endpoint<any>): Connection<T>
 }
+
+let logQueue: any[] | null = null
+store.listen('settings.debug.printLogs', v => {
+  if (v) (globalThis as any).wsQueue = logQueue ??= []
+  else {
+    logQueue = null
+    if ('logQueue' in globalThis) delete (globalThis as any).logQueue
+  }
+})
 
 export default function browserWSTransport(endpoint: string): WsTransport {
   let ws: WebSocket
@@ -34,7 +44,9 @@ export default function browserWSTransport(endpoint: string): WsTransport {
       transport.in(data)
     }
 
-    ws.onerror = e => logger.error('ws error:', e)
+    ws.onerror = e => {
+      logger.error('ws error:', e)
+    }
   }
 
   connect()
@@ -48,6 +60,7 @@ export default function browserWSTransport(endpoint: string): WsTransport {
       handleOut(msg)
     },
     in: msg => {
+      logQueue?.push(msg)
       if (typeof transport.onInput !== 'function')
         throw Error('no input handler defined')
       transport.onInput(msg, endpoint)
