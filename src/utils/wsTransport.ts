@@ -3,6 +3,7 @@ import type Endpoint from 'typerpc'
 import type Connection from 'typerpc/connection'
 import type { Schema } from 'typerpc/types'
 import { store } from 'store'
+import uiThread from 'main/ui'
 
 type WsTransport = Transport<string> & {
   connect<T extends Schema>(endpoint: Endpoint<any>): Connection<T>
@@ -18,38 +19,62 @@ store.listen('settings.debug.printLogs', v => {
 })
 
 export default function browserWSTransport(endpoint: string): WsTransport {
-  let ws: WebSocket
+  let ws: WebSocket | null = null
+  let cleanup: λ | null = null
   let queue: string[] = []
   const bufferMsg = (msg: string) => void queue.push(msg)
   let handleOut: (msg: string) => void = bufferMsg
 
   const connect = () => {
+    if (ws) return
     logger.info('connect ws')
     ws = new WebSocket(endpoint)
 
-    ws.onopen = () => {
+    function onOpen() {
       logger.info('ws connection open')
-      handleOut = msg => ws.send(msg)
-      queue.forEach(msg => ws.send(msg))
+      handleOut = msg => ws!.send(msg)
+      queue.forEach(msg => ws!.send(msg))
       queue = []
     }
 
-    ws.onclose = e => {
-      logger.warn('ws connction closed', e)
+    function onClose(event: CloseEvent) {
+      logger.warn('ws connection closed', { event, ...event })
       handleOut = bufferMsg
-      connect()
+      cleanup?.()
+      if (event.code <= 1001) return
+      const timeout = 3000
+      logger.info(`reconnect in ${timeout}`)
+      setTimeout(connect, timeout)
     }
 
-    ws.onmessage = ({ data }) => {
+    function onMessage({ data }: MessageEvent<any>) {
       transport.in(data)
     }
 
-    ws.onerror = e => {
+    function onError(e: Event) {
       logger.error('ws error:', e)
+    }
+
+    ws.addEventListener('open', onOpen)
+    ws.addEventListener('close', onClose)
+    ws.addEventListener('message', onMessage)
+    ws.addEventListener('error', onError)
+
+    cleanup = () => {
+      ws?.removeEventListener('open', onOpen)
+      ws?.removeEventListener('close', onClose)
+      ws?.removeEventListener('message', onMessage)
+      ws?.removeEventListener('error', onError)
+      ws = null
     }
   }
 
   connect()
+
+  uiThread.addEventListener('beforeunload', () => {
+    logger.info('close ws (beforeunload)')
+    ws?.close()
+  })
 
   const transport: WsTransport = {
     out: (addr, msg) => {
