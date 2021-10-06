@@ -21,6 +21,7 @@ function Info() {
     ;(async () => {
       const user = await main.getX('user')
       const podcasts = await main.getAll('podcasts')
+      podcasts.sort((a, b) => a.title.localeCompare(b.title))
 
       await Promise.all(
         podcasts.map(async pod => {
@@ -68,7 +69,7 @@ function Info() {
         </thead>
         <tbody>
           {state.podcasts?.map((v: any) => (
-            <tr key={v.id}>
+            <tr key={v.id} data-match={v.episodeCount === v.episodes?.length}>
               <td>{v.id}</td>
               <td className="title">{v.title}</td>
               <td>{v.episodeCount}</td>
@@ -119,5 +120,13 @@ const Page = styled.div`
     max-width: 10rem;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  tr {
+    position: relative;
+  }
+
+  tr[data-match='false'] {
+    background-color: #f004;
   }
 `

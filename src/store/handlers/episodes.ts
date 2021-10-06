@@ -8,6 +8,7 @@ import * as o from 'utils/object'
 import equals from 'snatchblock/equal'
 import { query } from 'api/calls'
 import * as convert from 'api/convert'
+import * as db from 'store/idb'
 
 // update cache data at path
 // return true if data has changed
@@ -66,7 +67,7 @@ export default (store: Store) => {
         !known &&
         (subbed || (await subscriptions).includes(cache.get(id)!.podcast))
       )
-        await writeToDB(cache.get(id)!)
+        db.episodes.put(cache.get(id)!)
       else if (!known)
         logger.info(
           `don't write ${id} (not subbed to ${cache.get(id)?.podcast})`,
@@ -98,26 +99,6 @@ export default (store: Store) => {
     if (!podcast) throw Error(`can't find podcast id for episode ${id}`)
     const data = await query.episode([podcast, id])
     return convert.episode(data, podcast) ?? null
-  }
-
-  // async function writeToDB(episode: Episode) {
-  //   await (await idb).put('episodes', episode)
-  // }
-
-  const queue: Episode[] = []
-  let writing = false
-
-  async function writeToDB(episode: Episode) {
-    queue.unshift(episode)
-    if (writing) return
-    writing = true
-    try {
-      let episode: Episode | undefined
-      const db = await idb
-      while ((episode = queue.pop())) await db.put('episodes', episode)
-    } finally {
-      writing = false
-    }
   }
 
   async function removeFromDB(...podcasts: string[]) {

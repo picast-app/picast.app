@@ -51,8 +51,8 @@ export default function browserWSTransport(endpoint: string): WsTransport {
       transport.in(data)
     }
 
-    function onError(e: Event) {
-      logger.error('ws error:', e)
+    function onError(event: Event) {
+      logger.error('ws error:', { event, ...event })
     }
 
     ws.addEventListener('open', onOpen)

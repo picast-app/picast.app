@@ -33,7 +33,6 @@ export class Podcast {
     Podcast.created.push(id)
     const ids = await db.getAllKeysFromIndex('episodes', 'podcast', id)
     const keys = Podcast.keys(ids)
-    logger.info(`create epStore ${id} with`, { ids, keys })
     return new Podcast(id, db, keys, subscribed)
   }
 
@@ -97,10 +96,10 @@ export class Podcast {
 
   public addEpisodes(episodes: Episode[], notify = false) {
     this.addKeys(Podcast.keys(episodes.map(({ id }) => id)))
-    logger.info(`[epStore ${this.id}] add ${episodes.length} episodes`, {
-      subscribed: this.subscribed,
-      keys: this.keys,
-    })
+    // logger.info(`[epStore ${this.id}] add ${episodes.length} episodes`, {
+    //   subscribed: this.subscribed,
+    //   keys: this.keys,
+    // })
     episodes.map(data =>
       store.set('episodes.*', data, { subbed: this.subscribed }, data.id)
     )
